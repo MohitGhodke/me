@@ -1,0 +1,141 @@
+# Mohit OS 1.0
+
+A portfolio site built as a small operating system: a menu bar, draggable
+windows, a desktop of icons, and a boot sequence. Static files, no build step,
+no framework to install.
+
+```
+npm install     # only needed for the tests
+npm run dev     # http://localhost:4173
+npm test        # 68 tests, ~1s
+```
+
+---
+
+## Where things live
+
+The rule is one job per file, and content is never mixed with markup.
+
+```
+MohitOS.dc.html          the template, and a thin component that owns state + events
+support.js               the Design Component runtime (generated — do not edit)
+
+src/content/             ▸ THE COPY. Edit these; nothing else.
+  site.js                  name, role, email, links, page metadata
+  resume.js                summary, roles, education
+  projects.js              the case studies in the Work folder
+  about.js                 About Me.txt
+  skills.js                the System Profile window
+  playground.js            the terminal's side projects
+  contact.js               contact copy and form behaviour
+  desktop.js               which windows exist, the menu bar, keyboard shortcuts
+  index.js                 assembles the above and validates it at boot
+
+src/design/              the design system
+  tokens.js                every colour, typeface, size, duration — the only hex in the repo
+  styles.js                style builders composed from tokens
+
+src/core/                browser-agnostic logic, unit-tested in Node
+  window-manager.js        open/close/stack/drag/clamp, as pure state transitions
+  menu-controller.js       menu bar latch-and-track behaviour
+  clipboard.js             copy that reports honest success or failure
+  shortcuts.js             key bindings, matched against data
+  system.js                clock, viewport, safe localStorage, external links
+
+src/app/
+  view-model.js            content + state → the flat object the template renders
+
+test/                    node:test, no runner to configure
+scripts/dev-server.mjs   zero-dependency static server
+```
+
+### Why it's split this way
+
+- **Content is data.** Adding a fifth case study means adding an object to
+  `projects.js`. The template already loops.
+- **The design system is one file.** `tokens.js` holds the palette; `styles.js`
+  turns tokens into the repeated style strings. Change the accent colour once.
+- **Logic doesn't need a browser.** The window manager takes an injected
+  viewport and returns new state, so its edge cases (a window taller than the
+  screen, a viewport that shrinks under an open window) are covered by fast
+  tests instead of manual clicking.
+- **The component is a composition root.** It owns React state and DOM events
+  and delegates everything else.
+
+---
+
+## Adding your real content
+
+Start with `CONTENT.md` — it's a checklist of every placeholder still in the
+repo. Every content file is commented, and the fields are plain strings and
+arrays.
+
+If you get a field wrong, you'll know immediately: the content is validated at
+boot, the problems are printed to the console **and** shown in a panel on the
+desktop, with the exact path (`projects[2] is missing \`summary\``).
+
+Adding a whole new window takes two steps:
+
+1. a row in `desktop.js` — `{ id, title, icon, meta, geometry }`
+2. a `<sc-if value="{{ w.yourId.open }}">` block in `MohitOS.dc.html`
+
+The window manager, the desktop icon, the list view, the mobile list and the
+menu wiring all follow from the registry. `npm test` fails if you do step 1 and
+forget step 2.
+
+---
+
+## Deploying
+
+Everything is static. Upload the repo (minus `node_modules/` and `test/`) and
+add one rewrite so `/` serves the page:
+
+| Host | Rule |
+| --- | --- |
+| Netlify | `/*  /MohitOS.dc.html  200` in `_redirects` |
+| Vercel | `{ "rewrites": [{ "source": "/", "destination": "/MohitOS.dc.html" }] }` |
+| nginx | `location = / { rewrite ^ /MohitOS.dc.html last; }` |
+| GitHub Pages | rename the file to `index.html` — nothing else changes |
+
+React is loaded from unpkg with subresource integrity; the Silkscreen webfont
+comes from Google Fonts. Both are the only external requests the page makes.
+
+---
+
+## Tests
+
+```
+npm test              # everything
+npm run test:watch    # re-runs on save
+```
+
+| File | What it protects |
+| --- | --- |
+| `window-manager.test.js` | stacking, clamping, drag limits, immutability |
+| `core.test.js` | menus, shortcuts, clipboard fallbacks, storage failures |
+| `content.test.js` | the validator actually catches broken content |
+| `view-model.test.js` | state → render values |
+| `template.test.js` | every `{{ hole }}` in the template still resolves |
+| `smoke.test.js` | boots the real page in jsdom and clicks through it |
+
+`template.test.js` is the one that matters when refactoring: a hole that no
+longer resolves is a silently blank window in the browser, and it turns that
+into a failing test naming the exact expression.
+
+`smoke.test.js` needs `npm install`; it skips cleanly without the dev
+dependencies so CI without them still runs the rest.
+
+---
+
+## Notes on the runtime
+
+`support.js` is a generated build of the Design Component runtime — regenerate
+it upstream rather than editing it. Two behaviours are worth knowing:
+
+- The template language is small on purpose: `{{ path }}`, `<sc-if value>`,
+  `<sc-for list as>`, equality and `!`. Anything more complicated belongs in
+  `view-model.js`.
+- The runtime compiles the page twice: once from the parsed DOM, then again
+  from the raw source it re-fetches, which is what preserves camelCase
+  attributes like `tabIndex`. That second pass needs the page served over HTTP,
+  so use `npm run dev` rather than opening the file directly.

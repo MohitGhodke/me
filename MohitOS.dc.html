@@ -1,26 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Crawler-visible baseline. The running app re-syncs these from
+     src/content/site.js on boot; test/template.test.js keeps them equal. -->
+<title>Mohit Ghodke — Lead Software Engineer</title>
+<meta name="description" content="The portfolio of Mohit Ghodke, a lead software engineer working on backend systems, platform and scale — presented as a small operating system.">
+<meta name="theme-color" content="#8a9c93">
+<meta name="color-scheme" content="light">
+<link rel="canonical" href="https://mohitghodke.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mohit Ghodke — Lead Software Engineer">
+<meta property="og:description" content="The portfolio of Mohit Ghodke, a lead software engineer working on backend systems, platform and scale — presented as a small operating system.">
+<meta property="og:url" content="https://mohitghodke.com/">
+<meta name="twitter:card" content="summary">
+
 <script src="./support.js"></script>
+
+<!-- Application modules. Plain classic scripts, loaded in dependency order and
+     namespaced under `window.MohitOS`, so the site stays a static bundle with
+     no build step. See README.md for the layout. -->
+<script src="./src/design/tokens.js"></script>
+<script src="./src/design/styles.js"></script>
+<script src="./src/core/window-manager.js"></script>
+<script src="./src/core/menu-controller.js"></script>
+<script src="./src/core/clipboard.js"></script>
+<script src="./src/core/shortcuts.js"></script>
+<script src="./src/core/system.js"></script>
+<script src="./src/content/site.js"></script>
+<script src="./src/content/resume.js"></script>
+<script src="./src/content/projects.js"></script>
+<script src="./src/content/about.js"></script>
+<script src="./src/content/skills.js"></script>
+<script src="./src/content/playground.js"></script>
+<script src="./src/content/contact.js"></script>
+<script src="./src/content/desktop.js"></script>
+<script src="./src/content/index.js"></script>
+<script src="./src/app/view-model.js"></script>
 </head>
 <body>
+<noscript>
+  <div style="font-family: Helvetica, Arial, sans-serif; max-width: 34em; margin: 3em auto; line-height: 1.6;">
+    <h1>Mohit Ghodke</h1>
+    <p>Lead Software Engineer — systems, platform, scale.</p>
+    <p>This portfolio is an interactive desktop and needs JavaScript. You can still
+      reach me at <a href="mailto:hello@mohitghodke.com">hello@mohitghodke.com</a>.</p>
+  </div>
+</noscript>
 <x-dc>
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
 <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
 <style>
+  /* Palette is published as custom properties by the component at mount, from
+     src/design/tokens.js. The literals here are fallbacks only. */
   html, body { margin: 0; padding: 0; height: 100%; }
-  body { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; background: #8a9c93; overscroll-behavior: none; }
-  a { color: oklch(0.55 0.14 40); text-decoration: underline; text-underline-offset: 2px; }
-  a:hover { color: #1b1a18; background: oklch(0.9 0.06 80); }
+  body {
+    font-family: var(--mos-font-body, "Helvetica Neue", Helvetica, Arial, sans-serif);
+    -webkit-font-smoothing: antialiased;
+    background: var(--mos-desktop, #8a9c93);
+    overscroll-behavior: none;
+  }
+  a { color: var(--mos-link, oklch(0.55 0.14 40)); text-decoration: underline; text-underline-offset: 2px; }
+  a:hover { color: var(--mos-ink, #1b1a18); background: var(--mos-link-hover-bg, oklch(0.9 0.06 80)); }
   * { box-sizing: border-box; }
+
+  /* Chrome is not selectable — document text is. */
+  .mos-selectable { user-select: text; -webkit-user-select: text; }
+
+  /* Everything interactive is a div or a span, so the focus ring has to be
+     spelled out. Keyboard users get the same affordances as the mouse. */
+  [tabindex]:focus-visible, a:focus-visible, button:focus-visible,
+  input:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--mos-ink, #1b1a18);
+    outline-offset: 2px;
+  }
+
   @keyframes bootbar { from { width: 4%; } to { width: 100%; } }
   @keyframes blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.25; } }
   @keyframes popin { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   @keyframes dropin { from { transform: translateY(-3px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+
   @media print {
     body { background: #fff !important; }
     [data-print="root"] { position: static !important; inset: auto !important; height: auto !important; background: #fff !important; background-image: none !important; }
@@ -37,88 +104,62 @@
 
 <div data-print="root" style="position: fixed; inset: 0; display: flex; flex-direction: column; background: #8a9c93; background-image: radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px); background-size: 4px 4px; color: #1b1a18; user-select: none;">
 
-  <div style="position: relative; z-index: 5000; flex: 0 0 auto; display: flex; align-items: stretch; gap: 0; height: 28px; background: #f5f2e8; border-bottom: 2px solid #1b1a18; padding: 0 8px; font-family: Silkscreen, monospace; font-size: 11px; letter-spacing: 0.02em;">
+  <!-- ================================================================ menu bar
+       Titles and commands both come from content/desktop.js. -->
+  <div role="menubar" aria-label="Main menu" style="{{ s.menuBar }}">
 
-    <div onClick="{{ toggleMenu }}" onMouseEnter="{{ hoverMenu }}" data-menu="apple" style="{{ mApple }}">
-      <div style="width: 13px; height: 13px; border: 2px solid #1b1a18; border-radius: 3px; background: oklch(0.62 0.14 40); pointer-events: none;"></div>
-      <sc-if value="{{ menuApple }}" hint-placeholder-val="{{ false }}">
-        <div style="position: absolute; top: 100%; left: 0; min-width: 208px; background: #f5f2e8; color: #1b1a18; border: 2px solid #1b1a18; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 3px 0; animation: dropin .08s ease-out; cursor: default;">
-          <div onClick="{{ act }}" data-act="about" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">About This Portfolio</div>
-          <div style="height: 1px; background: rgba(27,26,24,0.3); margin: 4px 8px;"></div>
-          <div onClick="{{ act }}" data-act="skills" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">System Profile</div>
-          <div onClick="{{ act }}" data-act="contact" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Contact Mohit…</div>
-        </div>
-      </sc-if>
-    </div>
+    <sc-for list="{{ menus }}" as="m" hint-placeholder-count="5">
+      <div onClick="{{ act }}" onMouseEnter="{{ hoverMenu }}" onKeyDown="{{ keyActivate }}"
+           data-act="menu" data-menu="{{ m.id }}" style="{{ m.style }}"
+           role="menuitem" tabIndex="0" aria-haspopup="true" aria-label="{{ m.label }}">
+        <sc-if value="{{ m.isApple }}" hint-placeholder-val="{{ false }}">
+          <div style="width: 13px; height: 13px; border: 2px solid #1b1a18; border-radius: 3px; background: oklch(0.62 0.14 40); pointer-events: none;"></div>
+        </sc-if>
+        <sc-if value="{{ m.hasLabel }}" hint-placeholder-val="{{ true }}">{{ m.label }}</sc-if>
 
-    <div onClick="{{ toggleMenu }}" onMouseEnter="{{ hoverMenu }}" data-menu="file" style="{{ mFile }}">File
-      <sc-if value="{{ menuFile }}" hint-placeholder-val="{{ false }}">
-        <div style="position: absolute; top: 100%; left: 0; min-width: 244px; background: #f5f2e8; color: #1b1a18; border: 2px solid #1b1a18; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 3px 0; animation: dropin .08s ease-out; cursor: default;">
-          <div onClick="{{ act }}" data-act="resume" style="display: flex; justify-content: space-between; gap: 20px; padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;"><span>Open Resume</span><span style="opacity: 0.5;">⌘R</span></div>
-          <div onClick="{{ act }}" data-act="work" style="display: flex; justify-content: space-between; gap: 20px; padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;"><span>Open Work Folder</span><span style="opacity: 0.5;">⌘W</span></div>
-          <div onClick="{{ act }}" data-act="play" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Open Playground</div>
-          <div style="height: 1px; background: rgba(27,26,24,0.3); margin: 4px 8px;"></div>
-          <div onClick="{{ act }}" data-act="print" style="display: flex; justify-content: space-between; gap: 20px; padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;"><span>Save Resume as PDF…</span><span style="opacity: 0.5;">⌘P</span></div>
-          <div style="height: 1px; background: rgba(27,26,24,0.3); margin: 4px 8px;"></div>
-          <div onClick="{{ act }}" data-act="closeall" style="{{ iCloseAll }}" style-hover="background:#1b1a18;color:#f5f2e8;">Close All Windows</div>
-        </div>
-      </sc-if>
-    </div>
-
-    <div onClick="{{ toggleMenu }}" onMouseEnter="{{ hoverMenu }}" data-menu="edit" style="{{ mEdit }}">Edit
-      <sc-if value="{{ menuEdit }}" hint-placeholder-val="{{ false }}">
-        <div style="position: absolute; top: 100%; left: 0; min-width: 236px; background: #f5f2e8; color: #1b1a18; border: 2px solid #1b1a18; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 3px 0; animation: dropin .08s ease-out; cursor: default;">
-          <div onClick="{{ act }}" data-act="copymail" style="display: flex; justify-content: space-between; gap: 20px; padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;"><span>Copy Email Address</span><span style="opacity: 0.5;">⌘C</span></div>
-          <div onClick="{{ act }}" data-act="copylink" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Copy Link to This Site</div>
-          <div style="height: 1px; background: rgba(27,26,24,0.3); margin: 4px 8px;"></div>
-          <div style="padding: 7px 14px; white-space: nowrap; opacity: 0.32;">Undo</div>
-          <div style="padding: 7px 14px; white-space: nowrap; opacity: 0.32;">Cut</div>
-          <div style="padding: 7px 14px; white-space: nowrap; opacity: 0.32;">Paste</div>
-        </div>
-      </sc-if>
-    </div>
-
-    <div onClick="{{ toggleMenu }}" onMouseEnter="{{ hoverMenu }}" data-menu="view" style="{{ mView }}">View
-      <sc-if value="{{ menuView }}" hint-placeholder-val="{{ false }}">
-        <div style="position: absolute; top: 100%; left: 0; min-width: 224px; background: #f5f2e8; color: #1b1a18; border: 2px solid #1b1a18; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 3px 0; animation: dropin .08s ease-out; cursor: default;">
-          <div onClick="{{ act }}" data-act="asicons" style="display: flex; gap: 8px; padding: 7px 14px 7px 10px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;"><span style="width: 10px;">{{ tickIcons }}</span><span>as Icons</span></div>
-          <div onClick="{{ act }}" data-act="aslist" style="display: flex; gap: 8px; padding: 7px 14px 7px 10px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;"><span style="width: 10px;">{{ tickList }}</span><span>as List</span></div>
-          <div style="height: 1px; background: rgba(27,26,24,0.3); margin: 4px 8px;"></div>
-          <div onClick="{{ act }}" data-act="cleanup" style="{{ iCleanUp }}" style-hover="background:#1b1a18;color:#f5f2e8;">Clean Up Desktop</div>
-        </div>
-      </sc-if>
-    </div>
-
-    <div onClick="{{ toggleMenu }}" onMouseEnter="{{ hoverMenu }}" data-menu="special" style="{{ mSpecial }}">Special
-      <sc-if value="{{ menuSpecial }}" hint-placeholder-val="{{ false }}">
-        <div style="position: absolute; top: 100%; left: 0; min-width: 220px; background: #f5f2e8; color: #1b1a18; border: 2px solid #1b1a18; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 3px 0; animation: dropin .08s ease-out; cursor: default;">
-          <div onClick="{{ act }}" data-act="github" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Open GitHub</div>
-          <div onClick="{{ act }}" data-act="linkedin" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Open LinkedIn</div>
-          <div style="height: 1px; background: rgba(27,26,24,0.3); margin: 4px 8px;"></div>
-          <div onClick="{{ act }}" data-act="restart" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Restart</div>
-          <div onClick="{{ act }}" data-act="shutdown" style="padding: 7px 14px; white-space: nowrap;" style-hover="background:#1b1a18;color:#f5f2e8;">Shut Down</div>
-        </div>
-      </sc-if>
-    </div>
+        <sc-if value="{{ m.open }}" hint-placeholder-val="{{ false }}">
+          <div role="menu" style="{{ m.panelStyle }}">
+            <sc-for list="{{ m.items }}" as="it" hint-placeholder-count="4">
+              <sc-if value="{{ it.isSeparator }}" hint-placeholder-val="{{ false }}">
+                <div role="separator" style="{{ it.style }}"></div>
+              </sc-if>
+              <sc-if value="{{ it.isItem }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}"
+                     data-act="{{ it.act }}" data-href="{{ it.href }}" style="{{ it.style }}"
+                     role="menuitem" tabIndex="0" aria-disabled="{{ it.disabled }}"
+                     style-hover="background:#1b1a18;color:#f5f2e8;">
+                  <sc-if value="{{ it.hasTick }}" hint-placeholder-val="{{ false }}"><span style="width: 10px;">{{ it.tick }}</span></sc-if>
+                  <span>{{ it.label }}</span>
+                  <sc-if value="{{ it.hasShortcut }}" hint-placeholder-val="{{ false }}"><span style="opacity: 0.5;">{{ it.shortcut }}</span></sc-if>
+                </div>
+              </sc-if>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </sc-for>
 
     <div style="flex: 1 1 auto;"></div>
     <div style="display: flex; align-items: center; padding: 0 10px; opacity: 0.7;" style-hover="opacity:1;">{{ clock }}</div>
-    <div style="display: flex; align-items: center; padding: 0 4px 0 10px; font-weight: 700;">Mohit Ghodke</div>
+    <div style="display: flex; align-items: center; padding: 0 4px 0 10px; font-weight: 700;">{{ site.name }}</div>
   </div>
 
+  <!-- =================================================================== stage -->
   <div onMouseDown="{{ closeMenu }}" data-print="stage" style="position: relative; flex: 1 1 auto; overflow: hidden;">
 
     <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
       <div style="position: absolute; top: 18px; left: 20px; max-width: 340px; font-family: Silkscreen, monospace; font-size: 10px; line-height: 1.8; color: rgba(255,255,255,0.92); text-shadow: 1px 1px 0 rgba(0,0,0,0.35); pointer-events: none;">
-        MOHIT OS 1.0<br />Lead Software Engineer — systems, platform, scale<br />Double-click an icon to open it.
+        {{ shell.osName }}<br />{{ site.tagline }}<br />{{ shell.desktopHint }}
       </div>
     </sc-if>
 
-    <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <!-- ----------------------------------------------------- desktop, icons -->
     <sc-if value="{{ viewIcons }}" hint-placeholder-val="{{ true }}">
-    <div style="position: absolute; top: 12px; right: 12px; bottom: 12px; display: grid; grid-auto-flow: column; grid-template-rows: repeat(4, min-content); grid-auto-columns: 104px; gap: 2px 4px; direction: rtl;">
+    <div role="list" aria-label="Desktop" style="position: absolute; top: 12px; right: 12px; bottom: 12px; display: grid; grid-auto-flow: column; grid-template-rows: repeat(4, min-content); grid-auto-columns: 104px; gap: 2px 4px; direction: rtl;">
       <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="6">
-        <div onDoubleClick="{{ handleOpen }}" onClick="{{ handleTap }}" data-app="{{ ic.id }}" style="direction: ltr; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 7px 4px 5px; cursor: default; border: 1px dotted transparent;" style-hover="border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.08);">
+        <div onDoubleClick="{{ handleOpen }}" onClick="{{ handleTap }}" onKeyDown="{{ keyOpen }}"
+             data-app="{{ ic.id }}" style="{{ s.icon }}" role="listitem" tabIndex="0"
+             aria-label="{{ ic.label }}" style-hover="border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.08);">
           <sc-if value="{{ ic.isFolder }}" hint-placeholder-val="{{ true }}">
             <div style="position: relative; width: 44px; height: 36px;">
               <div style="position: absolute; top: 0; left: 0; width: 20px; height: 8px; border: 2px solid #1b1a18; border-bottom: none; border-radius: 3px 3px 0 0; background: #f5f2e8;"></div>
@@ -138,19 +179,22 @@
               <div style="width: 15px; height: 15px; background: oklch(0.62 0.14 40); border: 2px solid #1b1a18; transform: rotate(45deg);"></div>
             </div>
           </sc-if>
-          <div style="font-family: Silkscreen, monospace; font-size: 9.5px; line-height: 1.35; text-align: center; color: #10120f; background: #f5f2e8; border: 1px solid #1b1a18; padding: 2px 5px; max-width: 100px; overflow-wrap: normal; white-space: nowrap;">{{ ic.label }}</div>
+          <div style="{{ s.iconLabel }}">{{ ic.label }}</div>
         </div>
       </sc-for>
     </div>
     </sc-if>
 
+    <!-- ------------------------------------------------------ desktop, list -->
     <sc-if value="{{ viewList }}" hint-placeholder-val="{{ false }}">
       <div style="position: absolute; top: 12px; right: 12px; width: 268px; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.35); border-radius: 3px; overflow: hidden;">
-        <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 2px solid #1b1a18; font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.75;">
-          <span>Name</span><span>Kind</span>
+        <div style="{{ s.infoStrip }}">
+          <span>{{ shell.listHeader.name }}</span><span>{{ shell.listHeader.kind }}</span>
         </div>
         <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="6">
-          <div onDoubleClick="{{ handleOpen }}" data-app="{{ ic.id }}" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid rgba(27,26,24,0.2); cursor: default;" style-hover="background:#1b1a18;color:#f5f2e8;">
+          <div onDoubleClick="{{ handleOpen }}" onKeyDown="{{ keyOpen }}" data-app="{{ ic.id }}"
+               tabIndex="0" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid rgba(27,26,24,0.2); cursor: default;"
+               style-hover="background:#1b1a18;color:#f5f2e8;">
             <span style="font-family: Silkscreen, monospace; font-size: 9.5px; white-space: nowrap;">{{ ic.label }}</span>
             <span style="font-size: 11px; opacity: 0.7; text-align: right;">{{ ic.meta }}</span>
           </div>
@@ -158,20 +202,23 @@
       </div>
     </sc-if>
 
+    <!-- ------------------------------------------------------------- mobile -->
     <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
       <div style="position: absolute; inset: 0; padding: 10px; overflow: auto;">
         <div style="border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.35);">
-          <div style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px);">
-            <div style="width: 13px; height: 13px; border: 2px solid #1b1a18; background: #f5f2e8;"></div>
-            <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 8px;">Mohit Ghodke</div>
+          <div style="{{ s.chromeBar }}">
+            <div style="{{ s.chromeGrow }}"></div>
+            <div style="{{ s.chromeTitle }}">{{ site.name }}</div>
             <div style="width: 13px;"></div>
           </div>
-          <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-bottom: 2px solid #1b1a18; font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.75;">
-            <span>6 items</span><span>Lead Software Engineer</span>
+          <div style="{{ s.infoStrip }}">
+            <span>{{ counts.desktop }}</span><span>{{ site.role }}</span>
           </div>
           <div style="display: flex; flex-direction: column;">
             <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="6">
-              <div onClick="{{ handleOpen }}" data-app="{{ ic.id }}" style="display: flex; align-items: center; gap: 12px; padding: 14px 12px; border-bottom: 1px solid rgba(27,26,24,0.25); min-height: 60px;" style-active="background:#1b1a18;color:#f5f2e8;">
+              <div onClick="{{ handleOpen }}" onKeyDown="{{ keyOpen }}" data-app="{{ ic.id }}"
+                   tabIndex="0" role="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 12px; border-bottom: 1px solid rgba(27,26,24,0.25); min-height: 60px;"
+                   style-active="background:#1b1a18;color:#f5f2e8;">
                 <div style="width: 26px; height: 30px; border: 2px solid currentColor; border-radius: 2px; flex: 0 0 auto;"></div>
                 <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px;">
                   <div style="font-family: Silkscreen, monospace; font-size: 12px;">{{ ic.label }}</div>
@@ -183,69 +230,74 @@
           </div>
         </div>
         <div style="font-family: Silkscreen, monospace; font-size: 9px; color: rgba(255,255,255,0.85); text-shadow: 1px 1px 0 rgba(0,0,0,0.3); padding: 12px 4px; line-height: 1.7;">
-          MOHIT OS 1.0 — tap a row to open it.
+          {{ shell.mobileHint }}
         </div>
       </div>
     </sc-if>
 
-    <sc-if value="{{ openResume }}" hint-placeholder-val="{{ false }}">
-      <div data-print="doc" style="{{ sResume }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="resume" data-print="chrome" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="resume" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px; white-space: nowrap; overflow: hidden;">Resume.doc</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- ================================================== window: Resume.doc -->
+    <sc-if value="{{ w.resume.open }}" hint-placeholder-val="{{ false }}">
+      <div data-print="doc" style="{{ w.resume.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="resume" data-print="chrome" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="Close Resume" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.resume.title }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div data-print="body" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 28px 30px 36px;">
+        <div data-print="body" class="mos-selectable" style="{{ s.windowBodyResume }}">
           <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 14px; border-bottom: 2px solid #1b1a18;">
-            <div style="font-family: Silkscreen, monospace; font-size: 20px; letter-spacing: -0.01em;">Mohit Ghodke</div>
-            <div style="font-size: 13px; opacity: 0.75;">Lead Software Engineer · Pune, IN · <a href="mailto:hello@mohitghodke.com">hello@mohitghodke.com</a></div>
+            <div style="font-family: Silkscreen, monospace; font-size: 20px; letter-spacing: -0.01em;">{{ site.name }}</div>
+            <div style="font-size: 13px; opacity: 0.75;">{{ site.role }} · {{ site.location }} · <a href="{{ mailto }}">{{ site.email }}</a></div>
           </div>
           <div style="display: flex; flex-direction: column; gap: 22px; padding-top: 18px;">
+
             <div style="display: flex; flex-direction: column; gap: 8px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 11px; text-transform: uppercase;">Summary</div>
-              <div style="font-size: 13.5px; line-height: 1.65; text-wrap: pretty;">Nine years building and leading backend and platform teams. I take systems from a prototype that works to a service that stays up — and I bring engineers along with me. Most recently led a four-person team through a payments re-platform serving 2M daily requests.</div>
+              <div style="{{ s.sectionLabelResume }}">Summary</div>
+              <div style="font-size: 13.5px; line-height: 1.65; text-wrap: pretty;">{{ resume.summary }}</div>
             </div>
+
             <div style="display: flex; flex-direction: column; gap: 12px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 11px; text-transform: uppercase;">Experience</div>
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; font-weight: 600;"><span>Lead Software Engineer — Acme Systems</span><span style="opacity: 0.6; font-weight: 400; white-space: nowrap;">2022 — now</span></div>
-                <div style="font-size: 13px; line-height: 1.6; opacity: 0.85;">Own the payments platform. Cut p99 latency 340ms → 90ms, moved 12 services onto a shared deploy pipeline, hired and mentored 3 engineers.</div>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; font-weight: 600;"><span>Senior Engineer — Northwind Labs</span><span style="opacity: 0.6; font-weight: 400; white-space: nowrap;">2019 — 2022</span></div>
-                <div style="font-size: 13px; line-height: 1.6; opacity: 0.85;">Built the event ingestion pipeline behind customer analytics. 40k events/sec sustained, exactly-once semantics.</div>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 5px;">
-                <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; font-weight: 600;"><span>Software Engineer — Bluebird</span><span style="opacity: 0.6; font-weight: 400; white-space: nowrap;">2017 — 2019</span></div>
-                <div style="font-size: 13px; line-height: 1.6; opacity: 0.85;">Full-stack product work across web and API. Shipped the first version of the merchant dashboard.</div>
-              </div>
+              <div style="{{ s.sectionLabelResume }}">Experience</div>
+              <sc-for list="{{ resume.roles }}" as="r" hint-placeholder-count="3">
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                  <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; font-weight: 600;"><span>{{ r.title }} — {{ r.company }}</span><span style="opacity: 0.6; font-weight: 400; white-space: nowrap;">{{ r.period }}</span></div>
+                  <div style="font-size: 13px; line-height: 1.6; opacity: 0.85;">{{ r.description }}</div>
+                </div>
+              </sc-for>
             </div>
+
             <div style="display: flex; flex-direction: column; gap: 8px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 11px; text-transform: uppercase;">Education</div>
-              <div style="font-size: 13px; line-height: 1.6;">B.E. Computer Engineering — University Name, 2017</div>
+              <div style="{{ s.sectionLabelResume }}">Education</div>
+              <sc-for list="{{ resume.education }}" as="ed" hint-placeholder-count="1">
+                <div style="font-size: 13px; line-height: 1.6;">{{ ed.line }}</div>
+              </sc-for>
             </div>
           </div>
+
           <div data-print="hide" style="margin-top: 28px; display: flex; gap: 10px;">
-            <div onClick="{{ act }}" data-act="print" style="font-family: Silkscreen, monospace; font-size: 10px; border: 2px solid #1b1a18; border-radius: 4px; padding: 11px 16px; background: #f5f2e8; color: #1b1a18; box-shadow: 2px 2px 0 #1b1a18; cursor: pointer; min-height: 44px; display: flex; align-items: center;" style-hover="background:#1b1a18;color:#f5f2e8;">Save as PDF</div>
-            <div onClick="{{ act }}" data-act="copymail" style="font-family: Silkscreen, monospace; font-size: 10px; border: 2px solid #1b1a18; border-radius: 4px; padding: 11px 16px; background: #f5f2e8; color: #1b1a18; box-shadow: 2px 2px 0 #1b1a18; cursor: pointer; min-height: 44px; display: flex; align-items: center;" style-hover="background:#1b1a18;color:#f5f2e8;">Copy Email</div>
+            <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="print" role="button" tabIndex="0" style="{{ s.btn }}" style-hover="background:#1b1a18;color:#f5f2e8;">Save as PDF</div>
+            <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="copymail" role="button" tabIndex="0" style="{{ s.btn }}" style-hover="background:#1b1a18;color:#f5f2e8;">Copy Email</div>
           </div>
         </div>
       </div>
     </sc-if>
 
-    <sc-if value="{{ openWork }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ sWork }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="work" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="work" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px;">Work</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- ======================================================= window: Work -->
+    <sc-if value="{{ w.work.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.work.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="work" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="Close Work" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.work.title }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 2px solid #1b1a18; font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.75; flex: 0 0 auto;">
-          <span>4 items</span><span>Double-click to open a case</span>
+        <div style="{{ s.infoStrip }}">
+          <span>{{ counts.work }}</span><span>{{ shell.workHint }}</span>
         </div>
         <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; align-content: start;">
-          <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
-            <div onDoubleClick="{{ launchProject }}" onClick="{{ tapProject }}" data-proj="{{ p.i }}" style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;" style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
+          <sc-for list="{{ files }}" as="p" hint-placeholder-count="4">
+            <div onDoubleClick="{{ launchProject }}" onClick="{{ tapProject }}" onKeyDown="{{ keyOpenProject }}"
+                 data-proj="{{ p.i }}" tabIndex="0" aria-label="{{ p.file }}"
+                 style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
+                 style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
               <div style="position: relative; width: 32px; height: 40px; border: 2px solid #1b1a18; border-radius: 2px; background: #fdfbf4; overflow: hidden;">
                 <div style="position: absolute; inset: 6px 5px auto 5px; height: 12px; background: repeating-linear-gradient(45deg, rgba(27,26,24,0.5) 0 2px, transparent 2px 4px);"></div>
                 <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #f5f2e8; border-left: 2px solid #1b1a18; border-bottom: 2px solid #1b1a18;"></div>
@@ -257,26 +309,27 @@
       </div>
     </sc-if>
 
-    <sc-if value="{{ openProject }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ sProject }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="project" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="project" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px; white-space: nowrap; overflow: hidden;">{{ proj.file }}</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- ==================================================== window: a case -->
+    <sc-if value="{{ w.project.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.project.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="project" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="Close case study" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ proj.file }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #fdfbf4;">
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4;">
           <div style="height: 190px; border-bottom: 2px solid #1b1a18; background: #eae5d6; background-image: repeating-linear-gradient(135deg, rgba(27,26,24,0.12) 0 6px, transparent 6px 12px); display: flex; align-items: center; justify-content: center;">
-            <div style="font-family: Silkscreen, monospace; font-size: 10px; background: #f5f2e8; border: 2px solid #1b1a18; padding: 6px 10px;">{{ proj.img }}</div>
+            <div style="font-family: Silkscreen, monospace; font-size: 10px; background: #f5f2e8; border: 2px solid #1b1a18; padding: 6px 10px;">{{ proj.image }}</div>
           </div>
           <div style="padding: 22px 26px 30px; display: flex; flex-direction: column; gap: 18px;">
             <div style="display: flex; flex-direction: column; gap: 6px;">
               <div style="font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.6;">{{ proj.meta }}</div>
               <div style="font-family: Silkscreen, monospace; font-size: 17px; line-height: 1.3;">{{ proj.title }}</div>
-              <div style="font-size: 14px; line-height: 1.65; text-wrap: pretty;">{{ proj.summary }}</div>
+              <div style="{{ s.prose }}">{{ proj.summary }}</div>
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(27,26,24,0.3); padding-top: 16px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 10px; text-transform: uppercase;">Outcome</div>
-              <sc-for list="{{ proj.points }}" as="pt" hint-placeholder-count="3">
+              <div style="{{ s.sectionLabel }}">Outcome</div>
+              <sc-for list="{{ proj.outcomes }}" as="pt" hint-placeholder-count="3">
                 <div style="display: flex; gap: 10px; font-size: 13.5px; line-height: 1.6;">
                   <span style="opacity: 0.5;">—</span><span>{{ pt }}</span>
                 </div>
@@ -284,7 +337,7 @@
             </div>
             <div style="display: flex; flex-wrap: wrap; gap: 6px;">
               <sc-for list="{{ proj.tags }}" as="t" hint-placeholder-count="4">
-                <div style="font-family: Silkscreen, monospace; font-size: 9px; border: 1px solid #1b1a18; padding: 4px 7px; background: #f5f2e8;">{{ t }}</div>
+                <div style="{{ s.chipOutline }}">{{ t }}</div>
               </sc-for>
             </div>
           </div>
@@ -292,138 +345,137 @@
       </div>
     </sc-if>
 
-    <sc-if value="{{ openAbout }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ sAbout }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="about" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="about" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px;">About Me.txt</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- =============================================== window: About Me.txt -->
+    <sc-if value="{{ w.about.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.about.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="about" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="Close About Me" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.about.title }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 26px 28px 32px; display: flex; flex-direction: column; gap: 16px;">
-          <div style="font-family: Silkscreen, monospace; font-size: 15px;">Hello — I'm Mohit.</div>
-          <div style="font-size: 14px; line-height: 1.7; text-wrap: pretty;">I'm a lead software engineer. I like the unglamorous parts: the migration nobody wants to own, the flaky test that's been muted for a year, the on-call runbook that finally makes sense. Good systems are mostly good decisions written down.</div>
-          <div style="font-size: 14px; line-height: 1.7; text-wrap: pretty;">These days I split my time between platform architecture and growing the people around me. I care about handing a team something they can run without me.</div>
-          <div style="border: 2px solid #1b1a18; background: #f5f2e8; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-family: Silkscreen, monospace; font-size: 10px; text-transform: uppercase;">Currently</div>
-            <div style="font-size: 13px; line-height: 1.65;">Leading the payments platform at Acme Systems. Open to staff and lead roles, and to advising early teams on infrastructure.</div>
-          </div>
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 26px 28px 32px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="font-family: Silkscreen, monospace; font-size: 15px;">{{ about.greeting }}</div>
+          <sc-for list="{{ about.paragraphs }}" as="para" hint-placeholder-count="2">
+            <div style="{{ s.prose }}">{{ para }}</div>
+          </sc-for>
+          <sc-if value="{{ about.callout }}" hint-placeholder-val="{{ true }}">
+            <div style="border: 2px solid #1b1a18; background: #f5f2e8; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="{{ s.sectionLabel }}">{{ about.callout.heading }}</div>
+              <div style="font-size: 13px; line-height: 1.65;">{{ about.callout.body }}</div>
+            </div>
+          </sc-if>
         </div>
       </div>
     </sc-if>
 
-    <sc-if value="{{ openSkills }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ sSkills }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="skills" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="skills" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px;">Skills</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- ===================================================== window: Skills -->
+    <sc-if value="{{ w.skills.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.skills.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="skills" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="Close Skills" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.skills.title }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; padding: 4px 10px; border-bottom: 2px solid #1b1a18; font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.75; flex: 0 0 auto;">
-          <span>System Profile</span><span>9 years in disk</span>
+        <div style="{{ s.infoStrip }}">
+          <span>System Profile</span><span>{{ skills.subtitle }}</span>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 20px 22px 28px; display: flex; flex-direction: column; gap: 20px;">
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="font-family: Silkscreen, monospace; font-size: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(27,26,24,0.3); padding-bottom: 6px;">Languages</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Go</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">TypeScript</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Python</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Rust</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">SQL</div>
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 20px 22px 28px; display: flex; flex-direction: column; gap: 20px;">
+          <sc-for list="{{ skills.groups }}" as="g" hint-placeholder-count="3">
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div style="{{ s.sectionLabelRule }}">{{ g.heading }}</div>
+              <sc-if value="{{ g.kind === 'chips' }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <sc-for list="{{ g.items }}" as="skill" hint-placeholder-count="5">
+                    <div style="{{ s.chip }}">{{ skill }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ g.kind === 'lines' }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 7px; font-size: 13px; line-height: 1.6;">
+                  <sc-for list="{{ g.items }}" as="line" hint-placeholder-count="4">
+                    <div>{{ line }}</div>
+                  </sc-for>
+                </div>
+              </sc-if>
             </div>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="font-family: Silkscreen, monospace; font-size: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(27,26,24,0.3); padding-bottom: 6px;">Platform</div>
-            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Kubernetes</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Kafka</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Postgres</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">Terraform</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">AWS</div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; border: 2px solid #1b1a18; padding: 5px 8px; background: #f5f2e8; box-shadow: 2px 2px 0 rgba(27,26,24,0.2);">gRPC</div>
-            </div>
-          </div>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="font-family: Silkscreen, monospace; font-size: 10px; text-transform: uppercase; border-bottom: 1px solid rgba(27,26,24,0.3); padding-bottom: 6px;">Leading</div>
-            <div style="display: flex; flex-direction: column; gap: 7px; font-size: 13px; line-height: 1.6;">
-              <div>Team of 4 — hiring, reviews, growth plans</div>
-              <div>Architecture review and technical strategy</div>
-              <div>Incident command and on-call culture</div>
-              <div>Mentoring senior engineers into leads</div>
-            </div>
-          </div>
+          </sc-for>
         </div>
       </div>
     </sc-if>
 
-    <sc-if value="{{ openPlay }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ sPlay }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="play" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="play" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px;">Playground</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- ================================================= window: Playground -->
+    <sc-if value="{{ w.play.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.play.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="play" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="Close Playground" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.play.title }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #1b1a18; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
-          <div style="opacity: 0.6;">last login: tue jul 28 09:14</div>
-          <div style="margin-top: 12px;">$ ls ~/playground</div>
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #1b1a18; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
+          <div style="opacity: 0.6;">{{ playground.lastLogin }}</div>
+          <div style="margin-top: 12px;">{{ playground.command }}</div>
           <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 12px;">
-            <div style="display: flex; flex-direction: column; gap: 3px;">
-              <div>tinykv/</div>
-              <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: #a9c99a;">A 900-line key-value store with a write-ahead log. Built it to finally understand crash recovery.</div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 3px;">
-              <div>slowdns/</div>
-              <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: #a9c99a;">DNS resolver that logs every hop. Turned into a debugging tool the whole team uses.</div>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 3px;">
-              <div>rasterbox/</div>
-              <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: #a9c99a;">1-bit image ditherer. It's also what made the wallpaper you're looking at.</div>
-            </div>
+            <sc-for list="{{ playground.entries }}" as="e" hint-placeholder-count="3">
+              <div style="display: flex; flex-direction: column; gap: 3px;">
+                <div>{{ e.name }}</div>
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: #a9c99a;">{{ e.description }}</div>
+              </div>
+            </sc-for>
           </div>
           <div style="margin-top: 16px;">$ <span style="display: inline-block; width: 8px; height: 13px; background: #d9f2c4; vertical-align: -2px; animation: blink 1.1s steps(1) infinite;"></span></div>
         </div>
       </div>
     </sc-if>
 
-    <sc-if value="{{ openContact }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ sContact }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="contact" style="display: flex; align-items: center; gap: 8px; padding: 5px 8px; border-bottom: 2px solid #1b1a18; background: repeating-linear-gradient(#1b1a18 0 1px, #f5f2e8 1px 3px); cursor: default; flex: 0 0 auto;">
-          <div onClick="{{ handleClose }}" data-win="contact" style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; cursor: pointer; flex: 0 0 auto;" style-hover="background:#1b1a18;"></div>
-          <div style="flex: 1 1 auto; text-align: center; font-family: Silkscreen, monospace; font-size: 11px; background: #f5f2e8; padding: 2px 10px;">Contact</div>
-          <div style="width: 14px; height: 14px; border: 2px solid #1b1a18; background: #f5f2e8; flex: 0 0 auto;"></div>
+    <!-- ==================================================== window: Contact -->
+    <sc-if value="{{ w.contact.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.contact.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="contact" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="Close Contact" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.contact.title }}</div>
+          <div style="{{ s.chromeGrow }}"></div>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 16px;">
-          <div style="font-size: 14px; line-height: 1.65; text-wrap: pretty;">Hiring, advising, or just want to compare notes on distributed systems — write to me. I reply within a day or two.</div>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 9px; text-transform: uppercase; opacity: 0.7;">Your name</div>
-              <input type="text" placeholder="Jane Doe" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; padding: 9px 10px; border: 2px solid #1b1a18; border-radius: 2px; background: #fdfbf4; color: #1b1a18; outline: none; min-height: 44px;" />
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="{{ s.prose }}">{{ contact.intro }}</div>
+
+          <!-- No backend: submit composes a mailto: with whatever was typed, so
+               nothing a visitor writes is silently thrown away. -->
+          <form onSubmit="{{ submitContact }}" style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <label style="display: flex; flex-direction: column; gap: 5px;">
+                <span style="font-family: Silkscreen, monospace; font-size: 9px; text-transform: uppercase; opacity: 0.7;">{{ contact.fields.name.label }}</span>
+                <input type="text" name="name" autoComplete="name" placeholder="{{ contact.fields.name.placeholder }}" style="{{ s.fieldInput }}" />
+              </label>
+              <label style="display: flex; flex-direction: column; gap: 5px;">
+                <span style="font-family: Silkscreen, monospace; font-size: 9px; text-transform: uppercase; opacity: 0.7;">{{ contact.fields.message.label }}</span>
+                <textarea rows="4" name="message" placeholder="{{ contact.fields.message.placeholder }}" style="{{ s.fieldArea }}"></textarea>
+              </label>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 5px;">
-              <div style="font-family: Silkscreen, monospace; font-size: 9px; text-transform: uppercase; opacity: 0.7;">Message</div>
-              <textarea rows="4" placeholder="What's on your mind?" style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 14px; padding: 9px 10px; border: 2px solid #1b1a18; border-radius: 2px; background: #fdfbf4; color: #1b1a18; outline: none; resize: none;"></textarea>
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <button type="submit" style="{{ s.btnPrimary }}">{{ contact.submitLabel }}</button>
+              <div style="font-size: 12.5px; opacity: 0.7;">{{ contact.fallbackPrefix }} <a href="{{ mailto }}">{{ site.email }}</a></div>
             </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <a href="mailto:hello@mohitghodke.com" style="font-family: Silkscreen, monospace; font-size: 10px; text-decoration: none; border: 2px solid #1b1a18; border-radius: 4px; padding: 11px 18px; background: oklch(0.62 0.14 40); color: #fdfbf4; box-shadow: 2px 2px 0 #1b1a18; min-height: 44px; display: flex; align-items: center;">Send</a>
-            <div style="font-size: 12.5px; opacity: 0.7;">or email <a href="mailto:hello@mohitghodke.com">hello@mohitghodke.com</a></div>
-          </div>
+          </form>
+
           <div style="border-top: 1px solid rgba(27,26,24,0.3); padding-top: 14px; display: flex; gap: 14px; font-size: 13px;">
-            <a href="#">GitHub</a><a href="#">LinkedIn</a><a href="#">Writing</a>
+            <sc-for list="{{ links }}" as="l" hint-placeholder-count="3">
+              <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>
+            </sc-for>
           </div>
         </div>
       </div>
     </sc-if>
 
+    <!-- ================================================== transient overlays -->
     <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
-      <div style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 8000; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 12px 18px; font-family: Silkscreen, monospace; font-size: 10px; animation: popin .12s ease-out; white-space: nowrap;">{{ toast }}</div>
+      <div role="status" aria-live="polite" style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 8000; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 12px 18px; font-family: Silkscreen, monospace; font-size: 10px; animation: popin .12s ease-out; white-space: nowrap;">{{ toast }}</div>
     </sc-if>
 
     <sc-if value="{{ isOff }}" hint-placeholder-val="{{ false }}">
       <div style="position: absolute; inset: 0; z-index: 9998; background: #1b1a18; display: flex; align-items: center; justify-content: center;">
         <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 24px;">
-          <div style="font-family: Silkscreen, monospace; font-size: 12px; color: #e6e2d6; line-height: 1.8;">It is now safe to close<br />this browser tab.</div>
-          <div onClick="{{ act }}" data-act="restart" style="font-family: Silkscreen, monospace; font-size: 10px; border: 2px solid #e6e2d6; border-radius: 4px; padding: 12px 18px; color: #e6e2d6; cursor: pointer; min-height: 44px; display: flex; align-items: center;" style-hover="background:#e6e2d6;color:#1b1a18;">Start Up Again</div>
+          <div style="font-family: Silkscreen, monospace; font-size: 12px; color: #e6e2d6; line-height: 1.8;">{{ shell.shutdown.message }}</div>
+          <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="restart" role="button" tabIndex="0" style="font-family: Silkscreen, monospace; font-size: 10px; border: 2px solid #e6e2d6; border-radius: 4px; padding: 12px 18px; color: #e6e2d6; cursor: pointer; min-height: 44px; display: flex; align-items: center;" style-hover="background:#e6e2d6;color:#1b1a18;">{{ shell.shutdown.restart }}</div>
         </div>
       </div>
     </sc-if>
@@ -434,12 +486,23 @@
           <div style="width: 46px; height: 46px; border: 2px solid #1b1a18; border-radius: 5px; display: flex; align-items: center; justify-content: center; background: #fdfbf4;">
             <div style="width: 18px; height: 18px; background: oklch(0.62 0.14 40); border: 2px solid #1b1a18; transform: rotate(45deg);"></div>
           </div>
-          <div style="font-family: Silkscreen, monospace; font-size: 12px; text-align: center; line-height: 1.6;">Welcome to Mohit OS</div>
+          <div style="font-family: Silkscreen, monospace; font-size: 12px; text-align: center; line-height: 1.6;">{{ shell.boot.title }}</div>
           <div style="width: 100%; height: 14px; border: 2px solid #1b1a18; background: #fdfbf4; padding: 2px;">
             <div style="height: 100%; background: repeating-linear-gradient(90deg, #1b1a18 0 3px, transparent 3px 5px); animation: bootbar 1.6s linear forwards;"></div>
           </div>
-          <div style="font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.6;">Starting up…</div>
+          <div style="font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.6;">{{ shell.boot.status }}</div>
         </div>
+      </div>
+    </sc-if>
+
+    <!-- Content that failed validation is a deploy-time mistake, not a runtime
+         one — say so loudly rather than rendering half a portfolio. -->
+    <sc-if value="{{ hasContentErrors }}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="position: absolute; left: 12px; bottom: 12px; right: 12px; z-index: 9000; max-height: 40%; overflow: auto; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 14px 16px; font-family: Silkscreen, monospace; font-size: 9px; line-height: 1.8;">
+        <div style="margin-bottom: 8px;">CONTENT ERROR — check src/content/</div>
+        <sc-for list="{{ contentErrors }}" as="err" hint-placeholder-count="1">
+          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px;">— {{ err }}</div>
+        </sc-for>
       </div>
     </sc-if>
 
@@ -448,277 +511,350 @@
 
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;bootSequence&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Behavior&quot;}}">
-const PROJECTS = [
-  { file: "payments.case", title: "Re-platforming payments without downtime", meta: "Acme Systems · 2023 · Lead", img: "architecture diagram", img2: "", summary: "The payment service was a single Rails monolith taking 2M requests a day and failing loudly every Friday. I led a four-person team through an incremental move to Go services behind a routing shim, with no maintenance window and no customer-visible change.", points: ["p99 latency 340ms → 90ms", "Zero downtime across a 7-month migration", "Failure rate down 4.1% → 0.3%"], tags: ["Go", "Kafka", "Postgres", "Kubernetes"] },
-  { file: "ingest.case", title: "Event pipeline at 40k events/sec", meta: "Northwind Labs · 2021 · Senior", img: "pipeline throughput chart", img2: "", summary: "Customer analytics needed exactly-once ingestion with sane replay. I designed and built the pipeline end to end — schema registry, dedup layer, and a replay tool that lets support fix a bad day of data in minutes instead of a week.", points: ["40k events/sec sustained, 120k peak", "Replay time for a full day: 6 min", "Adopted by 3 other product teams"], tags: ["Kafka", "Python", "Avro", "Terraform"] },
-  { file: "deploys.case", title: "One deploy pipeline for twelve services", meta: "Acme Systems · 2024 · Lead", img: "pipeline UI screenshot", img2: "", summary: "Every team had its own deploy script and its own outages. I built a shared pipeline with progressive rollout and automatic rollback, then spent as much time on migration docs and pairing as on the code itself.", points: ["Deploy frequency 2/week → 14/day", "Rollbacks automated, MTTR down 71%", "12 of 12 services migrated in a quarter"], tags: ["Terraform", "ArgoCD", "Go", "Grafana"] },
-  { file: "oncall.case", title: "Making on-call something people accept", meta: "Acme Systems · 2025 · Lead", img: "before/after alert volume", img2: "", summary: "Not a system, a culture problem. I audited every alert, deleted the ones nobody acted on, rewrote the runbooks as decision trees, and made blameless review a real meeting rather than a doc nobody read.", points: ["Pages per week 47 → 9", "Every remaining alert has a runbook", "On-call satisfaction 2.1 → 4.3 / 5"], tags: ["SRE", "Grafana", "Process", "Leadership"] }
-];
+/**
+ * Mohit OS 1.0 — composition root.
+ *
+ * Wires the content, the design system and the core modules together and owns
+ * exactly two things: React state, and the DOM events that change it. Anything
+ * that can be reasoned about without a browser lives in ./src and is tested
+ * there; this file stays thin on purpose.
+ */
+const OS = window.MohitOS;
+if (!OS || !OS.content || !OS.createViewModel) {
+  throw new Error(
+    "[MohitOS] the src/ modules did not load. Check the <script> tags in <head>, " +
+      "and serve the site over HTTP (npm run dev) rather than opening the file directly."
+  );
+}
 
-const ICONS = [
-  { id: "resume", label: "Resume.doc", kind: "doc", meta: "9 years, one page" },
-  { id: "work", label: "Work", kind: "folder", meta: "4 case studies" },
-  { id: "about", label: "About Me.txt", kind: "doc", meta: "Who I am" },
-  { id: "skills", label: "Skills", kind: "app", meta: "Languages, platform, leading" },
-  { id: "play", label: "Playground", kind: "app", meta: "Side projects" },
-  { id: "contact", label: "Contact", kind: "app", meta: "Get in touch" }
-];
+const { content, styles, tokens, system, clipboard, shortcuts } = OS;
+const { motion } = tokens;
 
-const GEOM = {
-  resume: { w: 580, h: 540, x: 90, y: 60 },
-  work: { w: 520, h: 320, x: 150, y: 120 },
-  project: { w: 560, h: 500, x: 220, y: 80 },
-  about: { w: 460, h: 400, x: 190, y: 150 },
-  skills: { w: 430, h: 470, x: 260, y: 90 },
-  play: { w: 500, h: 400, x: 130, y: 190 },
-  contact: { w: 430, h: 470, x: 300, y: 120 }
-};
+/** Actions that simply open the window of the same name. */
+const OPENS_WINDOW = content.windows.map((w) => w.id);
 
 class Component extends DCLogic {
   state = {
     showBoot: false,
     isMobile: false,
     clock: "",
-    proj: 0,
-    top: 10,
-    win: {},
+    projectIndex: 0,
     menu: null,
     view: "icons",
     toast: "",
-    isOff: false
+    isOff: false,
+    windows: null // set in the constructor, once the manager exists
   };
 
-  MENUS = ["apple", "file", "edit", "view", "special"];
+  constructor(props) {
+    super(props);
 
-  toggleMenu = (e) => {
-    e.stopPropagation();
-    const m = e.currentTarget.dataset.menu;
-    this.setState((s) => ({ menu: s.menu === m ? null : m }));
-  };
+    this.windowManager = OS.createWindowManager({ geometry: content.geometry });
+    this.menuController = OS.createMenuController(content.desktop.menus.map((m) => m.id));
+    this.viewModel = OS.createViewModel(content);
 
-  hoverMenu = (e) => {
-    const m = e.currentTarget.dataset.menu;
-    this.setState((s) => (s.menu && s.menu !== m ? { menu: m } : null));
-  };
+    this.state.windows = this.windowManager.empty();
+    this.isApplePlatform = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || "");
 
-  closeMenu = () => { if (this.state.menu) this.setState({ menu: null }); };
-
-  say = (msg) => {
-    clearTimeout(this.toastT);
-    this.setState({ toast: msg });
-    this.toastT = setTimeout(() => this.setState({ toast: "" }), 1900);
-  };
-
-  copy = (text, msg) => {
-    try {
-      if (navigator.clipboard) navigator.clipboard.writeText(text);
-    } catch (err) {}
-    this.say(msg);
-  };
-
-  act = (e) => {
-    e.stopPropagation();
-    const a = e.currentTarget.dataset.act;
-    this.setState({ menu: null });
-    if (["resume", "work", "about", "skills", "play", "contact"].indexOf(a) > -1) return this.open(a);
-    if (a === "print") {
-      this.open("resume");
-      setTimeout(() => window.print(), 420);
-      return;
+    if (content.problems.length) {
+      console.error("[MohitOS] content validation failed:\n  " + content.problems.join("\n  "));
     }
-    if (a === "closeall") {
-      const win = {};
-      Object.keys(this.state.win).forEach((k) => { win[k] = Object.assign({}, this.state.win[k], { open: false }); });
-      return this.setState({ win: win });
-    }
-    if (a === "copymail") return this.copy("hello@mohitghodke.com", "Email address copied");
-    if (a === "copylink") return this.copy("https://mohitghodke.com", "Link copied");
-    if (a === "asicons") return this.setState({ view: "icons" });
-    if (a === "aslist") return this.setState({ view: "list" });
-    if (a === "cleanup") {
-      const win = {};
-      Object.keys(this.state.win).forEach((k) => {
-        const p = this.clamp(k);
-        win[k] = Object.assign({}, this.state.win[k], p);
-      });
-      this.say("Desktop cleaned up");
-      return this.setState({ win: win });
-    }
-    if (a === "github") return window.open("https://github.com/", "_blank", "noopener");
-    if (a === "linkedin") return window.open("https://www.linkedin.com/", "_blank", "noopener");
-    if (a === "shutdown") return this.setState({ isOff: true, win: {} });
-    if (a === "restart") {
-      clearTimeout(this.bootT);
-      this.setState({ isOff: false, win: {}, view: "icons", showBoot: true, toast: "" });
-      this.bootT = setTimeout(() => this.setState({ showBoot: false }), 2100);
-      return;
-    }
-  };
-
-  onKey = (e) => {
-    if (!(e.metaKey || e.ctrlKey)) return;
-    const k = e.key.toLowerCase();
-    if (k === "r") { e.preventDefault(); this.open("resume"); }
-    else if (k === "w") { e.preventDefault(); this.open("work"); }
-    else if (k === "p") { e.preventDefault(); this.open("resume"); setTimeout(() => window.print(), 420); }
-    else if (k === "c" && !window.getSelection().toString()) { this.copy("hello@mohitghodke.com", "Email address copied"); }
-  };
-
-  componentDidMount() {
-    const mob = window.innerWidth < 780;
-    let seen = false;
-    try { seen = localStorage.getItem("mohitos-booted") === "1"; } catch (e) {}
-    const boot = (this.props.bootSequence ?? true) && !seen;
-    this.setState({ isMobile: mob, showBoot: boot, clock: this.now() });
-    if (boot) {
-      this.bootT = setTimeout(() => {
-        this.setState({ showBoot: false });
-        try { localStorage.setItem("mohitos-booted", "1"); } catch (e) {}
-      }, 2100);
-    }
-    this.tick = setInterval(() => this.setState({ clock: this.now() }), 20000);
-    this.onResize = () => this.setState((st) => {
-      const win = {};
-      Object.keys(st.win).forEach((k) => {
-        const w = st.win[k];
-        const p = this.clamp(k, w.x, w.y);
-        win[k] = Object.assign({}, w, p);
-      });
-      return { isMobile: window.innerWidth < 780, win: win };
-    });
-    window.addEventListener("resize", this.onResize);
-    window.addEventListener("keydown", this.onKey);
   }
 
-  menuStyle(id) {
-    const on = this.state.menu === id;
-    const pad = id === "apple" ? "0 10px 0 4px" : "0 10px";
-    return "position:relative;display:flex;align-items:center;padding:" + pad + ";cursor:default;" +
-      (on ? "background:#1b1a18;color:#f5f2e8;" : "");
+  /* ------------------------------------------------------------- lifecycle */
+
+  componentDidMount() {
+    this.applyDesignTokens();
+    this.syncDocumentMeta();
+
+    const alreadyBooted = system.storage.get(Component.BOOT_KEY) === "1";
+    const showBoot = (this.props.bootSequence ?? true) && !alreadyBooted;
+
+    this.setState({
+      isMobile: system.isMobileWidth(window.innerWidth),
+      showBoot,
+      clock: system.formatTime()
+    });
+
+    if (showBoot) {
+      this.bootTimer = setTimeout(() => {
+        this.setState({ showBoot: false });
+        system.storage.set(Component.BOOT_KEY, "1");
+      }, motion.bootMs);
+    }
+
+    this.clockTimer = setInterval(
+      () => this.setState({ clock: system.formatTime() }),
+      motion.clockMs
+    );
+
+    window.addEventListener("resize", this.onResize);
+    window.addEventListener("keydown", this.onKeyDown);
   }
 
   componentWillUnmount() {
-    clearTimeout(this.bootT);
-    clearTimeout(this.toastT);
-    clearInterval(this.tick);
+    clearTimeout(this.bootTimer);
+    clearTimeout(this.toastTimer);
+    clearTimeout(this.printTimer);
+    clearInterval(this.clockTimer);
     window.removeEventListener("resize", this.onResize);
-    window.removeEventListener("keydown", this.onKey);
-    window.removeEventListener("mousemove", this.move);
-    window.removeEventListener("mouseup", this.up);
+    window.removeEventListener("keydown", this.onKeyDown);
+    this.endDrag();
   }
 
-  now() {
-    return new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  /** Publish the palette so the stylesheet in <helmet> shares one source. */
+  applyDesignTokens() {
+    const vars = styles.cssVariables();
+    Object.keys(vars).forEach((name) => {
+      document.documentElement.style.setProperty(name, vars[name]);
+    });
   }
 
-  avail() { return window.innerHeight - 28; }
-
-  winH(id) { return Math.min(GEOM[id].h, this.avail() - 24); }
-
-  clamp(id, x, y) {
-    const g = GEOM[id];
-    const maxX = Math.max(8, window.innerWidth - g.w - 24);
-    const maxY = Math.max(8, this.avail() - this.winH(id) - 12);
-    return { x: Math.min(x == null ? g.x : x, maxX), y: Math.min(y == null ? g.y : y, maxY) };
+  /** Keep <title> and the meta description in step with content/site.js. */
+  syncDocumentMeta() {
+    const meta = content.site.meta;
+    document.title = meta.title;
+    document.documentElement.lang = meta.locale;
+    const description = document.querySelector('meta[name="description"]');
+    if (description) description.setAttribute("content", meta.description);
   }
 
-  open = (id) => {
-    this.setState((s) => {
-      const cur = s.win[id];
-      const pos = cur ? this.clamp(id, cur.x, cur.y) : this.clamp(id);
-      return { top: s.top + 1, win: Object.assign({}, s.win, { [id]: { open: true, x: pos.x, y: pos.y, z: s.top + 1 } }) };
+  onResize = () => {
+    this.setState((s) => ({
+      isMobile: system.isMobileWidth(window.innerWidth),
+      windows: this.windowManager.reflow(s.windows)
+    }));
+  };
+
+  /* ------------------------------------------------------------- feedback */
+
+  toast = (message) => {
+    clearTimeout(this.toastTimer);
+    this.setState({ toast: message });
+    this.toastTimer = setTimeout(() => this.setState({ toast: "" }), motion.toastMs);
+  };
+
+  copy = (text, successMessage) => {
+    clipboard.copyText(text).then((ok) => {
+      this.toast(ok ? successMessage : content.site.toasts.copyFailed);
     });
   };
 
-  close = (id) => {
-    this.setState((s) => {
-      const cur = s.win[id] || {};
-      return { win: Object.assign({}, s.win, { [id]: Object.assign({}, cur, { open: false }) }) };
-    });
+  /* ---------------------------------------------------------------- menus */
+
+  hoverMenu = (e) => {
+    const patch = this.menuController.hover(this.state.menu, e.currentTarget.dataset.menu);
+    if (patch) this.setState(patch);
   };
 
-  bringFront = (id) => {
-    this.setState((s) => {
-      const cur = s.win[id];
-      if (!cur || cur.z === s.top) return null;
-      return { top: s.top + 1, win: Object.assign({}, s.win, { [id]: Object.assign({}, cur, { z: s.top + 1 }) }) };
-    });
+  closeMenu = () => {
+    const patch = this.menuController.close(this.state.menu);
+    if (patch) this.setState(patch);
   };
 
-  handleOpen = (e) => this.open(e.currentTarget.dataset.app);
-  handleTap = (e) => { if (this.state.isMobile) this.open(e.currentTarget.dataset.app); };
-  handleClose = (e) => { e.stopPropagation(); this.close(e.currentTarget.dataset.win); };
-  focusWin = (e) => this.bringFront(e.currentTarget.dataset.win);
-  launchProject = (e) => { this.setState({ proj: Number(e.currentTarget.dataset.proj) }); this.open("project"); };
+  /* ------------------------------------------------------------- commands */
+
+  /**
+   * Single entry point for every command in the UI. `data-act` carries the
+   * action id; menu titles use the reserved id "menu" to latch themselves open.
+   */
+  act = (e) => {
+    e.stopPropagation();
+    const el = e.currentTarget;
+    const action = el.dataset.act;
+
+    if (action === "menu") {
+      return this.setState(this.menuController.toggle(this.state.menu, el.dataset.menu));
+    }
+
+    this.closeMenu();
+
+    if (OPENS_WINDOW.includes(action)) return this.openWindow(action);
+    if (action.startsWith("view:")) return this.setState({ view: action.slice(5) });
+
+    switch (action) {
+      case "print":
+        this.openWindow("resume");
+        clearTimeout(this.printTimer);
+        this.printTimer = setTimeout(() => window.print(), motion.printDelayMs);
+        return;
+      case "closeall":
+        return this.setState((s) => ({ windows: this.windowManager.closeAll(s.windows) }));
+      case "cleanup":
+        this.toast(content.site.toasts.desktopTidied);
+        return this.setState((s) => ({ windows: this.windowManager.tidy(s.windows) }));
+      case "copymail":
+        return this.copy(content.site.email, content.site.toasts.emailCopied);
+      case "copylink":
+        return this.copy(content.site.url, content.site.toasts.linkCopied);
+      case "link":
+        return system.openExternal(el.dataset.href);
+      case "shutdown":
+        return this.setState((s) => ({ isOff: true, windows: this.windowManager.closeAll(s.windows) }));
+      case "restart":
+        clearTimeout(this.bootTimer);
+        this.setState((s) => ({
+          isOff: false,
+          view: "icons",
+          toast: "",
+          showBoot: true,
+          windows: this.windowManager.closeAll(s.windows)
+        }));
+        this.bootTimer = setTimeout(() => this.setState({ showBoot: false }), motion.bootMs);
+        return;
+      default:
+        console.warn('[MohitOS] no handler for action "' + action + '"');
+    }
+  };
+
+  onKeyDown = (e) => {
+    const pressed = shortcuts.describe(e, window.getSelection && window.getSelection());
+    const binding = shortcuts.match(content.desktop.shortcuts, pressed);
+    if (!binding) return;
+
+    // `passive` bindings layer on top of a browser default worth keeping.
+    if (!binding.passive) e.preventDefault();
+    this.runAction(binding.action);
+  };
+
+  /** Invoke an action without a DOM event — used by the keyboard handler. */
+  runAction(action) {
+    this.act({
+      stopPropagation() {},
+      currentTarget: { dataset: { act: action } }
+    });
+  }
+
+  /* --------------------------------------------------------------- windows */
+
+  openWindow = (id) => {
+    this.setState((s) => ({ windows: this.windowManager.open(s.windows, id) }));
+  };
+
+  handleOpen = (e) => this.openWindow(e.currentTarget.dataset.app);
+  handleTap = (e) => { if (this.state.isMobile) this.openWindow(e.currentTarget.dataset.app); };
+
+  handleClose = (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.win;
+    this.setState((s) => ({ windows: this.windowManager.close(s.windows, id) }));
+  };
+
+  focusWin = (e) => {
+    const next = this.windowManager.bringFront(this.state.windows, e.currentTarget.dataset.win);
+    if (next) this.setState({ windows: next });
+  };
+
+  launchProject = (e) => {
+    this.setState({ projectIndex: Number(e.currentTarget.dataset.proj) });
+    this.openWindow("project");
+  };
+
   tapProject = (e) => { if (this.state.isMobile) this.launchProject(e); };
+
+  /* ----------------------------------------------------------------- drag */
 
   startDrag = (e) => {
     const id = e.currentTarget.dataset.win;
-    this.bringFront(id);
+    this.focusWin(e);
     if (this.state.isMobile) return;
-    const w = this.state.win[id];
-    if (!w) return;
-    this.dragging = { id, ox: e.clientX - w.x, oy: e.clientY - w.y };
-    window.addEventListener("mousemove", this.move);
-    window.addEventListener("mouseup", this.up);
+
+    const frame = this.windowManager.get(this.state.windows, id);
+    if (!frame) return;
+
+    this.drag = { id, offsetX: e.clientX - frame.x, offsetY: e.clientY - frame.y };
+    window.addEventListener("mousemove", this.onDragMove);
+    window.addEventListener("mouseup", this.endDrag);
     e.preventDefault();
   };
 
-  move = (e) => {
-    const d = this.dragging;
-    if (!d) return;
-    const g = GEOM[d.id];
-    const x = Math.max(-g.w + 120, Math.min(e.clientX - d.ox, window.innerWidth - 90));
-    const y = Math.max(0, Math.min(e.clientY - d.oy, this.avail() - this.winH(d.id) - 12));
-    this.setState((s) => ({ win: Object.assign({}, s.win, { [d.id]: Object.assign({}, s.win[d.id], { x, y }) }) }));
+  onDragMove = (e) => {
+    const drag = this.drag;
+    if (!drag) return;
+    this.setState((s) => ({
+      windows: this.windowManager.dragTo(
+        s.windows,
+        drag.id,
+        e.clientX - drag.offsetX,
+        e.clientY - drag.offsetY
+      )
+    }));
   };
 
-  up = () => {
-    this.dragging = null;
-    window.removeEventListener("mousemove", this.move);
-    window.removeEventListener("mouseup", this.up);
+  endDrag = () => {
+    this.drag = null;
+    window.removeEventListener("mousemove", this.onDragMove);
+    window.removeEventListener("mouseup", this.endDrag);
   };
 
-  winStyle(id) {
-    const w = this.state.win[id] || { x: 40, y: 40, z: 1 };
-    const g = GEOM[id];
-    const base = "display:flex;flex-direction:column;border:2px solid #1b1a18;background:#f5f2e8;overflow:hidden;animation:popin .12s ease-out;";
-    if (this.state.isMobile) {
-      return base + "position:absolute;inset:0;z-index:" + (900 + w.z) + ";border-width:0 0 0 0;";
-    }
-    return base + "position:absolute;left:" + w.x + "px;top:" + w.y + "px;width:" + Math.min(g.w, window.innerWidth - 24) + "px;height:" + this.winH(id) + "px;border-radius:3px;box-shadow:4px 4px 0 rgba(0,0,0,0.35);z-index:" + (100 + w.z) + ";";
-  }
+  /* ------------------------------------------------------------- keyboard */
 
-  isOpen(id) {
-    const w = this.state.win[id];
-    return !!(w && w.open);
-  }
+  /** Enter/Space on a div that already has a click handler. */
+  keyActivate = (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    e.currentTarget.click();
+  };
+
+  /** Desktop icons open on Enter/Space rather than needing a double-click. */
+  keyOpen = (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    this.openWindow(e.currentTarget.dataset.app);
+  };
+
+  keyOpenProject = (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    e.preventDefault();
+    this.launchProject(e);
+  };
+
+  /* -------------------------------------------------------------- contact */
+
+  /**
+   * No server, so hand the message to the visitor's mail client with the fields
+   * already filled in. A `formAction` in content/contact.js posts instead.
+   */
+  submitContact = (e) => {
+    if (content.contact.formAction) return; // let the browser POST it
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const name = (form.elements.name && form.elements.name.value || "").trim();
+    const message = (form.elements.message && form.elements.message.value || "").trim();
+
+    const subject = name ? "Hello from " + name : "Hello from your portfolio";
+    const href =
+      "mailto:" + content.site.email +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(message);
+
+    window.location.href = href;
+  };
+
+  /* --------------------------------------------------------------- render */
 
   renderVals() {
     const s = this.state;
-    const p = PROJECTS[s.proj] || PROJECTS[0];
-    const anyOpen = Object.keys(s.win).some((k) => s.win[k].open);
-    return {
-      icons: ICONS.map((i) => ({ id: i.id, label: i.label, meta: i.meta, isFolder: i.kind === "folder", isDoc: i.kind === "doc", isApp: i.kind === "app" })),
-      projects: PROJECTS.map((x, i) => ({ file: x.file, i: i })),
-      proj: p,
-      clock: s.clock,
+
+    const vals = this.viewModel.build({
+      state: s.windows,
+      wm: this.windowManager,
+      view: s.view,
+      openMenu: s.menu,
       isMobile: s.isMobile,
+      isApplePlatform: this.isApplePlatform,
+      projectIndex: s.projectIndex,
+      clock: s.clock,
+      toast: s.toast,
       showBoot: s.showBoot,
-      openResume: this.isOpen("resume"),
-      openWork: this.isOpen("work"),
-      openProject: this.isOpen("project"),
-      openAbout: this.isOpen("about"),
-      openSkills: this.isOpen("skills"),
-      openPlay: this.isOpen("play"),
-      openContact: this.isOpen("contact"),
-      sResume: this.winStyle("resume"),
-      sWork: this.winStyle("work"),
-      sProject: this.winStyle("project"),
-      sAbout: this.winStyle("about"),
-      sSkills: this.winStyle("skills"),
-      sPlay: this.winStyle("play"),
-      sContact: this.winStyle("contact"),
+      isOff: s.isOff
+    });
+
+    return Object.assign(vals, {
+      act: this.act,
+      hoverMenu: this.hoverMenu,
+      closeMenu: this.closeMenu,
       handleOpen: this.handleOpen,
       handleTap: this.handleTap,
       handleClose: this.handleClose,
@@ -726,33 +862,15 @@ class Component extends DCLogic {
       startDrag: this.startDrag,
       launchProject: this.launchProject,
       tapProject: this.tapProject,
-      isDesktop: !s.isMobile,
-      toggleMenu: this.toggleMenu,
-      hoverMenu: this.hoverMenu,
-      closeMenu: this.closeMenu,
-      act: this.act,
-      menuApple: s.menu === "apple",
-      menuFile: s.menu === "file",
-      menuEdit: s.menu === "edit",
-      menuView: s.menu === "view",
-      menuSpecial: s.menu === "special",
-      mApple: this.menuStyle("apple"),
-      mFile: this.menuStyle("file"),
-      mEdit: this.menuStyle("edit"),
-      mView: this.menuStyle("view"),
-      mSpecial: this.menuStyle("special"),
-      viewIcons: !s.isMobile && s.view === "icons",
-      viewList: !s.isMobile && s.view === "list",
-      tickIcons: s.view === "icons" ? "✓" : "",
-      tickList: s.view === "list" ? "✓" : "",
-      iCloseAll: "padding:7px 14px;white-space:nowrap;" + (anyOpen ? "" : "opacity:0.32;pointer-events:none;"),
-      iCleanUp: "padding:7px 14px;white-space:nowrap;" + (anyOpen ? "" : "opacity:0.32;pointer-events:none;"),
-      toast: s.toast,
-      isOff: s.isOff
-    };
+      keyActivate: this.keyActivate,
+      keyOpen: this.keyOpen,
+      keyOpenProject: this.keyOpenProject,
+      submitContact: this.submitContact
+    });
   }
 }
 
+Component.BOOT_KEY = "mohitos-booted";
 </script>
 </body>
 </html>
