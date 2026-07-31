@@ -86,6 +86,8 @@
     menuBarHeight: 28,
     /** Below this width the desktop metaphor is replaced by a stacked list. */
     mobileBreakpoint: 780,
+    /** Below this width the menu bar has no room for titles: name only. */
+    phoneBreakpoint: 560,
     /** WCAG 2.5.8 minimum interactive target. */
     minTouchTarget: 44,
     /** Gap kept between a window and the edges of the stage. */

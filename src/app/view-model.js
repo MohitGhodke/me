@@ -38,7 +38,9 @@
     // Styles that never change are built once, at construction.
     var s = {
       menuBar: styles.menuBar(),
-      chromeBar: styles.titleBar(),
+      // The mobile list's header. A window's own bar is built per-window,
+      // because only that one can be dragged.
+      chromeBar: styles.titleBar(false),
       chromeClose: styles.titleBarButton(true),
       chromeGrow: styles.titleBarButton(false),
       chromeTitle: styles.titleBarTitle(),
@@ -133,8 +135,9 @@
      * template says `{{ w.resume.open }}` and adding a window never touches
      * this function.
      *
-     * The zoom box and the resize grip live here rather than in `s` because
-     * both collapse on mobile, which `s` is built too early to know.
+     * The title bar, the zoom box and the resize grip live here rather than in
+     * `s` because all three change on mobile, which `s` is built too early to
+     * know.
      */
     function buildWindows(ctx) {
       var out = {};
@@ -148,6 +151,8 @@
           zoomed: zoomed,
           // The one affordance whose meaning flips with state, so it says which.
           zoomLabel: (zoomed ? "Restore " : "Zoom ") + win.title,
+          // A window fills the stage on mobile, so there is nowhere to drag it.
+          chromeStyle: styles.titleBar(!ctx.isMobile),
           zoomStyle: styles.titleBarZoom(ctx.isMobile),
           gripStyle: styles.resizeGrip(ctx.isMobile),
           style: open ? styles.windowFrame(frame, ctx.isMobile) : ""
@@ -322,6 +327,7 @@
      * @param {string} ctx.view   "icons" | "list"
      * @param {string|null} ctx.openMenu
      * @param {boolean} ctx.isMobile
+     * @param {boolean} ctx.isPhone  narrower still: the menu bar is name only
      * @param {boolean} ctx.isApplePlatform
      * @param {{list: string, index: number}} ctx.item  what the detail window shows
      * @param {string}  ctx.clock
@@ -353,7 +359,11 @@
 
         // ---- derived view data
         s: s,
-        menus: buildMenus(menuCtx),
+        // A phone has no room for five titles, a clock and a name: it keeps the
+        // name. Every window the menus open is a row in the list below them,
+        // and the résumé's links are in the window itself, so what goes with
+        // them is chrome — print, the view toggle, restart.
+        menus: ctx.isPhone ? [] : buildMenus(menuCtx),
         icons: buildIcons(),
         resumeLinks: buildResumeLinks(),
         resumeRoles: buildResumeRoles(),
@@ -382,10 +392,15 @@
 
         // ---- shell state
         clock: ctx.clock,
+        // The clock is the first thing to go when the bar runs out of room.
+        showClock: !ctx.isPhone,
+        // "Mohit Ghodke" in the corner of a 390px bar leaves nothing beside it.
+        barName: ctx.isPhone ? content.site.name.split(" ")[0] : content.site.name,
         toast: ctx.toast,
         showBoot: ctx.showBoot,
         isOff: ctx.isOff,
         isMobile: ctx.isMobile,
+        isPhone: !!ctx.isPhone,
         isDesktop: !ctx.isMobile,
         viewIcons: !ctx.isMobile && ctx.view === "icons",
         viewList: !ctx.isMobile && ctx.view === "list"

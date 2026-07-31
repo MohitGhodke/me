@@ -67,6 +67,22 @@ test("the zoom box and the resize grip collapse on mobile", () => {
   assert.equal(mobile.zoomStyle, "display:none;");
 });
 
+test("the handles a finger drags claim the gesture from the browser", () => {
+  const wm = windowManager();
+  const state = wm.open(wm.empty(), "resume");
+  const vals = buildVals({ wm, state });
+
+  // Without this the browser pans the page and the pointermoves stop coming.
+  assert.match(vals.w.resume.chromeStyle, /touch-action:none/);
+  assert.match(vals.w.resume.gripStyle, /touch-action:none/);
+
+  // A window fills the stage on mobile, so its bar is not a drag handle — and
+  // the same builder draws the mobile list's header, which has to scroll.
+  const mobile = buildVals({ wm, state, isMobile: true });
+  assert.doesNotMatch(mobile.w.resume.chromeStyle, /touch-action/);
+  assert.doesNotMatch(vals.s.chromeBar, /touch-action/);
+});
+
 test("an item only offers a source link when it has a repo", () => {
   // Every extension is public, so every one of them links out.
   content.extensions.forEach((_, i) => {
@@ -124,6 +140,30 @@ test("separators carry no command", () => {
   const separators = vals.menus.flatMap((m) => m.items).filter((i) => i.isSeparator);
   assert.ok(separators.length > 0);
   separators.forEach((sep) => assert.equal(sep.isItem, false));
+});
+
+test("on a phone the menu bar keeps the name and nothing else", () => {
+  const phone = buildVals({ isMobile: true, isPhone: true });
+  assert.deepEqual(phone.menus, [], "no room for five titles on a 390px bar");
+  assert.equal(phone.showClock, false);
+  assert.equal(phone.barName, "Mohit");
+
+  // A tablet is mobile but not a phone: it still gets the whole bar.
+  const tablet = buildVals({ isMobile: true });
+  assert.equal(tablet.menus.length, content.desktop.menus.length);
+  assert.equal(tablet.showClock, true);
+  assert.equal(tablet.barName, content.site.name);
+});
+
+test("every window a phone loses a menu for is still a row in the list", () => {
+  // What the empty menu bar is allowed to cost: chrome, never a destination.
+  const opens = new Set(content.desktop.menus.flatMap((m) => m.items).map((i) => i.act));
+  const reachable = new Set(content.desktopIcons.map((w) => w.id));
+  content.windows
+    .filter((w) => opens.has(w.id) && !w.parent)
+    .forEach((w) =>
+      assert.ok(reachable.has(w.id), `"${w.id}" would be unreachable on a phone`)
+    );
 });
 
 test("desktop icons follow the registry, one kind flag each", () => {

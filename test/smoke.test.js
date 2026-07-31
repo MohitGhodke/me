@@ -87,13 +87,18 @@ if (jsdom) {
     return new Promise((resolve) => dom.window.setTimeout(resolve, 20));
   }
 
+  /**
+   * jsdom has no PointerEvent, so a pointer gesture is a MouseEvent of the same
+   * name with the one extra field the handlers read bolted on. React listens by
+   * event name, so this reaches the same code the browser would.
+   */
   function fire(dom, element, type, at) {
-    element.dispatchEvent(
-      new dom.window.MouseEvent(
-        type,
-        Object.assign({ bubbles: true, cancelable: true, view: dom.window }, at)
-      )
-    );
+    const init = Object.assign({ bubbles: true, cancelable: true, view: dom.window }, at);
+    const event = new dom.window.MouseEvent(type, init);
+    if (type.startsWith("pointer")) {
+      Object.defineProperty(event, "pointerId", { value: init.pointerId ?? 1 });
+    }
+    element.dispatchEvent(event);
     return settle(dom);
   }
 
@@ -194,6 +199,35 @@ if (jsdom) {
     dom.window.close();
   });
 
+  // The Work folder is small enough to have room to move on every side of the
+  // stage, so the assertions are about the drag and not about the clamping.
+  test("a finger on the title bar moves the window", async () => {
+    const dom = await bootPage();
+    await fire(dom, query(dom, '[data-app="work"]'), "dblclick");
+
+    const bar = query(dom, '[data-win="work"][style*="repeating-linear-gradient"]');
+    assert.ok(bar, "a window needs a title bar to drag by");
+
+    const left = parseInt(frameStyle(dom, "work").left, 10);
+    const top = parseInt(frameStyle(dom, "work").top, 10);
+
+    // One touch produces pointer events and a single synthetic click — never
+    // the mousemove stream a drag used to need.
+    await fire(dom, bar, "pointerdown", { clientX: left + 40, clientY: top + 8, pointerId: 3 });
+    await fire(dom, dom.window, "pointermove", { clientX: left + 90, clientY: top + 38, pointerId: 3 });
+    await fire(dom, dom.window, "pointerup", { clientX: left + 90, clientY: top + 38, pointerId: 3 });
+
+    assert.equal(frameStyle(dom, "work").left, left + 50 + "px", "it should follow the finger");
+    assert.equal(frameStyle(dom, "work").top, top + 30 + "px");
+
+    // A second finger landing elsewhere must not pick the window back up.
+    await fire(dom, dom.window, "pointermove", { clientX: 900, clientY: 700, pointerId: 4 });
+    assert.equal(frameStyle(dom, "work").left, left + 50 + "px", "the drag should be over");
+
+    assert.deepEqual(dom.problems, [], "the console should stay clean");
+    dom.window.close();
+  });
+
   test("dragging the grow handle resizes the window", async () => {
     const dom = await bootPage();
     const { content } = require("../src/content/index.js");
@@ -203,9 +237,11 @@ if (jsdom) {
     const grip = query(dom, '[data-win="about"][aria-hidden="true"]');
     assert.ok(grip, "a resizable window needs a grow handle");
 
-    await fire(dom, grip, "mousedown", { clientX: 500, clientY: 400 });
-    await fire(dom, dom.window, "mousemove", { clientX: 560, clientY: 460 });
-    await fire(dom, dom.window, "mouseup", { clientX: 560, clientY: 460 });
+    // Pointer events, not mouse events: a finger produces these and no
+    // mousemove stream, which is what makes the handle work on a tablet.
+    await fire(dom, grip, "pointerdown", { clientX: 500, clientY: 400, pointerId: 1 });
+    await fire(dom, dom.window, "pointermove", { clientX: 560, clientY: 460, pointerId: 1 });
+    await fire(dom, dom.window, "pointerup", { clientX: 560, clientY: 460, pointerId: 1 });
 
     // Width has room to grow, so the corner tracks the pointer exactly.
     assert.equal(
@@ -222,7 +258,7 @@ if (jsdom) {
     assert.ok(grown <= stage, `height ${grown} should stay within the ${stage}px stage`);
 
     // The pointer has been let go, so further movement must not keep resizing.
-    await fire(dom, dom.window, "mousemove", { clientX: 900, clientY: 700 });
+    await fire(dom, dom.window, "pointermove", { clientX: 900, clientY: 700, pointerId: 1 });
     assert.equal(frameStyle(dom, "about").width, frame.w + 60 + "px", "the drag should be over");
     assert.equal(parseInt(frameStyle(dom, "about").height, 10), grown, "height too");
 

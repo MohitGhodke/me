@@ -151,6 +151,14 @@ test("the mobile breakpoint is where the desktop metaphor stops", () => {
   assert.equal(system.isMobileWidth(780), false);
 });
 
+test("the phone breakpoint is where the menu bar runs out of room", () => {
+  assert.equal(system.isPhoneWidth(559), true);
+  assert.equal(system.isPhoneWidth(560), false);
+  // A phone is always mobile; a tablet is mobile without being a phone.
+  assert.equal(system.isMobileWidth(559), true);
+  assert.equal(system.isPhoneWidth(768), false);
+});
+
 test("storage never throws, whatever the browser does", () => {
   const original = Object.getOwnPropertyDescriptor(globalThis, "localStorage");
   Object.defineProperty(globalThis, "localStorage", {

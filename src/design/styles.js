@@ -109,13 +109,24 @@
     ]);
   }
 
-  /** The dragging strip at the top of a window. */
-  function titleBar() {
+  /**
+   * The strip at the top of a window — and, undraggable, the header of the
+   * mobile list.
+   *
+   * `touch-action:none` is what lets a finger drag the window rather than pan
+   * the page: without it the browser claims the gesture and the pointermove
+   * stream stops after a few pixels. Only the draggable variant takes it, so a
+   * strip that is pure decoration never blocks a scroll that starts on it.
+   *
+   * @param {boolean} draggable
+   */
+  function titleBar(draggable) {
     return join([
       "display:flex;align-items:center;gap:8px;padding:5px 8px;",
       "border-bottom:" + b.frame + ";",
       "background:repeating-linear-gradient(" + c.ink + " 0 1px," + c.paper + " 1px 3px);",
-      "cursor:default;flex:0 0 auto;"
+      "cursor:default;flex:0 0 auto;",
+      draggable ? "touch-action:none;" : ""
     ]);
   }
 
@@ -157,7 +168,8 @@
       "border-radius:" + b.radiusSm + " 0 0 0;",
       "background-color:" + c.paper + ";",
       "background-image:repeating-linear-gradient(-45deg," + c.ink + " 0 1px,transparent 1px 3px);",
-      "cursor:nwse-resize;z-index:2;"
+      // As on the title bar: the gesture has to be ours, not the browser's.
+      "cursor:nwse-resize;touch-action:none;z-index:2;"
     ]);
   }
 

@@ -21,6 +21,14 @@
     return width < tokens.layout.mobileBreakpoint;
   }
 
+  /**
+   * Narrower than a tablet: the menu bar drops its titles and its clock and
+   * keeps only the name. Always implies `isMobileWidth`.
+   */
+  function isPhoneWidth(width) {
+    return width < tokens.layout.phoneBreakpoint;
+  }
+
   /** Best-effort persistence. Reads return `null` and writes return false on failure. */
   var storage = {
     get: function (key) {
@@ -51,6 +59,7 @@
   var api = {
     formatTime: formatTime,
     isMobileWidth: isMobileWidth,
+    isPhoneWidth: isPhoneWidth,
     storage: storage,
     openExternal: openExternal
   };

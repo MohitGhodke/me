@@ -85,6 +85,20 @@
     outline-offset: 2px;
   }
 
+  /* The grow handle is a 16px corner: a good mouse target and a poor finger
+     one. On touch it keeps its size and grows an invisible one to grab it by,
+     so the corner meets the 44px target without the chrome getting heavier. */
+  @media (pointer: coarse) {
+    [data-win][aria-hidden="true"]::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 44px;
+      height: 44px;
+    }
+  }
+
   @keyframes bootbar { from { width: 4%; } to { width: 100%; } }
   @keyframes blink { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.25; } }
   @keyframes popin { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -123,7 +137,8 @@
 <div data-print="root" style="position: fixed; inset: 0; display: flex; flex-direction: column; background: #8a9c93; background-image: radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px); background-size: 4px 4px; color: #1b1a18; user-select: none;">
 
   <!-- ================================================================ menu bar
-       Titles and commands both come from content/desktop.js. -->
+       Titles and commands both come from content/desktop.js. On a phone the
+       view model empties `menus` and hides the clock, leaving the name. -->
   <div role="menubar" aria-label="Main menu" style="{{ s.menuBar }}">
 
     <sc-for list="{{ menus }}" as="m" hint-placeholder-count="5">
@@ -158,12 +173,14 @@
     </sc-for>
 
     <div style="flex: 1 1 auto;"></div>
-    <div style="display: flex; align-items: center; padding: 0 10px; opacity: 0.7;" style-hover="opacity:1;">{{ clock }}</div>
-    <div style="display: flex; align-items: center; padding: 0 4px 0 10px; font-weight: 700;">{{ site.name }}</div>
+    <sc-if value="{{ showClock }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; align-items: center; padding: 0 10px; opacity: 0.7;" style-hover="opacity:1;">{{ clock }}</div>
+    </sc-if>
+    <div style="display: flex; align-items: center; padding: 0 4px 0 10px; font-weight: 700;">{{ barName }}</div>
   </div>
 
   <!-- =================================================================== stage -->
-  <div onMouseDown="{{ closeMenu }}" data-print="stage" style="position: relative; flex: 1 1 auto; overflow: hidden;">
+  <div onPointerDown="{{ closeMenu }}" data-print="stage" style="position: relative; flex: 1 1 auto; overflow: hidden;">
 
     <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
       <div style="position: absolute; top: 18px; left: 20px; max-width: 340px; font-family: Silkscreen, monospace; font-size: 10px; line-height: 1.8; color: rgba(255,255,255,0.92); text-shadow: 1px 1px 0 rgba(0,0,0,0.35); pointer-events: none;">
@@ -256,12 +273,12 @@
     <!-- ================================================== window: Resume.doc -->
     <sc-if value="{{ w.resume.open }}" hint-placeholder-val="{{ false }}">
       <div data-print="doc" style="{{ w.resume.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="resume" data-print="chrome" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="resume" data-print="chrome" style="{{ w.resume.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="Close Resume" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.resume.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="{{ w.resume.zoomLabel }}" style="{{ w.resume.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="resume" data-print="hide" aria-hidden="true" style="{{ w.resume.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="resume" data-print="hide" aria-hidden="true" style="{{ w.resume.gripStyle }}"></div>
         <div data-print="body" class="mos-selectable" style="{{ s.windowBodyResume }}">
           <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 14px; border-bottom: 2px solid #1b1a18;">
             <div style="font-family: Silkscreen, monospace; font-size: 20px; letter-spacing: -0.01em;">{{ site.name }}</div>
@@ -344,12 +361,12 @@
     <!-- ======================================================= window: Work -->
     <sc-if value="{{ w.work.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.work.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="work" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="work" style="{{ w.work.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="Close Work" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.work.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="{{ w.work.zoomLabel }}" style="{{ w.work.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="work" aria-hidden="true" style="{{ w.work.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="work" aria-hidden="true" style="{{ w.work.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.work }}</span><span>{{ shell.workHint }}</span>
         </div>
@@ -392,12 +409,12 @@
          a `.vsix` badge so the kind is legible before anything is opened. -->
     <sc-if value="{{ w.extensions.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.extensions.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="extensions" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="extensions" style="{{ w.extensions.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="Close VS Code Extensions" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.extensions.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="{{ w.extensions.zoomLabel }}" style="{{ w.extensions.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="extensions" aria-hidden="true" style="{{ w.extensions.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="extensions" aria-hidden="true" style="{{ w.extensions.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.extensions }}</span><span>{{ shell.extensionsHint }}</span>
         </div>
@@ -424,12 +441,12 @@
          folders read differently at a glance. -->
     <sc-if value="{{ w.apps.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.apps.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="apps" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="apps" style="{{ w.apps.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="Close iOS Apps" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.apps.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="{{ w.apps.zoomLabel }}" style="{{ w.apps.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="apps" aria-hidden="true" style="{{ w.apps.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="apps" aria-hidden="true" style="{{ w.apps.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.apps }}</span><span>{{ shell.appsHint }}</span>
         </div>
@@ -453,12 +470,12 @@
     <!-- ============================================ window: one item's detail -->
     <sc-if value="{{ w.project.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.project.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="project" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="project" style="{{ w.project.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="Close case study" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ proj.file }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="{{ w.project.zoomLabel }}" style="{{ w.project.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="project" aria-hidden="true" style="{{ w.project.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="project" aria-hidden="true" style="{{ w.project.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4;">
           <div style="height: 190px; border-bottom: 2px solid #1b1a18; background: #eae5d6; background-image: repeating-linear-gradient(135deg, rgba(27,26,24,0.12) 0 6px, transparent 6px 12px); display: flex; align-items: center; justify-content: center;">
             <div style="font-family: Silkscreen, monospace; font-size: 10px; background: #f5f2e8; border: 2px solid #1b1a18; padding: 6px 10px;">{{ proj.image }}</div>
@@ -497,12 +514,12 @@
     <!-- =============================================== window: About Me.txt -->
     <sc-if value="{{ w.about.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.about.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="about" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="about" style="{{ w.about.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="Close About Me" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.about.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="{{ w.about.zoomLabel }}" style="{{ w.about.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="about" aria-hidden="true" style="{{ w.about.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="about" aria-hidden="true" style="{{ w.about.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 26px 28px 32px; display: flex; flex-direction: column; gap: 16px;">
           <div style="font-family: Silkscreen, monospace; font-size: 15px;">{{ about.greeting }}</div>
           <sc-for list="{{ about.paragraphs }}" as="para" hint-placeholder-count="2">
@@ -521,12 +538,12 @@
     <!-- ===================================================== window: Skills -->
     <sc-if value="{{ w.skills.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.skills.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="skills" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="skills" style="{{ w.skills.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="Close Skills" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.skills.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="{{ w.skills.zoomLabel }}" style="{{ w.skills.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="skills" aria-hidden="true" style="{{ w.skills.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="skills" aria-hidden="true" style="{{ w.skills.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>System Profile</span><span>{{ skills.subtitle }}</span>
         </div>
@@ -561,12 +578,12 @@
     <!-- ================================================= window: Playground -->
     <sc-if value="{{ w.play.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.play.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="play" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="play" style="{{ w.play.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="Close Playground" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.play.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="{{ w.play.zoomLabel }}" style="{{ w.play.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="play" aria-hidden="true" style="{{ w.play.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="play" aria-hidden="true" style="{{ w.play.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #1b1a18; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
           <div style="opacity: 0.6;">{{ playground.lastLogin }}</div>
           <div style="margin-top: 12px;">{{ playground.command }}</div>
@@ -586,12 +603,12 @@
     <!-- ==================================================== window: Contact -->
     <sc-if value="{{ w.contact.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.contact.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="contact" style="{{ s.chromeBar }}">
+        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="contact" style="{{ w.contact.chromeStyle }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="Close Contact" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.contact.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="{{ w.contact.zoomLabel }}" style="{{ w.contact.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
-        <div onMouseDown="{{ startResize }}" data-win="contact" aria-hidden="true" style="{{ w.contact.gripStyle }}"></div>
+        <div onPointerDown="{{ startResize }}" data-win="contact" aria-hidden="true" style="{{ w.contact.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 16px;">
           <div style="{{ s.prose }}">{{ contact.intro }}</div>
 
@@ -694,6 +711,7 @@ class Component extends DCLogic {
   state = {
     showBoot: false,
     isMobile: false,
+    isPhone: false,
     clock: "",
     item: { list: "projects", index: 0 },
     menu: null,
@@ -729,6 +747,7 @@ class Component extends DCLogic {
 
     this.setState({
       isMobile: system.isMobileWidth(window.innerWidth),
+      isPhone: system.isPhoneWidth(window.innerWidth),
       showBoot,
       clock: system.formatTime()
     });
@@ -780,6 +799,7 @@ class Component extends DCLogic {
   onResize = () => {
     this.setState((s) => ({
       isMobile: system.isMobileWidth(window.innerWidth),
+      isPhone: system.isPhoneWidth(window.innerWidth),
       windows: this.windowManager.reflow(s.windows)
     }));
   };
@@ -917,6 +937,18 @@ class Component extends DCLogic {
 
   /* ----------------------------------------------------------------- drag */
 
+  /**
+   * Drag and resize are driven by pointer events rather than mouse events, so
+   * one code path serves a mouse, a trackpad, a pen and a finger. A touch
+   * device only ever synthesises a single mouse click — never the stream of
+   * mousemoves a drag needs — which is why the title bar used to be inert on an
+   * iPad. The gesture is claimed with `touch-action:none` on the two handles
+   * (see styles.js); the browser would otherwise pan the page instead.
+   *
+   * `pointerId` is remembered so a second finger landing on the desktop can't
+   * take over a drag that is already running, and `pointercancel` ends the
+   * drag the way the system does — a palm rejection, an incoming call.
+   */
   startDrag = (e) => {
     // A press on the close or zoom box is the start of a click, not a drag.
     if (e.target !== e.currentTarget && e.target.closest && e.target.closest('[role="button"]')) {
@@ -930,15 +962,19 @@ class Component extends DCLogic {
     const frame = this.windowManager.get(this.state.windows, id);
     if (!frame || frame.zoomed) return;
 
-    this.drag = { id, offsetX: e.clientX - frame.x, offsetY: e.clientY - frame.y };
-    window.addEventListener("mousemove", this.onDragMove);
-    window.addEventListener("mouseup", this.endDrag);
+    this.drag = {
+      id,
+      pointerId: e.pointerId,
+      offsetX: e.clientX - frame.x,
+      offsetY: e.clientY - frame.y
+    };
+    this.listenWhileDragging(this.onDragMove, this.endDrag);
     e.preventDefault();
   };
 
   onDragMove = (e) => {
     const drag = this.drag;
-    if (!drag) return;
+    if (!drag || e.pointerId !== drag.pointerId) return;
     this.setState((s) => ({
       windows: this.windowManager.dragTo(
         s.windows,
@@ -949,10 +985,10 @@ class Component extends DCLogic {
     }));
   };
 
-  endDrag = () => {
+  endDrag = (e) => {
+    if (!this.drag || (e && e.pointerId !== this.drag.pointerId)) return;
     this.drag = null;
-    window.removeEventListener("mousemove", this.onDragMove);
-    window.removeEventListener("mouseup", this.endDrag);
+    this.unlisten(this.onDragMove, this.endDrag);
   };
 
   /* --------------------------------------------------------------- resize */
@@ -969,15 +1005,21 @@ class Component extends DCLogic {
     if (this.state.isMobile) return;
 
     const frame = this.windowManager.frame(this.state.windows, id);
-    this.resize = { id, fromX: e.clientX, fromY: e.clientY, w: frame.w, h: frame.h };
-    window.addEventListener("mousemove", this.onResizeMove);
-    window.addEventListener("mouseup", this.endResize);
+    this.resize = {
+      id,
+      pointerId: e.pointerId,
+      fromX: e.clientX,
+      fromY: e.clientY,
+      w: frame.w,
+      h: frame.h
+    };
+    this.listenWhileDragging(this.onResizeMove, this.endResize);
     e.preventDefault();
   };
 
   onResizeMove = (e) => {
     const resize = this.resize;
-    if (!resize) return;
+    if (!resize || e.pointerId !== resize.pointerId) return;
     this.setState((s) => ({
       windows: this.windowManager.resizeTo(
         s.windows,
@@ -988,11 +1030,28 @@ class Component extends DCLogic {
     }));
   };
 
-  endResize = () => {
+  endResize = (e) => {
+    if (!this.resize || (e && e.pointerId !== this.resize.pointerId)) return;
     this.resize = null;
-    window.removeEventListener("mousemove", this.onResizeMove);
-    window.removeEventListener("mouseup", this.endResize);
+    this.unlisten(this.onResizeMove, this.endResize);
   };
+
+  /**
+   * A gesture is tracked on `window`, not on the handle, so it survives the
+   * pointer leaving the element — and, on a mouse, leaving the browser and
+   * coming back with the button released.
+   */
+  listenWhileDragging(onMove, onEnd) {
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onEnd);
+    window.addEventListener("pointercancel", onEnd);
+  }
+
+  unlisten(onMove, onEnd) {
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onEnd);
+    window.removeEventListener("pointercancel", onEnd);
+  }
 
   /** The zoom box, and a double-click on the title bar: fill the stage or come back. */
   toggleZoom = (e) => {
@@ -1059,6 +1118,7 @@ class Component extends DCLogic {
       view: s.view,
       openMenu: s.menu,
       isMobile: s.isMobile,
+      isPhone: s.isPhone,
       isApplePlatform: this.isApplePlatform,
       item: s.item,
       clock: s.clock,
