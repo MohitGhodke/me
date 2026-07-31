@@ -19,16 +19,16 @@
  *   tags     the stack
  *   repo     optional; draws a "Source on GitHub" button in the window
  *
- * A worked example, for when you add the first one:
+ * The shape, for when you add the first one — fill every field with your own:
  *
  *   {
- *     file: "payments.case",
- *     title: "Re-platforming payments without downtime",
- *     meta: "Acme Systems · 2023 · Lead",
- *     image: "architecture diagram",
- *     summary: "The problem, and what you did about it — one paragraph.",
- *     outcomes: ["p99 latency 340ms → 90ms", "Zero downtime", "…"],
- *     tags: ["Go", "Kafka", "Postgres"]
+ *     file: "<name>.case",
+ *     title: "<what changed, in one line>",
+ *     meta: "<Employer> · <year> · <your role>",
+ *     image: "<caption for the hero well>",
+ *     summary: "<the problem, and what you did about it — one paragraph>",
+ *     outcomes: ["<number>", "<number>", "<number>"],
+ *     tags: ["C# / .NET", "Angular"]
  *   }
  */
 ;(function (global) {

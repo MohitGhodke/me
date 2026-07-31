@@ -1,3 +1,7 @@
 .DS_Store
 node_modules/
 npm-debug.log*
+
+# Design-tool artifacts — not part of the site.
+.thumbnail
+uploads/

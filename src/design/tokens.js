@@ -1,9 +1,14 @@
 /**
  * Mohit OS 1.0 — design tokens.
  *
- * The single source of truth for every colour, typeface, size and duration in
- * the interface. Nothing else in the codebase should contain a raw hex value.
- * Change a token here and the whole desktop follows.
+ * The palette, type scale and timings that `styles.js` composes from. Change a
+ * token here and every style builder follows.
+ *
+ * Only values something actually reads live here: a token nothing consumes is
+ * worse than no token, because changing it appears to do nothing. The purely
+ * decorative one-offs in the template — the terminal's greens, the shutdown
+ * screen, the wallpaper captions — are inline there on purpose, so they are not
+ * duplicated as tokens that would never be read.
  */
 ;(function (global) {
   "use strict";
@@ -17,28 +22,14 @@
     page: "#fdfbf4",
     /** The desktop behind the windows. */
     desktop: "#8a9c93",
-    /** Flat fill used for empty media wells. */
-    shade: "#eae5d6",
 
     accent: "oklch(0.62 0.14 40)",
     accentText: "#fdfbf4",
     link: "oklch(0.55 0.14 40)",
     linkHoverBg: "oklch(0.9 0.06 80)",
 
-    terminalBg: "#1b1a18",
-    terminalText: "#d9f2c4",
-    terminalMuted: "#a9c99a",
-
-    shutdownBg: "#1b1a18",
-    shutdownText: "#e6e2d6",
-
-    /** Text drawn straight onto the desktop wallpaper. */
-    onDesktop: "rgba(255,255,255,0.92)",
-    onDesktopMuted: "rgba(255,255,255,0.85)",
-
     rule: "rgba(27,26,24,0.3)",
     ruleFaint: "rgba(27,26,24,0.2)",
-    hairline: "rgba(27,26,24,0.25)",
     wash: "rgba(27,26,24,0.05)",
     dropShadow: "rgba(0,0,0,0.35)",
     dropShadowStrong: "rgba(0,0,0,0.4)"
@@ -58,27 +49,13 @@
     icon: 9.5,
     label: 10,
     prose: 14,
-    proseSmall: 13,
     proseDense: 12.5,
-    heading: 15,
-    headingLarge: 17,
-    display: 20
-  };
-
-  var space = {
-    hair: 2,
-    xs: 4,
-    sm: 6,
-    md: 10,
-    lg: 14,
-    xl: 18,
-    xxl: 26
+    heading: 15
   };
 
   var border = {
     /** Every visible edge in the OS is 2px of ink. */
     frame: "2px solid " + color.ink,
-    hair: "1px solid " + color.ruleFaint,
     rule: "1px solid " + color.rule,
     radiusSm: "2px",
     radius: "3px",
@@ -88,7 +65,6 @@
   var shadow = {
     window: "4px 4px 0 " + color.dropShadow,
     panel: "3px 3px 0 " + color.dropShadowStrong,
-    raised: "3px 3px 0 " + color.dropShadow,
     button: "2px 2px 0 " + color.ink,
     chip: "2px 2px 0 " + color.ruleFaint
   };
@@ -114,7 +90,6 @@
     minTouchTarget: 44,
     /** Gap kept between a window and the edges of the stage. */
     stageGutter: 24,
-    desktopIconWidth: 104,
     /** A window can be dragged down to this, but no smaller: the chrome and a
      *  line or two of content still have to fit. */
     minWindowWidth: 280,
@@ -127,7 +102,6 @@
     color: color,
     font: font,
     size: size,
-    space: space,
     border: border,
     shadow: shadow,
     motion: motion,

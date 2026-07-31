@@ -3,9 +3,6 @@
  *
  * Everything here is plain data. Nothing in this file affects layout; change a
  * value, reload the page, done.
- *
- * ⚠︎ PLACEHOLDER: the Writing URL in `links` is still a guess — point it at a
- * real page or delete the entry.
  */
 ;(function (global) {
   "use strict";
@@ -18,14 +15,13 @@
     url: "https://mohitghodke.com",
 
     /** Shown on the wallpaper under the OS name. */
-    tagline: "Lead Software Engineer — systems, platform, scale",
+    tagline: "Lead Software Engineer — C#, Angular, and the AI tooling around them",
 
     /** Used for <title>, the meta description and social cards. */
     meta: {
       title: "Mohit Ghodke — Lead Software Engineer",
       description:
-        "The portfolio of Mohit Ghodke, a lead software engineer working on " +
-        "backend systems, platform and scale — presented as a small operating system.",
+        "Mohit Ghodke — lead software engineer. C#/.NET and Angular, plus the agent tooling and fine-tuned small language models around them. A portfolio built as a small operating system.",
       locale: "en",
       themeColor: "#8a9c93"
     },
@@ -40,8 +36,7 @@
      */
     links: [
       { id: "github", label: "GitHub", url: "https://github.com/MohitGhodke", onResume: true },
-      { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/mohit-ghodke-41754215/", onResume: true },
-      { id: "writing", label: "Writing", url: "https://mohitghodke.com/writing" }     // PLACEHOLDER
+      { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/mohit-ghodke-41754215/", onResume: true }
     ],
 
     /** Copy shown by the toast after a Copy command. */

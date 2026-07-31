@@ -161,7 +161,12 @@ A result with a number behind it reads better as a case study in
 
 ### 6. `playground.js` — the terminal
 
-`entries[]`, each `{ name, description }`. Also `lastLogin`, which is decoration.
+**Real content.** `entries[]`, each `{ name, description }` — the local-model
+side projects that aren't shipped products (the shipped ones are in the Work
+folder). The three invented projects this shipped with — `tinykv`, `slowdns`,
+`rasterbox`, one of which claimed to have made the wallpaper — have been removed.
+
+`lastLogin` is set dressing, like the menu-bar clock. It isn't a claim.
 
 ### 7. `contact.js` — the Contact window
 

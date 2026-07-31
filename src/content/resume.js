@@ -5,8 +5,7 @@
  * actually put on one page. Add or remove `roles` freely; the template renders
  * however many you list.
  *
- * `summary`, `roles` and `sections` are real. `education` is still a blank
- * template — fill it in and delete the PLACEHOLDER marker.
+ * Everything in this file is real.
  *
  * Each role carries the stack it was built on rather than a paragraph. That is
  * the checkable part, and it beats the invented achievements this file shipped
@@ -68,7 +67,7 @@
     ],
 
     education: [
-      { line: "Degree — Institution, year" }                              // PLACEHOLDER
+      { line: "Bachelor in Engineering — Pune University" }
     ],
 
     /**
