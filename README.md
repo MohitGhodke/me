@@ -17,7 +17,7 @@ npm test        # 106 tests, ~2s
 The rule is one job per file, and content is never mixed with markup.
 
 ```
-MohitOS.dc.html          the template, and a thin component that owns state + events
+index.html          the template, and a thin component that owns state + events
 support.js               the Design Component runtime (generated — do not edit)
 
 src/content/             ▸ THE COPY. Edit these; nothing else.
@@ -80,7 +80,7 @@ Adding a whole new window takes two steps:
 
 1. a row in `desktop.js` — `{ id, title, icon, meta, geometry }`, or
    `parent: "work"` instead of `icon` to nest it inside another folder
-2. a `<sc-if value="{{ w.yourId.open }}">` block in `MohitOS.dc.html`
+2. a `<sc-if value="{{ w.yourId.open }}">` block in `index.html`
 
 The window manager, the desktop icon, the list view, the mobile list and the
 menu wiring all follow from the registry. `npm test` fails if you do step 1 and
@@ -90,15 +90,19 @@ forget step 2.
 
 ## Deploying
 
-Everything is static. Upload the repo (minus `node_modules/` and `test/`) and
-add one rewrite so `/` serves the page:
+Everything is static and the entry point is `index.html`, so every host serves
+it at `/` with no rewrite and no build step. Upload the repo minus
+`node_modules/`, `test/` and `scripts/`; `support.js` and all of `src/` must
+ship.
 
-| Host | Rule |
-| --- | --- |
-| Netlify | `/*  /MohitOS.dc.html  200` in `_redirects` |
-| Vercel | `{ "rewrites": [{ "source": "/", "destination": "/MohitOS.dc.html" }] }` |
-| nginx | `location = / { rewrite ^ /MohitOS.dc.html last; }` |
-| GitHub Pages | rename the file to `index.html` — nothing else changes |
+Live on GitHub Pages at **mohitghodke.com**: Settings → Pages → deploy from
+`main` / root, then set the custom domain, which writes the `CNAME` file. The
+apex needs four `A` records at the DNS provider — GitHub lists the current
+addresses on that same settings page.
+
+One constraint worth knowing: the DC runtime re-fetches the page's own source
+(`fetch(location.href)`), so the site has to be served over HTTP. Opening
+`index.html` from disk will not work — use `npm run dev`.
 
 React is loaded from unpkg with subresource integrity; the Silkscreen webfont
 comes from Google Fonts. Both are the only external requests the page makes.

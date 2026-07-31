@@ -21,7 +21,7 @@ Every line still carrying sample copy is marked `PLACEHOLDER` in the source, so
 | `name`, `role`, `email`, `url` | ✅ real | |
 | `location` | ✅ real | Pune, IN — confirmed |
 | `tagline` | ✅ real | one line, shows on the wallpaper |
-| `meta.title` / `meta.description` | ✅ real | also update the same two values in the `<head>` of `MohitOS.dc.html` — `npm test` fails if they drift apart |
+| `meta.title` / `meta.description` | ✅ real | also update the same two values in the `<head>` of `index.html` — `npm test` fails if they drift apart |
 | `email` | ✅ real | mohitghodke@gmail.com — also duplicated in the `<noscript>` fallback, which `npm test` keeps in step |
 | `links[]` | ⚠️ partly real | GitHub and LinkedIn confirmed and marked `onResume: true`; the Writing URL is still a guess — point it somewhere real or delete the entry |
 
@@ -190,7 +190,7 @@ which keys do what. Window titles and desktop labels live here too.
      geometry: { w: 480, h: 420, x: 200, y: 100 } }
    ```
 
-2. Add a block to `MohitOS.dc.html`, copying an existing one:
+2. Add a block to `index.html`, copying an existing one:
 
    ```html
    <sc-if value="{{ w.writing.open }}">

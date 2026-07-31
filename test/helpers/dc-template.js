@@ -13,7 +13,15 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 const ROOT = path.join(__dirname, "..", "..");
-const TEMPLATE_PATH = path.join(ROOT, "MohitOS.dc.html");
+
+/**
+ * The page itself. Named `index.html` so GitHub Pages serves it at `/` without
+ * a rewrite — every other host in README.md rewrites to it instead.
+ *
+ * Exported so nothing else has to hard-code the filename: `smoke.test.js` and
+ * `scripts/dev-server.mjs` are the other two places that need it.
+ */
+const TEMPLATE_PATH = path.join(ROOT, "index.html");
 
 function readTemplateFile() {
   return fs.readFileSync(TEMPLATE_PATH, "utf8");
@@ -23,7 +31,7 @@ function readTemplateFile() {
 function templateBody(src) {
   const open = src.indexOf("<x-dc>");
   const close = src.lastIndexOf("</x-dc>");
-  if (open === -1 || close === -1) throw new Error("MohitOS.dc.html has no <x-dc> block");
+  if (open === -1 || close === -1) throw new Error("index.html has no <x-dc> block");
   const body = src.slice(open + "<x-dc>".length, close);
   return body.replace(/<helmet>[\s\S]*?<\/helmet>/, "");
 }
@@ -31,7 +39,7 @@ function templateBody(src) {
 /** The contents of `<script data-dc-script>`. */
 function logicScript(src) {
   const match = /<script[^>]*data-dc-script[^>]*>([\s\S]*?)<\/script>/.exec(src);
-  if (!match) throw new Error("MohitOS.dc.html has no <script data-dc-script> block");
+  if (!match) throw new Error("index.html has no <script data-dc-script> block");
   return match[1];
 }
 

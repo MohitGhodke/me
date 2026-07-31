@@ -15,6 +15,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { pathToFileURL } = require("node:url");
 
+const dc = require("./helpers/dc-template.js");
+
 const ROOT = path.join(__dirname, "..");
 
 let jsdom = null;
@@ -45,8 +47,8 @@ if (jsdom) {
     virtualConsole.on("error", (...args) => problems.push(args.join(" ")));
     virtualConsole.on("jsdomError", (err) => problems.push(String(err)));
 
-    const dom = await JSDOM.fromFile(path.join(ROOT, "MohitOS.dc.html"), {
-      url: pathToFileURL(path.join(ROOT, "MohitOS.dc.html")).href,
+    const dom = await JSDOM.fromFile(dc.TEMPLATE_PATH, {
+      url: pathToFileURL(dc.TEMPLATE_PATH).href,
       runScripts: "dangerously",
       resources: new LocalFilesOnly(),
       pretendToBeVisual: true,

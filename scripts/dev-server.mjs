@@ -13,7 +13,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const ENTRY = "/MohitOS.dc.html";
+const ENTRY = "/index.html";
 
 const PORT = Number(
   process.env.PORT ||
