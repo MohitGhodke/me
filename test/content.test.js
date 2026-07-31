@@ -206,7 +206,8 @@ test("every menu action is one the app can actually run", () => {
       const known =
         windowIds.includes(item.act) ||
         builtIn.includes(item.act) ||
-        item.act.startsWith("view:");
+        item.act.startsWith("view:") ||
+        item.act.startsWith("theme:");
       assert.ok(known, `menu "${menu.id}" has an unhandled action: ${item.act}`);
     });
   });

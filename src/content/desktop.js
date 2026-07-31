@@ -100,7 +100,8 @@
    *   act        action id — a window id, a built-in verb, or "link"
    *   linkId     for act:"link", which entry of site.links to open
    *   shortcut   action id whose key binding is displayed on the right
-   *   tickWhen   "view:icons" — draws a checkmark while that view is active
+   *   tickWhen   "view:icons" or "theme:dark" — draws a checkmark while that
+   *              view/theme is active
    *   enabledWhen  "anyWindowOpen" — greys the row out otherwise
    *   disabled   permanently greyed out (present for period flavour)
    */
@@ -114,7 +115,10 @@
         { label: "About This Portfolio", act: "about" },
         { kind: "separator" },
         { label: "System Profile", act: "skills" },
-        { label: "Contact Mohit…", act: "contact" }
+        { label: "Contact Mohit…", act: "contact" },
+        { kind: "separator" },
+        { label: "Light", act: "theme:light", tickWhen: "theme:light" },
+        { label: "Dark", act: "theme:dark", tickWhen: "theme:dark" }
       ]
     },
     {

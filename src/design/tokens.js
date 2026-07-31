@@ -6,33 +6,73 @@
  *
  * Only values something actually reads live here: a token nothing consumes is
  * worse than no token, because changing it appears to do nothing. The purely
- * decorative one-offs in the template — the terminal's greens, the shutdown
- * screen, the wallpaper captions — are inline there on purpose, so they are not
- * duplicated as tokens that would never be read.
+ * decorative one-offs in the template — the shutdown screen, the wallpaper
+ * captions — are inline there on purpose, so they are not duplicated as
+ * tokens that would never be read. The terminal's colors *are* tokenized
+ * (`color.light/dark.term*`) because the Playground and Chirp AI windows
+ * repaint with the rest of the site — see `index.html`'s `AI_LINE_STYLE`.
  */
 ;(function (global) {
   "use strict";
 
+  /**
+   * Two palettes, same keys both sides — `styles.cssVariables(theme)` picks
+   * one and publishes it as `--mos-*` custom properties; every builder below
+   * reads the properties, never the palette directly, so a theme switch is a
+   * repaint rather than a re-render. `termBg`/`termText`/`termDim` are used
+   * only by the Playground and Chirp AI terminal windows, which read as a
+   * light terminal (dark text on a pale ground) in light mode and keep
+   * today's dark-terminal look — unchanged — in dark mode.
+   */
   var color = {
-    /** Foreground / every border and rule. */
-    ink: "#1b1a18",
-    /** Chrome surfaces: menu bar, window frames, title bars. */
-    paper: "#f5f2e8",
-    /** Document surfaces: the inside of a window body. */
-    page: "#fdfbf4",
-    /** The desktop behind the windows. */
-    desktop: "#8a9c93",
+    light: {
+      /** Foreground / every border and rule. */
+      ink: "#1b1a18",
+      /** Chrome surfaces: menu bar, window frames, title bars. */
+      paper: "#f5f2e8",
+      /** Document surfaces: the inside of a window body. */
+      page: "#fdfbf4",
+      /** The desktop behind the windows. */
+      desktop: "#8a9c93",
 
-    accent: "oklch(0.62 0.14 40)",
-    accentText: "#fdfbf4",
-    link: "oklch(0.55 0.14 40)",
-    linkHoverBg: "oklch(0.9 0.06 80)",
+      accent: "oklch(0.62 0.14 40)",
+      accentText: "#fdfbf4",
+      link: "oklch(0.55 0.14 40)",
+      linkHoverBg: "oklch(0.9 0.06 80)",
 
-    rule: "rgba(27,26,24,0.3)",
-    ruleFaint: "rgba(27,26,24,0.2)",
-    wash: "rgba(27,26,24,0.05)",
-    dropShadow: "rgba(0,0,0,0.35)",
-    dropShadowStrong: "rgba(0,0,0,0.4)"
+      rule: "rgba(27,26,24,0.3)",
+      ruleFaint: "rgba(27,26,24,0.2)",
+      wash: "rgba(27,26,24,0.05)",
+      dropShadow: "rgba(0,0,0,0.35)",
+      dropShadowStrong: "rgba(0,0,0,0.4)",
+
+      termBg: "#fdfbf4",
+      termText: "#1b1a18",
+      termDim: "rgba(27,26,24,0.6)"
+    },
+    dark: {
+      ink: "#eae6d9",
+      paper: "#28271f",
+      page: "#1e1d18",
+      desktop: "#3a453e",
+
+      accent: "oklch(0.62 0.14 40)",
+      accentText: "#fdfbf4",
+      link: "oklch(0.7 0.14 40)",
+      linkHoverBg: "oklch(0.3 0.08 40)",
+
+      rule: "rgba(234,230,217,0.3)",
+      ruleFaint: "rgba(234,230,217,0.2)",
+      wash: "rgba(234,230,217,0.06)",
+      dropShadow: "rgba(0,0,0,0.35)",
+      dropShadowStrong: "rgba(0,0,0,0.4)",
+
+      // Today's exact terminal colors — dark mode's terminal is pixel-
+      // identical to what shipped before light/dark mode existed.
+      termBg: "#1b1a18",
+      termText: "#d9f2c4",
+      termDim: "#a9c99a"
+    }
   };
 
   var font = {
@@ -53,20 +93,26 @@
     heading: 15
   };
 
+  // Ink and rule change with the theme, so these compose the CSS custom
+  // property rather than a palette value baked in at load — see `color`,
+  // above, and `styles.cssVariables(theme)`, which publishes it.
   var border = {
     /** Every visible edge in the OS is 2px of ink. */
-    frame: "2px solid " + color.ink,
-    rule: "1px solid " + color.rule,
+    frame: "2px solid var(--mos-ink)",
+    rule: "1px solid var(--mos-rule)",
     radiusSm: "2px",
     radius: "3px",
     radiusMd: "4px"
   };
 
   var shadow = {
-    window: "4px 4px 0 " + color.dropShadow,
-    panel: "3px 3px 0 " + color.dropShadowStrong,
-    button: "2px 2px 0 " + color.ink,
-    chip: "2px 2px 0 " + color.ruleFaint
+    // A drop shadow reads as black on either surface, so — unlike border,
+    // above — this is the one place a color is deliberately the same in
+    // both palettes rather than routed through a custom property.
+    window: "4px 4px 0 rgba(0,0,0,0.35)",
+    panel: "3px 3px 0 rgba(0,0,0,0.4)",
+    button: "2px 2px 0 var(--mos-ink)",
+    chip: "2px 2px 0 var(--mos-rule-faint)"
   };
 
   var motion = {

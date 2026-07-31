@@ -136,7 +136,7 @@
 </style>
 </helmet>
 
-<div data-print="root" style="position: fixed; inset: 0; display: flex; flex-direction: column; background: #8a9c93; background-image: radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px); background-size: 4px 4px; color: #1b1a18; user-select: none;">
+<div data-print="root" style="position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--mos-desktop); background-image: radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px); background-size: 4px 4px; color: var(--mos-ink); user-select: none;">
 
   <!-- Chirp's pixel-bird mascot, defined once and stamped out wherever its
        icon appears via <use>. Hand-plotted on a 20x17 cell grid, not an
@@ -144,7 +144,7 @@
   <svg width="0" height="0" style="position: absolute;" aria-hidden="true">
     <defs>
       <symbol id="mos-bird" viewBox="0 0 180 153">
-        <rect x="90" y="9" width="45" height="9" fill="#1b1a18"/><rect x="81" y="18" width="18" height="9" fill="#1b1a18"/><rect x="99" y="18" width="27" height="9" fill="#f5f2e8"/><rect x="126" y="18" width="18" height="9" fill="#1b1a18"/><rect x="72" y="27" width="18" height="9" fill="#1b1a18"/><rect x="90" y="27" width="27" height="9" fill="#f5f2e8"/><rect x="117" y="27" width="9" height="9" fill="#1b1a18"/><rect x="126" y="27" width="9" height="9" fill="#f5f2e8"/><rect x="135" y="27" width="9" height="9" fill="#1b1a18"/><rect x="54" y="36" width="27" height="9" fill="#1b1a18"/><rect x="81" y="36" width="54" height="9" fill="#f5f2e8"/><rect x="135" y="36" width="36" height="9" fill="#1b1a18"/><rect x="36" y="45" width="27" height="9" fill="#1b1a18"/><rect x="63" y="45" width="72" height="9" fill="#f5f2e8"/><rect x="135" y="45" width="27" height="9" fill="#c1633b"/><rect x="162" y="45" width="9" height="9" fill="#1b1a18"/><rect x="0" y="54" width="45" height="9" fill="#1b1a18"/><rect x="45" y="54" width="90" height="9" fill="#f5f2e8"/><rect x="135" y="54" width="36" height="9" fill="#1b1a18"/><rect x="0" y="63" width="9" height="9" fill="#1b1a18"/><rect x="9" y="63" width="18" height="9" fill="#f5f2e8"/><rect x="27" y="63" width="9" height="9" fill="#1b1a18"/><rect x="36" y="63" width="90" height="9" fill="#f5f2e8"/><rect x="126" y="63" width="18" height="9" fill="#1b1a18"/><rect x="0" y="72" width="18" height="9" fill="#1b1a18"/><rect x="18" y="72" width="108" height="9" fill="#f5f2e8"/><rect x="126" y="72" width="18" height="9" fill="#1b1a18"/><rect x="9" y="81" width="18" height="9" fill="#1b1a18"/><rect x="27" y="81" width="45" height="9" fill="#f5f2e8"/><rect x="72" y="81" width="9" height="9" fill="#d9f2c4"/><rect x="81" y="81" width="54" height="9" fill="#f5f2e8"/><rect x="135" y="81" width="9" height="9" fill="#1b1a18"/><rect x="18" y="90" width="9" height="9" fill="#1b1a18"/><rect x="27" y="90" width="27" height="9" fill="#f5f2e8"/><rect x="54" y="90" width="45" height="9" fill="#d9f2c4"/><rect x="99" y="90" width="36" height="9" fill="#f5f2e8"/><rect x="135" y="90" width="9" height="9" fill="#1b1a18"/><rect x="18" y="99" width="18" height="9" fill="#1b1a18"/><rect x="36" y="99" width="18" height="9" fill="#f5f2e8"/><rect x="54" y="99" width="45" height="9" fill="#d9f2c4"/><rect x="99" y="99" width="27" height="9" fill="#f5f2e8"/><rect x="126" y="99" width="18" height="9" fill="#1b1a18"/><rect x="27" y="108" width="9" height="9" fill="#1b1a18"/><rect x="36" y="108" width="18" height="9" fill="#f5f2e8"/><rect x="54" y="108" width="45" height="9" fill="#d9f2c4"/><rect x="99" y="108" width="27" height="9" fill="#f5f2e8"/><rect x="126" y="108" width="9" height="9" fill="#1b1a18"/><rect x="27" y="117" width="18" height="9" fill="#1b1a18"/><rect x="45" y="117" width="72" height="9" fill="#f5f2e8"/><rect x="117" y="117" width="18" height="9" fill="#1b1a18"/><rect x="36" y="126" width="18" height="9" fill="#1b1a18"/><rect x="54" y="126" width="54" height="9" fill="#f5f2e8"/><rect x="108" y="126" width="18" height="9" fill="#1b1a18"/><rect x="45" y="135" width="9" height="9" fill="#1b1a18"/><rect x="54" y="135" width="9" height="9" fill="#1b1a18"/><rect x="63" y="135" width="36" height="9" fill="#1b1a18"/><rect x="99" y="135" width="9" height="9" fill="#1b1a18"/><rect x="108" y="135" width="9" height="9" fill="#1b1a18"/><rect x="45" y="144" width="9" height="9" fill="#1b1a18"/><rect x="54" y="144" width="9" height="9" fill="#1b1a18"/><rect x="63" y="144" width="9" height="9" fill="#1b1a18"/><rect x="90" y="144" width="9" height="9" fill="#1b1a18"/><rect x="99" y="144" width="9" height="9" fill="#1b1a18"/><rect x="108" y="144" width="9" height="9" fill="#1b1a18"/>
+        <rect x="90" y="9" width="45" height="9" fill="var(--mos-ink)"/><rect x="81" y="18" width="18" height="9" fill="var(--mos-ink)"/><rect x="99" y="18" width="27" height="9" fill="var(--mos-paper)"/><rect x="126" y="18" width="18" height="9" fill="var(--mos-ink)"/><rect x="72" y="27" width="18" height="9" fill="var(--mos-ink)"/><rect x="90" y="27" width="27" height="9" fill="var(--mos-paper)"/><rect x="117" y="27" width="9" height="9" fill="var(--mos-ink)"/><rect x="126" y="27" width="9" height="9" fill="var(--mos-paper)"/><rect x="135" y="27" width="9" height="9" fill="var(--mos-ink)"/><rect x="54" y="36" width="27" height="9" fill="var(--mos-ink)"/><rect x="81" y="36" width="54" height="9" fill="var(--mos-paper)"/><rect x="135" y="36" width="36" height="9" fill="var(--mos-ink)"/><rect x="36" y="45" width="27" height="9" fill="var(--mos-ink)"/><rect x="63" y="45" width="72" height="9" fill="var(--mos-paper)"/><rect x="135" y="45" width="27" height="9" fill="#c1633b"/><rect x="162" y="45" width="9" height="9" fill="var(--mos-ink)"/><rect x="0" y="54" width="45" height="9" fill="var(--mos-ink)"/><rect x="45" y="54" width="90" height="9" fill="var(--mos-paper)"/><rect x="135" y="54" width="36" height="9" fill="var(--mos-ink)"/><rect x="0" y="63" width="9" height="9" fill="var(--mos-ink)"/><rect x="9" y="63" width="18" height="9" fill="var(--mos-paper)"/><rect x="27" y="63" width="9" height="9" fill="var(--mos-ink)"/><rect x="36" y="63" width="90" height="9" fill="var(--mos-paper)"/><rect x="126" y="63" width="18" height="9" fill="var(--mos-ink)"/><rect x="0" y="72" width="18" height="9" fill="var(--mos-ink)"/><rect x="18" y="72" width="108" height="9" fill="var(--mos-paper)"/><rect x="126" y="72" width="18" height="9" fill="var(--mos-ink)"/><rect x="9" y="81" width="18" height="9" fill="var(--mos-ink)"/><rect x="27" y="81" width="45" height="9" fill="var(--mos-paper)"/><rect x="72" y="81" width="9" height="9" fill="#d9f2c4"/><rect x="81" y="81" width="54" height="9" fill="var(--mos-paper)"/><rect x="135" y="81" width="9" height="9" fill="var(--mos-ink)"/><rect x="18" y="90" width="9" height="9" fill="var(--mos-ink)"/><rect x="27" y="90" width="27" height="9" fill="var(--mos-paper)"/><rect x="54" y="90" width="45" height="9" fill="#d9f2c4"/><rect x="99" y="90" width="36" height="9" fill="var(--mos-paper)"/><rect x="135" y="90" width="9" height="9" fill="var(--mos-ink)"/><rect x="18" y="99" width="18" height="9" fill="var(--mos-ink)"/><rect x="36" y="99" width="18" height="9" fill="var(--mos-paper)"/><rect x="54" y="99" width="45" height="9" fill="#d9f2c4"/><rect x="99" y="99" width="27" height="9" fill="var(--mos-paper)"/><rect x="126" y="99" width="18" height="9" fill="var(--mos-ink)"/><rect x="27" y="108" width="9" height="9" fill="var(--mos-ink)"/><rect x="36" y="108" width="18" height="9" fill="var(--mos-paper)"/><rect x="54" y="108" width="45" height="9" fill="#d9f2c4"/><rect x="99" y="108" width="27" height="9" fill="var(--mos-paper)"/><rect x="126" y="108" width="9" height="9" fill="var(--mos-ink)"/><rect x="27" y="117" width="18" height="9" fill="var(--mos-ink)"/><rect x="45" y="117" width="72" height="9" fill="var(--mos-paper)"/><rect x="117" y="117" width="18" height="9" fill="var(--mos-ink)"/><rect x="36" y="126" width="18" height="9" fill="var(--mos-ink)"/><rect x="54" y="126" width="54" height="9" fill="var(--mos-paper)"/><rect x="108" y="126" width="18" height="9" fill="var(--mos-ink)"/><rect x="45" y="135" width="9" height="9" fill="var(--mos-ink)"/><rect x="54" y="135" width="9" height="9" fill="var(--mos-ink)"/><rect x="63" y="135" width="36" height="9" fill="var(--mos-ink)"/><rect x="99" y="135" width="9" height="9" fill="var(--mos-ink)"/><rect x="108" y="135" width="9" height="9" fill="var(--mos-ink)"/><rect x="45" y="144" width="9" height="9" fill="var(--mos-ink)"/><rect x="54" y="144" width="9" height="9" fill="var(--mos-ink)"/><rect x="63" y="144" width="9" height="9" fill="var(--mos-ink)"/><rect x="90" y="144" width="9" height="9" fill="var(--mos-ink)"/><rect x="99" y="144" width="9" height="9" fill="var(--mos-ink)"/><rect x="108" y="144" width="9" height="9" fill="var(--mos-ink)"/>
       </symbol>
     </defs>
   </svg>
@@ -159,7 +159,7 @@
            data-act="menu" data-menu="{{ m.id }}" style="{{ m.style }}"
            role="menuitem" tabIndex="0" aria-haspopup="true" aria-label="{{ m.label }}">
         <sc-if value="{{ m.isApple }}" hint-placeholder-val="{{ false }}">
-          <div style="width: 13px; height: 13px; border: 2px solid #1b1a18; border-radius: 3px; background: oklch(0.62 0.14 40); pointer-events: none;"></div>
+          <div style="width: 13px; height: 13px; border: 2px solid var(--mos-ink); border-radius: 3px; background: oklch(0.62 0.14 40); pointer-events: none;"></div>
         </sc-if>
         <sc-if value="{{ m.hasLabel }}" hint-placeholder-val="{{ true }}">{{ m.label }}</sc-if>
 
@@ -173,7 +173,7 @@
                 <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}"
                      data-act="{{ it.act }}" data-href="{{ it.href }}" style="{{ it.style }}"
                      role="menuitem" tabIndex="0" aria-disabled="{{ it.disabled }}"
-                     style-hover="background:#1b1a18;color:#f5f2e8;">
+                     style-hover="background:var(--mos-ink);color:var(--mos-paper);">
                   <sc-if value="{{ it.hasTick }}" hint-placeholder-val="{{ false }}"><span style="width: 10px;">{{ it.tick }}</span></sc-if>
                   <span>{{ it.label }}</span>
                   <sc-if value="{{ it.hasShortcut }}" hint-placeholder-val="{{ false }}"><span style="opacity: 0.5;">{{ it.shortcut }}</span></sc-if>
@@ -189,6 +189,13 @@
     <sc-if value="{{ showClock }}" hint-placeholder-val="{{ true }}">
       <div style="display: flex; align-items: center; padding: 0 10px; opacity: 0.7;" style-hover="opacity:1;">{{ clock }}</div>
     </sc-if>
+    <!-- Lives here, not only in the Apple menu, because the Apple menu is
+         unreachable on a phone — `menus` comes back empty there so the bar
+         has room for the name. This is the one control that always works. -->
+    <div onClick="{{ toggleTheme }}" onKeyDown="{{ keyActivate }}" role="button" tabIndex="0"
+         aria-label="Switch to {{ themeToggleLabel }} mode"
+         style="display: flex; align-items: center; padding: 0 8px; border-left: 1px solid var(--mos-rule); opacity: 0.75; cursor: pointer;"
+         style-hover="opacity:1;">{{ themeToggleLabel }}</div>
     <div style="display: flex; align-items: center; padding: 0 4px 0 10px; font-weight: 700;">{{ barName }}</div>
   </div>
 
@@ -210,25 +217,25 @@
              aria-label="{{ ic.label }}" style-hover="border-color:rgba(255,255,255,0.6);background:rgba(255,255,255,0.08);">
           <sc-if value="{{ ic.isFolder }}" hint-placeholder-val="{{ true }}">
             <div style="position: relative; width: 44px; height: 36px;">
-              <div style="position: absolute; top: 0; left: 0; width: 20px; height: 8px; border: 2px solid #1b1a18; border-bottom: none; border-radius: 3px 3px 0 0; background: #f5f2e8;"></div>
-              <div style="position: absolute; top: 6px; left: 0; width: 44px; height: 30px; border: 2px solid #1b1a18; border-radius: 0 3px 3px 3px; background: #f5f2e8; box-shadow: inset 0 -6px 0 rgba(27,26,24,0.07);"></div>
+              <div style="position: absolute; top: 0; left: 0; width: 20px; height: 8px; border: 2px solid var(--mos-ink); border-bottom: none; border-radius: 3px 3px 0 0; background: var(--mos-paper);"></div>
+              <div style="position: absolute; top: 6px; left: 0; width: 44px; height: 30px; border: 2px solid var(--mos-ink); border-radius: 0 3px 3px 3px; background: var(--mos-paper); box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--mos-ink) 7%, transparent);"></div>
             </div>
           </sc-if>
           <sc-if value="{{ ic.isDoc }}" hint-placeholder-val="{{ true }}">
-            <div style="position: relative; width: 32px; height: 40px; border: 2px solid #1b1a18; border-radius: 2px; background: #f5f2e8; padding: 7px 5px 0; display: flex; flex-direction: column; gap: 3px; overflow: hidden;">
-              <div style="height: 2px; background: rgba(27,26,24,0.35);"></div>
-              <div style="height: 2px; background: rgba(27,26,24,0.35);"></div>
-              <div style="height: 2px; background: rgba(27,26,24,0.35); width: 60%;"></div>
-              <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #8a9c93; border-left: 2px solid #1b1a18; border-bottom: 2px solid #1b1a18;"></div>
+            <div style="position: relative; width: 32px; height: 40px; border: 2px solid var(--mos-ink); border-radius: 2px; background: var(--mos-paper); padding: 7px 5px 0; display: flex; flex-direction: column; gap: 3px; overflow: hidden;">
+              <div style="height: 2px; background: color-mix(in srgb, var(--mos-ink) 35%, transparent);"></div>
+              <div style="height: 2px; background: color-mix(in srgb, var(--mos-ink) 35%, transparent);"></div>
+              <div style="height: 2px; background: color-mix(in srgb, var(--mos-ink) 35%, transparent); width: 60%;"></div>
+              <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: var(--mos-desktop); border-left: 2px solid var(--mos-ink); border-bottom: 2px solid var(--mos-ink);"></div>
             </div>
           </sc-if>
           <sc-if value="{{ ic.isApp }}" hint-placeholder-val="{{ true }}">
-            <div style="width: 38px; height: 38px; border: 2px solid #1b1a18; border-radius: 4px; background: #f5f2e8; display: flex; align-items: center; justify-content: center;">
-              <div style="width: 15px; height: 15px; background: oklch(0.62 0.14 40); border: 2px solid #1b1a18; transform: rotate(45deg);"></div>
+            <div style="width: 38px; height: 38px; border: 2px solid var(--mos-ink); border-radius: 4px; background: var(--mos-paper); display: flex; align-items: center; justify-content: center;">
+              <div style="width: 15px; height: 15px; background: oklch(0.62 0.14 40); border: 2px solid var(--mos-ink); transform: rotate(45deg);"></div>
             </div>
           </sc-if>
           <sc-if value="{{ ic.isAi }}" hint-placeholder-val="{{ false }}">
-            <div style="width: 38px; height: 38px; border: 2px solid #1b1a18; border-radius: 4px; background: #f5f2e8; display: flex; align-items: center; justify-content: center;">
+            <div style="width: 38px; height: 38px; border: 2px solid var(--mos-ink); border-radius: 4px; background: var(--mos-paper); display: flex; align-items: center; justify-content: center;">
               <svg viewBox="0 0 180 153" width="28" height="24"><use href="#mos-bird"/></svg>
             </div>
           </sc-if>
@@ -240,14 +247,14 @@
 
     <!-- ------------------------------------------------------ desktop, list -->
     <sc-if value="{{ viewList }}" hint-placeholder-val="{{ false }}">
-      <div style="position: absolute; top: 12px; right: 12px; width: 268px; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.35); border-radius: 3px; overflow: hidden;">
+      <div style="position: absolute; top: 12px; right: 12px; width: 268px; border: 2px solid var(--mos-ink); background: var(--mos-paper); box-shadow: 3px 3px 0 rgba(0,0,0,0.35); border-radius: 3px; overflow: hidden;">
         <div style="{{ s.infoStrip }}">
           <span>{{ shell.listHeader.name }}</span><span>{{ shell.listHeader.kind }}</span>
         </div>
         <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="6">
           <div onDoubleClick="{{ handleOpen }}" onKeyDown="{{ keyOpen }}" data-app="{{ ic.id }}"
-               tabIndex="0" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid rgba(27,26,24,0.2); cursor: default;"
-               style-hover="background:#1b1a18;color:#f5f2e8;">
+               tabIndex="0" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-bottom: 1px solid color-mix(in srgb, var(--mos-ink) 20%, transparent); cursor: default;"
+               style-hover="background:var(--mos-ink);color:var(--mos-paper);">
             <span style="font-family: Silkscreen, monospace; font-size: 9.5px; white-space: nowrap;">{{ ic.label }}</span>
             <span style="font-size: 11px; opacity: 0.7; text-align: right;">{{ ic.meta }}</span>
           </div>
@@ -258,7 +265,7 @@
     <!-- ------------------------------------------------------------- mobile -->
     <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
       <div style="position: absolute; inset: 0; padding: 10px; overflow: auto;">
-        <div style="border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.35);">
+        <div style="border: 2px solid var(--mos-ink); background: var(--mos-paper); box-shadow: 3px 3px 0 rgba(0,0,0,0.35);">
           <div style="{{ s.chromeBar }}">
             <div style="{{ s.chromeGrow }}"></div>
             <div style="{{ s.chromeTitle }}">{{ site.name }}</div>
@@ -270,8 +277,8 @@
           <div style="display: flex; flex-direction: column;">
             <sc-for list="{{ icons }}" as="ic" hint-placeholder-count="6">
               <div onClick="{{ handleOpen }}" onKeyDown="{{ keyOpen }}" data-app="{{ ic.id }}"
-                   tabIndex="0" role="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 12px; border-bottom: 1px solid rgba(27,26,24,0.25); min-height: 60px;"
-                   style-active="background:#1b1a18;color:#f5f2e8;">
+                   tabIndex="0" role="button" style="display: flex; align-items: center; gap: 12px; padding: 14px 12px; border-bottom: 1px solid color-mix(in srgb, var(--mos-ink) 25%, transparent); min-height: 60px;"
+                   style-active="background:var(--mos-ink);color:var(--mos-paper);">
                 <div style="width: 26px; height: 30px; border: 2px solid currentColor; border-radius: 2px; flex: 0 0 auto;"></div>
                 <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px;">
                   <div style="font-family: Silkscreen, monospace; font-size: 12px;">{{ ic.label }}</div>
@@ -292,13 +299,13 @@
     <sc-if value="{{ w.resume.open }}" hint-placeholder-val="{{ false }}">
       <div data-print="doc" style="{{ w.resume.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="resume" data-print="chrome" style="{{ w.resume.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="Close Resume" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="Close Resume" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.resume.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="{{ w.resume.zoomLabel }}" style="{{ w.resume.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="{{ w.resume.zoomLabel }}" style="{{ w.resume.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="resume" data-print="hide" aria-hidden="true" style="{{ w.resume.gripStyle }}"></div>
         <div data-print="body" class="mos-selectable" style="{{ s.windowBodyResume }}">
-          <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 14px; border-bottom: 2px solid #1b1a18;">
+          <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 14px; border-bottom: 2px solid var(--mos-ink);">
             <div style="font-family: Silkscreen, monospace; font-size: 20px; letter-spacing: -0.01em;">{{ site.name }}</div>
             <div style="font-size: 13px; opacity: 0.75;">{{ site.role }} · {{ site.location }} · <a href="{{ mailto }}">{{ site.email }}</a></div>
             <!-- Where a reader goes next. On paper the label gives way to the
@@ -306,7 +313,7 @@
             <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px;">
               <sc-for list="{{ resumeLinks }}" as="ln" hint-placeholder-count="2">
                 <a href="{{ ln.url }}" target="_blank" rel="noopener noreferrer"
-                   style="{{ s.resumeLink }}" style-hover="background:#1b1a18;color:#f5f2e8;">
+                   style="{{ s.resumeLink }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);">
                   <span data-print="hide">{{ ln.label }}</span><span data-print="only">{{ ln.bare }}</span>
                 </a>
               </sc-for>
@@ -340,7 +347,7 @@
               <div onClick="{{ handleOpen }}" onKeyDown="{{ keyOpen }}" data-app="{{ sec.window }}"
                    role="button" tabIndex="0" aria-label="{{ sec.openLabel }}"
                    style="{{ s.resumeSection }}"
-                   style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.04);">
+                   style-hover="border-color:var(--mos-ink);background:color-mix(in srgb, var(--mos-ink) 4%, transparent);">
                 <div style="{{ s.sectionLabelResume }}">{{ sec.label }}</div>
                 <div style="font-size: 13.5px; line-height: 1.65; text-wrap: pretty;">{{ sec.summary }}</div>
                 <div data-print="hide" style="{{ s.resumeSectionOpen }}">{{ sec.openLabel }}</div>
@@ -369,8 +376,8 @@
           </div>
 
           <div data-print="hide" style="margin-top: 28px; display: flex; gap: 10px;">
-            <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="print" role="button" tabIndex="0" style="{{ s.btn }}" style-hover="background:#1b1a18;color:#f5f2e8;">Save as PDF</div>
-            <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="copymail" role="button" tabIndex="0" style="{{ s.btn }}" style-hover="background:#1b1a18;color:#f5f2e8;">Copy Email</div>
+            <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="print" role="button" tabIndex="0" style="{{ s.btn }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);">Save as PDF</div>
+            <div onClick="{{ act }}" onKeyDown="{{ keyActivate }}" data-act="copymail" role="button" tabIndex="0" style="{{ s.btn }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);">Copy Email</div>
           </div>
         </div>
       </div>
@@ -380,25 +387,25 @@
     <sc-if value="{{ w.work.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.work.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="work" style="{{ w.work.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="Close Work" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="Close Work" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.work.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="{{ w.work.zoomLabel }}" style="{{ w.work.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="{{ w.work.zoomLabel }}" style="{{ w.work.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="work" aria-hidden="true" style="{{ w.work.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.work }}</span><span>{{ shell.workHint }}</span>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; align-content: start;">
+        <div style="flex: 1 1 auto; overflow: auto; background: var(--mos-paper); padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; align-content: start;">
           <sc-for list="{{ workItems }}" as="p" hint-placeholder-count="5">
             <!-- A nested folder — opens its own window, like the desktop icons do. -->
             <sc-if value="{{ p.isFolder }}" hint-placeholder-val="{{ true }}">
               <div onDoubleClick="{{ handleOpen }}" onClick="{{ handleTap }}" onKeyDown="{{ keyOpen }}"
                    data-app="{{ p.app }}" tabIndex="0" aria-label="{{ p.label }}"
                    style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
-                   style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
+                   style-hover="border-color:var(--mos-ink);background:color-mix(in srgb, var(--mos-ink) 5%, transparent);">
                 <div style="position: relative; width: 40px; height: 40px;">
-                  <div style="position: absolute; top: 2px; left: 0; width: 18px; height: 7px; border: 2px solid #1b1a18; border-bottom: none; border-radius: 3px 3px 0 0; background: #fdfbf4;"></div>
-                  <div style="position: absolute; top: 7px; left: 0; width: 40px; height: 28px; border: 2px solid #1b1a18; border-radius: 0 3px 3px 3px; background: #fdfbf4; box-shadow: inset 0 -6px 0 rgba(27,26,24,0.07);"></div>
+                  <div style="position: absolute; top: 2px; left: 0; width: 18px; height: 7px; border: 2px solid var(--mos-ink); border-bottom: none; border-radius: 3px 3px 0 0; background: var(--mos-page);"></div>
+                  <div style="position: absolute; top: 7px; left: 0; width: 40px; height: 28px; border: 2px solid var(--mos-ink); border-radius: 0 3px 3px 3px; background: var(--mos-page); box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--mos-ink) 7%, transparent);"></div>
                 </div>
                 <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ p.label }}</div>
               </div>
@@ -409,10 +416,10 @@
               <div onDoubleClick="{{ launchItem }}" onClick="{{ tapItem }}" onKeyDown="{{ keyOpenItem }}"
                    data-item="{{ p.ref }}" tabIndex="0" aria-label="{{ p.label }}"
                    style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
-                   style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
-                <div style="position: relative; width: 32px; height: 40px; border: 2px solid #1b1a18; border-radius: 2px; background: #fdfbf4; overflow: hidden;">
-                  <div style="position: absolute; inset: 6px 5px auto 5px; height: 12px; background: repeating-linear-gradient(45deg, rgba(27,26,24,0.5) 0 2px, transparent 2px 4px);"></div>
-                  <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #f5f2e8; border-left: 2px solid #1b1a18; border-bottom: 2px solid #1b1a18;"></div>
+                   style-hover="border-color:var(--mos-ink);background:color-mix(in srgb, var(--mos-ink) 5%, transparent);">
+                <div style="position: relative; width: 32px; height: 40px; border: 2px solid var(--mos-ink); border-radius: 2px; background: var(--mos-page); overflow: hidden;">
+                  <div style="position: absolute; inset: 6px 5px auto 5px; height: 12px; background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--mos-ink) 50%, transparent) 0 2px, transparent 2px 4px);"></div>
+                  <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: var(--mos-paper); border-left: 2px solid var(--mos-ink); border-bottom: 2px solid var(--mos-ink);"></div>
                 </div>
                 <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ p.label }}</div>
               </div>
@@ -428,23 +435,23 @@
     <sc-if value="{{ w.extensions.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.extensions.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="extensions" style="{{ w.extensions.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="Close VS Code Extensions" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="Close VS Code Extensions" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.extensions.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="{{ w.extensions.zoomLabel }}" style="{{ w.extensions.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="{{ w.extensions.zoomLabel }}" style="{{ w.extensions.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="extensions" aria-hidden="true" style="{{ w.extensions.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.extensions }}</span><span>{{ shell.extensionsHint }}</span>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; align-content: start;">
+        <div style="flex: 1 1 auto; overflow: auto; background: var(--mos-paper); padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; align-content: start;">
           <sc-for list="{{ extensionItems }}" as="x" hint-placeholder-count="4">
             <div onDoubleClick="{{ launchItem }}" onClick="{{ tapItem }}" onKeyDown="{{ keyOpenItem }}"
                  data-item="{{ x.ref }}" tabIndex="0" aria-label="{{ x.label }}"
                  style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
-                 style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
-              <div style="position: relative; width: 38px; height: 38px; border: 2px solid #1b1a18; border-radius: 4px; background: #fdfbf4; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                <div style="width: 16px; height: 16px; background: oklch(0.62 0.14 40); border: 2px solid #1b1a18; transform: rotate(45deg);"></div>
-                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1b1a18; color: #fdfbf4; font-family: Silkscreen, monospace; font-size: 6px; text-align: center; letter-spacing: 0.06em; padding: 1px 0;">VSIX</div>
+                 style-hover="border-color:var(--mos-ink);background:color-mix(in srgb, var(--mos-ink) 5%, transparent);">
+              <div style="position: relative; width: 38px; height: 38px; border: 2px solid var(--mos-ink); border-radius: 4px; background: var(--mos-page); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <div style="width: 16px; height: 16px; background: oklch(0.62 0.14 40); border: 2px solid var(--mos-ink); transform: rotate(45deg);"></div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--mos-ink); color: var(--mos-page); font-family: Silkscreen, monospace; font-size: 6px; text-align: center; letter-spacing: 0.06em; padding: 1px 0;">VSIX</div>
               </div>
               <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ x.label }}</div>
             </div>
@@ -460,23 +467,23 @@
     <sc-if value="{{ w.apps.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.apps.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="apps" style="{{ w.apps.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="Close iOS Apps" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="Close iOS Apps" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.apps.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="{{ w.apps.zoomLabel }}" style="{{ w.apps.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="{{ w.apps.zoomLabel }}" style="{{ w.apps.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="apps" aria-hidden="true" style="{{ w.apps.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.apps }}</span><span>{{ shell.appsHint }}</span>
         </div>
-        <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; align-content: start;">
+        <div style="flex: 1 1 auto; overflow: auto; background: var(--mos-paper); padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; align-content: start;">
           <sc-for list="{{ appItems }}" as="app" hint-placeholder-count="2">
             <div onDoubleClick="{{ launchItem }}" onClick="{{ tapItem }}" onKeyDown="{{ keyOpenItem }}"
                  data-item="{{ app.ref }}" tabIndex="0" aria-label="{{ app.label }}"
                  style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
-                 style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
-              <div style="position: relative; width: 38px; height: 38px; border: 2px solid #1b1a18; border-radius: 9px; background: #fdfbf4; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                <div style="width: 18px; height: 18px; border: 2px solid #1b1a18; border-radius: 50%; background: oklch(0.62 0.14 40);"></div>
-                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1b1a18; color: #fdfbf4; font-family: Silkscreen, monospace; font-size: 6px; text-align: center; letter-spacing: 0.06em; padding: 1px 0;">APP</div>
+                 style-hover="border-color:var(--mos-ink);background:color-mix(in srgb, var(--mos-ink) 5%, transparent);">
+              <div style="position: relative; width: 38px; height: 38px; border: 2px solid var(--mos-ink); border-radius: 9px; background: var(--mos-page); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <div style="width: 18px; height: 18px; border: 2px solid var(--mos-ink); border-radius: 50%; background: oklch(0.62 0.14 40);"></div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: var(--mos-ink); color: var(--mos-page); font-family: Silkscreen, monospace; font-size: 6px; text-align: center; letter-spacing: 0.06em; padding: 1px 0;">APP</div>
               </div>
               <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ app.label }}</div>
             </div>
@@ -489,14 +496,14 @@
     <sc-if value="{{ w.project.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.project.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="project" style="{{ w.project.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="Close case study" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="Close case study" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ proj.file }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="{{ w.project.zoomLabel }}" style="{{ w.project.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="{{ w.project.zoomLabel }}" style="{{ w.project.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="project" aria-hidden="true" style="{{ w.project.gripStyle }}"></div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4;">
-          <div style="height: 190px; border-bottom: 2px solid #1b1a18; background: #eae5d6; background-image: repeating-linear-gradient(135deg, rgba(27,26,24,0.12) 0 6px, transparent 6px 12px); display: flex; align-items: center; justify-content: center;">
-            <div style="font-family: Silkscreen, monospace; font-size: 10px; background: #f5f2e8; border: 2px solid #1b1a18; padding: 6px 10px;">{{ proj.image }}</div>
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-page);">
+          <div style="height: 190px; border-bottom: 2px solid var(--mos-ink); background: var(--mos-page); background-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--mos-ink) 12%, transparent) 0 6px, transparent 6px 12px); display: flex; align-items: center; justify-content: center;">
+            <div style="font-family: Silkscreen, monospace; font-size: 10px; background: var(--mos-paper); border: 2px solid var(--mos-ink); padding: 6px 10px;">{{ proj.image }}</div>
           </div>
           <div style="padding: 22px 26px 30px; display: flex; flex-direction: column; gap: 18px;">
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -504,7 +511,7 @@
               <div style="font-family: Silkscreen, monospace; font-size: 17px; line-height: 1.3;">{{ proj.title }}</div>
               <div style="{{ s.prose }}">{{ proj.summary }}</div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid rgba(27,26,24,0.3); padding-top: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid color-mix(in srgb, var(--mos-ink) 30%, transparent); padding-top: 16px;">
               <div style="{{ s.sectionLabel }}">Outcome</div>
               <sc-for list="{{ proj.outcomes }}" as="pt" hint-placeholder-count="3">
                 <div style="display: flex; gap: 10px; font-size: 13.5px; line-height: 1.6;">
@@ -521,7 +528,7 @@
             <!-- Shipped work reads better short: the detail is in the repo. -->
             <sc-if value="{{ proj.hasRepo }}" hint-placeholder-val="{{ true }}">
               <div style="display: flex;">
-                <a href="{{ proj.repo }}" target="_blank" rel="noopener noreferrer" style="{{ s.btn }}" style-hover="background:#1b1a18;color:#f5f2e8;">Source on GitHub →</a>
+                <a href="{{ proj.repo }}" target="_blank" rel="noopener noreferrer" style="{{ s.btn }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);">Source on GitHub →</a>
               </div>
             </sc-if>
           </div>
@@ -533,18 +540,18 @@
     <sc-if value="{{ w.about.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.about.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="about" style="{{ w.about.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="Close About Me" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="Close About Me" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.about.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="{{ w.about.zoomLabel }}" style="{{ w.about.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="{{ w.about.zoomLabel }}" style="{{ w.about.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="about" aria-hidden="true" style="{{ w.about.gripStyle }}"></div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 26px 28px 32px; display: flex; flex-direction: column; gap: 16px;">
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-page); padding: 26px 28px 32px; display: flex; flex-direction: column; gap: 16px;">
           <div style="font-family: Silkscreen, monospace; font-size: 15px;">{{ about.greeting }}</div>
           <sc-for list="{{ about.paragraphs }}" as="para" hint-placeholder-count="2">
             <div style="{{ s.prose }}">{{ para }}</div>
           </sc-for>
           <sc-if value="{{ about.callout }}" hint-placeholder-val="{{ true }}">
-            <div style="border: 2px solid #1b1a18; background: #f5f2e8; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="border: 2px solid var(--mos-ink); background: var(--mos-paper); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
               <div style="{{ s.sectionLabel }}">{{ about.callout.heading }}</div>
               <div style="font-size: 13px; line-height: 1.65;">{{ about.callout.body }}</div>
             </div>
@@ -557,15 +564,15 @@
     <sc-if value="{{ w.skills.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.skills.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="skills" style="{{ w.skills.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="Close Skills" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="Close Skills" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.skills.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="{{ w.skills.zoomLabel }}" style="{{ w.skills.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="{{ w.skills.zoomLabel }}" style="{{ w.skills.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="skills" aria-hidden="true" style="{{ w.skills.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>System Profile</span><span>{{ skills.subtitle }}</span>
         </div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 20px 22px 28px; display: flex; flex-direction: column; gap: 20px;">
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-page); padding: 20px 22px 28px; display: flex; flex-direction: column; gap: 20px;">
           <sc-for list="{{ skills.groups }}" as="g" hint-placeholder-count="3">
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <div style="{{ s.sectionLabelRule }}">{{ g.heading }}</div>
@@ -597,23 +604,23 @@
     <sc-if value="{{ w.play.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.play.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="play" style="{{ w.play.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="Close Playground" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="Close Playground" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.play.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="{{ w.play.zoomLabel }}" style="{{ w.play.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="{{ w.play.zoomLabel }}" style="{{ w.play.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="play" aria-hidden="true" style="{{ w.play.gripStyle }}"></div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #1b1a18; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-term-bg); color: var(--mos-term-text); font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
           <div style="opacity: 0.6;">{{ playground.lastLogin }}</div>
           <div style="margin-top: 12px;">{{ playground.command }}</div>
           <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 12px;">
             <sc-for list="{{ playground.entries }}" as="e" hint-placeholder-count="3">
               <div style="display: flex; flex-direction: column; gap: 3px;">
                 <div>{{ e.name }}</div>
-                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: #a9c99a;">{{ e.description }}</div>
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: var(--mos-term-dim);">{{ e.description }}</div>
               </div>
             </sc-for>
           </div>
-          <div style="margin-top: 16px;">$ <span style="display: inline-block; width: 8px; height: 13px; background: #d9f2c4; vertical-align: -2px; animation: blink 1.1s steps(1) infinite;"></span></div>
+          <div style="margin-top: 16px;">$ <span style="display: inline-block; width: 8px; height: 13px; background: var(--mos-term-text); vertical-align: -2px; animation: blink 1.1s steps(1) infinite;"></span></div>
         </div>
       </div>
     </sc-if>
@@ -622,12 +629,12 @@
     <sc-if value="{{ w.ai.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.ai.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="ai" style="{{ w.ai.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="Close Chirp AI" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="Close Chirp AI" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.ai.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="{{ w.ai.zoomLabel }}" style="{{ w.ai.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="{{ w.ai.zoomLabel }}" style="{{ w.ai.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="ai" aria-hidden="true" style="{{ w.ai.gripStyle }}"></div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #1b1a18; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-term-bg); color: var(--mos-term-text); font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 14px; display: flex; flex-direction: column; gap: 10px;">
           <div style="flex: 0 0 auto;" aria-hidden="true">
             <svg viewBox="0 0 180 153" width="34" height="29"><use href="#mos-bird"/></svg>
           </div>
@@ -636,10 +643,10 @@
               <div style="{{ ln.style }} white-space: pre-wrap;">{{ ln.text }}</div>
             </sc-for>
           </div>
-          <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 6px; border-top: 1px solid rgba(217,242,196,0.2); padding-top: 10px;">
+          <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--mos-term-dim); padding-top: 10px;">
             <span>{{ aiCopy.prompt }}</span>
             <sc-if value="{{ aiShowCursor }}" hint-placeholder-val="{{ false }}">
-              <span aria-hidden="true" style="display: inline-block; width: 8px; height: 13px; flex: 0 0 auto; background: #d9f2c4; animation: blink 1.1s steps(1) infinite;"></span>
+              <span aria-hidden="true" style="display: inline-block; width: 8px; height: 13px; flex: 0 0 auto; background: var(--mos-term-text); animation: blink 1.1s steps(1) infinite;"></span>
             </sc-if>
             <input
               ref="{{ setAiInputRef }}"
@@ -655,7 +662,7 @@
               spellCheck="false"
               autoFocus="{{ true }}"
               aria-label="{{ aiCopy.inputPlaceholder }}"
-              style="flex: 1 1 auto; min-width: 0; background: transparent; border: none; outline: none; caret-color: transparent; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; padding: 6px 0; min-height: 28px;" />
+              style="flex: 1 1 auto; min-width: 0; background: transparent; border: none; outline: none; caret-color: transparent; color: var(--mos-term-text); font-family: Silkscreen, monospace; font-size: 11px; padding: 6px 0; min-height: 28px;" />
           </div>
         </div>
       </div>
@@ -665,12 +672,12 @@
     <sc-if value="{{ w.contact.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.contact.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="contact" style="{{ w.contact.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="Close Contact" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="Close Contact" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
           <div style="{{ s.chromeTitle }}">{{ w.contact.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="{{ w.contact.zoomLabel }}" style="{{ w.contact.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="{{ w.contact.zoomLabel }}" style="{{ w.contact.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="contact" aria-hidden="true" style="{{ w.contact.gripStyle }}"></div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 16px;">
+        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-paper); padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 16px;">
           <div style="{{ s.prose }}">{{ contact.intro }}</div>
 
           <!-- No backend: submit composes a mailto: with whatever was typed, so
@@ -692,7 +699,7 @@
             </div>
           </form>
 
-          <div style="border-top: 1px solid rgba(27,26,24,0.3); padding-top: 14px; display: flex; gap: 14px; font-size: 13px;">
+          <div style="border-top: 1px solid color-mix(in srgb, var(--mos-ink) 30%, transparent); padding-top: 14px; display: flex; gap: 14px; font-size: 13px;">
             <sc-for list="{{ links }}" as="l" hint-placeholder-count="3">
               <a href="{{ l.url }}" target="_blank" rel="noopener noreferrer">{{ l.label }}</a>
             </sc-for>
@@ -703,7 +710,7 @@
 
     <!-- ================================================== transient overlays -->
     <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
-      <div role="status" aria-live="polite" style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 8000; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 12px 18px; font-family: Silkscreen, monospace; font-size: 10px; animation: popin .12s ease-out; white-space: nowrap;">{{ toast }}</div>
+      <div role="status" aria-live="polite" style="position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 8000; border: 2px solid var(--mos-ink); background: var(--mos-paper); box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 12px 18px; font-family: Silkscreen, monospace; font-size: 10px; animation: popin .12s ease-out; white-space: nowrap;">{{ toast }}</div>
     </sc-if>
 
     <sc-if value="{{ isOff }}" hint-placeholder-val="{{ false }}">
@@ -716,14 +723,14 @@
     </sc-if>
 
     <sc-if value="{{ showBoot }}" hint-placeholder-val="{{ false }}">
-      <div style="position: absolute; inset: 0; background: #8a9c93; background-image: radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px); background-size: 4px 4px; display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div style="width: min(340px, 82vw); border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 4px 4px 0 rgba(0,0,0,0.35); padding: 26px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
-          <div style="width: 46px; height: 46px; border: 2px solid #1b1a18; border-radius: 5px; display: flex; align-items: center; justify-content: center; background: #fdfbf4;">
-            <div style="width: 18px; height: 18px; background: oklch(0.62 0.14 40); border: 2px solid #1b1a18; transform: rotate(45deg);"></div>
+      <div style="position: absolute; inset: 0; background: var(--mos-desktop); background-image: radial-gradient(rgba(0,0,0,0.14) 1px, transparent 1px); background-size: 4px 4px; display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div style="width: min(340px, 82vw); border: 2px solid var(--mos-ink); background: var(--mos-paper); box-shadow: 4px 4px 0 rgba(0,0,0,0.35); padding: 26px 24px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+          <div style="width: 46px; height: 46px; border: 2px solid var(--mos-ink); border-radius: 5px; display: flex; align-items: center; justify-content: center; background: var(--mos-page);">
+            <div style="width: 18px; height: 18px; background: oklch(0.62 0.14 40); border: 2px solid var(--mos-ink); transform: rotate(45deg);"></div>
           </div>
           <div style="font-family: Silkscreen, monospace; font-size: 12px; text-align: center; line-height: 1.6;">{{ shell.boot.title }}</div>
-          <div style="width: 100%; height: 14px; border: 2px solid #1b1a18; background: #fdfbf4; padding: 2px;">
-            <div style="height: 100%; background: repeating-linear-gradient(90deg, #1b1a18 0 3px, transparent 3px 5px); animation: bootbar 1.6s linear forwards;"></div>
+          <div style="width: 100%; height: 14px; border: 2px solid var(--mos-ink); background: var(--mos-page); padding: 2px;">
+            <div style="height: 100%; background: repeating-linear-gradient(90deg, var(--mos-ink) 0 3px, transparent 3px 5px); animation: bootbar 1.6s linear forwards;"></div>
           </div>
           <div style="font-family: Silkscreen, monospace; font-size: 9px; opacity: 0.6;">{{ shell.boot.status }}</div>
         </div>
@@ -733,7 +740,7 @@
     <!-- Content that failed validation is a deploy-time mistake, not a runtime
          one — say so loudly rather than rendering half a portfolio. -->
     <sc-if value="{{ hasContentErrors }}" hint-placeholder-val="{{ false }}">
-      <div role="alert" style="position: absolute; left: 12px; bottom: 12px; right: 12px; z-index: 9000; max-height: 40%; overflow: auto; border: 2px solid #1b1a18; background: #f5f2e8; box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 14px 16px; font-family: Silkscreen, monospace; font-size: 9px; line-height: 1.8;">
+      <div role="alert" style="position: absolute; left: 12px; bottom: 12px; right: 12px; z-index: 9000; max-height: 40%; overflow: auto; border: 2px solid var(--mos-ink); background: var(--mos-paper); box-shadow: 3px 3px 0 rgba(0,0,0,0.4); padding: 14px 16px; font-family: Silkscreen, monospace; font-size: 9px; line-height: 1.8;">
         <div style="margin-bottom: 8px;">CONTENT ERROR — check src/content/</div>
         <sc-for list="{{ contentErrors }}" as="err" hint-placeholder-count="1">
           <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12px;">— {{ err }}</div>
@@ -774,10 +781,10 @@ const OPENS_WINDOW = content.windows.map((w) => w.id);
  * per line instead of four (one per kind) with three always hidden.
  */
 const AI_LINE_STYLE = {
-  system: "color:#a9c99a;font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
-  progress: "color:#a9c99a;opacity:0.65;font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
-  user: "color:#d9f2c4;font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
-  assistant: "color:#f5f2e8;font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;"
+  system: "color:var(--mos-term-dim);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
+  progress: "color:var(--mos-term-dim);opacity:0.65;font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
+  user: "color:var(--mos-term-text);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
+  assistant: "color:var(--mos-term-text);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;"
 };
 
 function aiLine(kind, text) {
@@ -796,6 +803,7 @@ class Component extends DCLogic {
     toast: "",
     isOff: false,
     windows: null, // set in the constructor, once the manager exists
+    theme: "light", // resolved for real in the constructor, before first paint
 
     // Chirp: status walks idle -> awaiting-consent -> declined |
     // unsupported | loading -> ready | error. `lines` is everything printed
@@ -814,6 +822,17 @@ class Component extends DCLogic {
     this.isApplePlatform = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || "");
     this.aiSession = null;
 
+    // A visitor's own choice always wins; absent one, follow the OS/browser
+    // preference — resolved here, synchronously, so the very first paint is
+    // already in the right theme rather than flashing light and correcting.
+    const storedTheme = system.storage.get(Component.THEME_KEY);
+    this.state.theme =
+      storedTheme === "light" || storedTheme === "dark"
+        ? storedTheme
+        : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+
     if (content.problems.length) {
       console.error("[MohitOS] content validation failed:\n  " + content.problems.join("\n  "));
     }
@@ -822,8 +841,21 @@ class Component extends DCLogic {
   /* ------------------------------------------------------------- lifecycle */
 
   componentDidMount() {
-    this.applyDesignTokens();
+    this.applyDesignTokens(this.state.theme);
     this.syncDocumentMeta();
+
+    // Follow the OS/browser preference live — but only up to the point the
+    // visitor makes their own choice; `setTheme` is what starts overriding it.
+    this.themeMedia = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+    if (this.themeMedia) {
+      this.onThemeMediaChange = (e) => {
+        if (system.storage.get(Component.THEME_KEY)) return;
+        const theme = e.matches ? "dark" : "light";
+        this.applyDesignTokens(theme);
+        this.setState({ theme });
+      };
+      this.themeMedia.addEventListener("change", this.onThemeMediaChange);
+    }
 
     const alreadyBooted = system.storage.get(Component.BOOT_KEY) === "1";
     const showBoot = (this.props.bootSequence ?? true) && !alreadyBooted;
@@ -858,17 +890,40 @@ class Component extends DCLogic {
     clearInterval(this.clockTimer);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
+    if (this.themeMedia) this.themeMedia.removeEventListener("change", this.onThemeMediaChange);
     this.endDrag();
     this.endResize();
   }
 
-  /** Publish the palette so the stylesheet in <helmet> shares one source. */
-  applyDesignTokens() {
-    const vars = styles.cssVariables();
+  /**
+   * Publish the palette so the stylesheet in <helmet> shares one source, and
+   * keep the meta tags that describe the theme to the browser chrome/OS in
+   * step with it — the same "derived from one source, never copied" approach
+   * `syncDocumentMeta` uses for <title> and the description.
+   */
+  applyDesignTokens(theme) {
+    const vars = styles.cssVariables(theme);
     Object.keys(vars).forEach((name) => {
       document.documentElement.style.setProperty(name, vars[name]);
     });
+
+    const colorScheme = document.querySelector('meta[name="color-scheme"]');
+    if (colorScheme) colorScheme.setAttribute("content", theme);
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    if (themeColor) themeColor.setAttribute("content", vars["--mos-desktop"]);
   }
+
+  /** The Apple menu's Light/Dark toggle, and the visitor's own override going forward. */
+  setTheme = (theme) => {
+    system.storage.set(Component.THEME_KEY, theme);
+    this.applyDesignTokens(theme);
+    this.setState({ theme });
+  };
+
+  /** The menu-bar button — the one theme control a phone can actually reach. */
+  toggleTheme = () => {
+    this.setTheme(this.state.theme === "dark" ? "light" : "dark");
+  };
 
   /** Keep <title> and the meta description in step with content/site.js. */
   syncDocumentMeta() {
@@ -932,6 +987,7 @@ class Component extends DCLogic {
 
     if (OPENS_WINDOW.includes(action)) return this.openWindow(action);
     if (action.startsWith("view:")) return this.setState({ view: action.slice(5) });
+    if (action.startsWith("theme:")) return this.setTheme(action.slice(6));
 
     switch (action) {
       case "print":
@@ -1373,7 +1429,8 @@ class Component extends DCLogic {
       toast: s.toast,
       showBoot: s.showBoot,
       isOff: s.isOff,
-      ai: s.ai
+      ai: s.ai,
+      theme: s.theme
     });
 
     return Object.assign(vals, {
@@ -1396,13 +1453,15 @@ class Component extends DCLogic {
       aiInputChange: this.aiInputChange,
       aiKeyDown: this.aiKeyDown,
       setAiInputRef: this.setAiInputRef,
-      setAiScrollRef: this.setAiScrollRef
+      setAiScrollRef: this.setAiScrollRef,
+      toggleTheme: this.toggleTheme
     });
   }
 }
 
 Component.BOOT_KEY = "mohitos-booted";
 Component.AI_CONSENT_KEY = "mohitos-ai-consent";
+Component.THEME_KEY = "mohitos-theme";
 </script>
 </body>
 </html>

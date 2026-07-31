@@ -16,7 +16,24 @@
       ? require("./tokens.js")
       : global.MohitOS.tokens;
 
-  var c = tokens.color;
+  // Every builder below reaches for `c.ink`, `c.paper`, etc. — none of them
+  // touch `tokens.color` directly, so pointing this at the CSS custom
+  // properties instead of a palette object is what makes every one of them
+  // theme-aware without a rewrite. See `cssVariables(theme)`, below, for the
+  // other half: publishing the right palette onto those properties.
+  var c = {
+    ink: "var(--mos-ink)",
+    paper: "var(--mos-paper)",
+    page: "var(--mos-page)",
+    desktop: "var(--mos-desktop)",
+    accent: "var(--mos-accent)",
+    accentText: "var(--mos-accent-text)",
+    link: "var(--mos-link)",
+    linkHoverBg: "var(--mos-link-hover-bg)",
+    rule: "var(--mos-rule)",
+    ruleFaint: "var(--mos-rule-faint)",
+    wash: "var(--mos-wash)"
+  };
   var f = tokens.font;
   var s = tokens.size;
   var b = tokens.border;
@@ -318,25 +335,36 @@
   function desktopIconLabel() {
     return join([
       pixelText(s.icon, "line-height:1.35;"),
-      "text-align:center;color:#10120f;background:" + c.paper + ";",
+      "text-align:center;color:" + c.ink + ";background:" + c.paper + ";",
       "border:1px solid " + c.ink + ";padding:2px 5px;max-width:100px;"
     ]);
   }
 
   /**
-   * Token values published as CSS custom properties, so the stylesheet in
-   * <helmet> can reference the same palette the JS builders use.
+   * The chosen palette, published as CSS custom properties — this is the one
+   * function that reads `tokens.color` directly. Every builder above reaches
+   * for `c.ink` etc. (an alias for the property, not the value), so calling
+   * this again with the other theme is the entire repaint.
+   *
+   * @param {"light"|"dark"} theme
    */
-  function cssVariables() {
+  function cssVariables(theme) {
+    var p = tokens.color[theme] || tokens.color.light;
     return {
-      "--mos-ink": c.ink,
-      "--mos-paper": c.paper,
-      "--mos-page": c.page,
-      "--mos-desktop": c.desktop,
-      "--mos-accent": c.accent,
-      "--mos-link": c.link,
-      "--mos-link-hover-bg": c.linkHoverBg,
-      "--mos-wash": c.wash,
+      "--mos-ink": p.ink,
+      "--mos-paper": p.paper,
+      "--mos-page": p.page,
+      "--mos-desktop": p.desktop,
+      "--mos-accent": p.accent,
+      "--mos-accent-text": p.accentText,
+      "--mos-link": p.link,
+      "--mos-link-hover-bg": p.linkHoverBg,
+      "--mos-wash": p.wash,
+      "--mos-rule": p.rule,
+      "--mos-rule-faint": p.ruleFaint,
+      "--mos-term-bg": p.termBg,
+      "--mos-term-text": p.termText,
+      "--mos-term-dim": p.termDim,
       "--mos-font-body": f.body,
       "--mos-font-pixel": f.pixel
     };

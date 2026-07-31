@@ -71,6 +71,11 @@
 
     /** Menu bar, resolved against the current menu/view/window state. */
     function buildMenus(ctx) {
+      // Every toggle a menu item can tick lives here as one "<kind>:<value>"
+      // flag, so a new toggle (view, theme, ...) is a row in this list, not a
+      // new comparison.
+      var activeFlags = ["view:" + ctx.view, "theme:" + ctx.theme];
+
       return content.desktop.menus.map(function (menu) {
         var open = ctx.openMenu === menu.id;
         return {
@@ -92,7 +97,7 @@
 
             var binding = item.shortcut ? content.shortcutByAction[item.shortcut] : null;
             var link = item.act === "link" ? content.linkById[item.linkId] : null;
-            var tick = item.tickWhen ? (item.tickWhen === "view:" + ctx.view ? "✓" : "") : null;
+            var tick = item.tickWhen ? (activeFlags.indexOf(item.tickWhen) !== -1 ? "✓" : "") : null;
 
             return {
               isSeparator: false,
@@ -336,6 +341,7 @@
      * @param {boolean} ctx.showBoot
      * @param {boolean} ctx.isOff
      * @param {{status: string, lines: object[], input: string, busy: boolean}} ctx.ai
+     * @param {"light"|"dark"} ctx.theme
      */
     function build(ctx) {
       var anyWindowOpen = ctx.wm.anyOpen(ctx.state);
@@ -345,6 +351,7 @@
       var menuCtx = {
         openMenu: ctx.openMenu,
         view: ctx.view,
+        theme: ctx.theme,
         anyWindowOpen: anyWindowOpen,
         isApplePlatform: ctx.isApplePlatform
       };
@@ -407,6 +414,12 @@
         showClock: !ctx.isPhone,
         // "Mohit Ghodke" in the corner of a 390px bar leaves nothing beside it.
         barName: ctx.isPhone ? content.site.name.split(" ")[0] : content.site.name,
+        // A menu bar button, not a menu item, because the Apple menu that
+        // already carries the Light/Dark tick items is unreachable on a
+        // phone — `menus` comes back empty there (see below). Labelled with
+        // the theme it switches *to*, so it reads the same as a menu tick.
+        theme: ctx.theme,
+        themeToggleLabel: ctx.theme === "dark" ? "Light" : "Dark",
         toast: ctx.toast,
         showBoot: ctx.showBoot,
         isOff: ctx.isOff,

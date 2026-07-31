@@ -35,7 +35,8 @@ function buildVals(overrides) {
         toast: "",
         showBoot: false,
         isOff: false,
-        ai: { status: "idle", lines: [], input: "", busy: false }
+        ai: { status: "idle", lines: [], input: "", busy: false },
+        theme: "light"
       },
       overrides
     )

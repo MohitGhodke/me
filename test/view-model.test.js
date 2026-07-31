@@ -4,6 +4,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const { content, buildVals, windowManager } = require("./helpers/fixtures.js");
+const styles = require("../src/design/styles.js");
+const tokens = require("../src/design/tokens.js");
 
 test("every registered window gets an entry, open or not", () => {
   const vals = buildVals();
@@ -123,6 +125,20 @@ test("the View menu ticks whichever view is showing", () => {
   assert.equal(tickFor("icons", "view:icons"), "✓");
   assert.equal(tickFor("icons", "view:list"), "");
   assert.equal(tickFor("list", "view:list"), "✓");
+});
+
+test("the Apple menu ticks whichever theme is active", () => {
+  const tickFor = (theme, act) =>
+    buildVals({ theme }).menus.find((m) => m.id === "apple").items.find((i) => i.act === act).tick;
+
+  assert.equal(tickFor("light", "theme:light"), "✓");
+  assert.equal(tickFor("light", "theme:dark"), "");
+  assert.equal(tickFor("dark", "theme:dark"), "✓");
+});
+
+test("the menu-bar theme toggle is labelled with the theme it switches to, not the current one", () => {
+  assert.equal(buildVals({ theme: "light" }).themeToggleLabel, "Dark");
+  assert.equal(buildVals({ theme: "dark" }).themeToggleLabel, "Light");
 });
 
 test("menu items resolve their link and their shortcut", () => {
@@ -370,6 +386,23 @@ test("the ai state passes through untouched; aiDisabled follows status and busy"
   assert.equal(buildVals({ ai: { status: "unsupported", lines: [], input: "", busy: false } }).aiDisabled, true);
   assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: true } }).aiDisabled, true);
   assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: false } }).aiDisabled, false);
+});
+
+test("light and dark define the same set of colors, so neither can drift from the other", () => {
+  assert.deepEqual(Object.keys(tokens.color.light).sort(), Object.keys(tokens.color.dark).sort());
+});
+
+test("cssVariables(theme) actually repaints — light and dark disagree on the colors that should change", () => {
+  const light = styles.cssVariables("light");
+  const dark = styles.cssVariables("dark");
+
+  ["--mos-ink", "--mos-paper", "--mos-page", "--mos-desktop", "--mos-term-bg", "--mos-term-text"].forEach(
+    (name) => assert.notEqual(light[name], dark[name], `${name} should differ between themes`)
+  );
+  // The one deliberate exception: dark mode's terminal is defined to be
+  // pixel-identical to what shipped before light/dark mode existed.
+  assert.equal(dark["--mos-term-bg"], "#1b1a18");
+  assert.equal(dark["--mos-term-text"], "#d9f2c4");
 });
 
 test("style strings are well-formed CSS declarations", () => {
