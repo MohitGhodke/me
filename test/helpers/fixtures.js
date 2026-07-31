@@ -30,7 +30,7 @@ function buildVals(overrides) {
         openMenu: null,
         isMobile: false,
         isApplePlatform: true,
-        projectIndex: 0,
+        item: { list: "projects", index: 0 },
         clock: "9:41",
         toast: "",
         showBoot: false,

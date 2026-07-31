@@ -88,7 +88,9 @@
 
   /**
    * The outer window frame. On mobile a window fills the stage instead of
-   * floating, so position and chrome collapse.
+   * floating, so position and chrome collapse. A zoomed window fills the stage
+   * too, so it drops the rounding and the drop shadow it has nothing to cast
+   * onto.
    */
   function windowFrame(frame, isMobile) {
     var base =
@@ -102,7 +104,7 @@
       base,
       "position:absolute;left:" + frame.x + "px;top:" + frame.y + "px;",
       "width:" + frame.w + "px;height:" + frame.h + "px;",
-      "border-radius:" + b.radius + ";box-shadow:" + sh.window + ";",
+      frame.zoomed ? "" : "border-radius:" + b.radius + ";box-shadow:" + sh.window + ";",
       "z-index:" + (100 + frame.z) + ";"
     ]);
   }
@@ -123,6 +125,39 @@
       "width:14px;height:14px;border:" + b.frame + ";background:" + c.paper + ";",
       "flex:0 0 auto;",
       interactive ? "cursor:pointer;" : ""
+    ]);
+  }
+
+  /**
+   * The zoom box: the close box's square with the smaller one nested in its
+   * corner. Hidden on mobile, where a window already fills the stage.
+   */
+  function titleBarZoom(isMobile) {
+    if (isMobile) return "display:none;";
+    return join([
+      titleBarButton(true),
+      // Painted rather than nested, so the box stays a single element and the
+      // hover rule can invert it in one declaration. Held off the frame on
+      // every side: 6px of ink in a 10px interior reads as a filled box.
+      "background-image:linear-gradient(" + c.ink + "," + c.ink + ");",
+      "background-size:5px 5px;background-position:2px 2px;background-repeat:no-repeat;"
+    ]);
+  }
+
+  /**
+   * The grow handle in a window's bottom-right corner. Sits over the content
+   * rather than in the layout, the way the corner of a scrollbar used to.
+   */
+  function resizeGrip(isMobile) {
+    if (isMobile) return "display:none;";
+    return join([
+      "position:absolute;right:0;bottom:0;",
+      "width:" + l.resizeGripSize + "px;height:" + l.resizeGripSize + "px;",
+      "border-top:" + b.frame + ";border-left:" + b.frame + ";",
+      "border-radius:" + b.radiusSm + " 0 0 0;",
+      "background-color:" + c.paper + ";",
+      "background-image:repeating-linear-gradient(-45deg," + c.ink + " 0 1px,transparent 1px 3px);",
+      "cursor:nwse-resize;z-index:2;"
     ]);
   }
 
@@ -163,6 +198,53 @@
     return join([
       pixelText(o.size || s.label, "text-transform:uppercase;"),
       o.rule ? "border-bottom:" + b.rule + ";padding-bottom:6px;" : ""
+    ]);
+  }
+
+  /**
+   * The framing sentence under a section heading. Set a measure so it stays
+   * readable when the window is zoomed to full screen.
+   */
+  function sectionNote() {
+    return join([
+      prose(s.proseDense),
+      "opacity:0.8;max-width:56ch;"
+    ]);
+  }
+
+  /**
+   * A résumé section that opens a window. Reads as an ordinary section on the
+   * page and on paper; the hover state is what says it can be clicked.
+   */
+  function resumeSection() {
+    return join([
+      "display:flex;flex-direction:column;gap:8px;cursor:pointer;",
+      "margin:0 -10px;padding:8px 10px;border-radius:" + b.radiusSm + ";",
+      "border:1px solid transparent;"
+    ]);
+  }
+
+  /** The "Open Skills →" affordance under a résumé section summary. */
+  function resumeSectionOpen() {
+    return join([
+      pixelText(s.chromeSmall),
+      "align-self:flex-start;border:1px solid " + c.ink + ";",
+      "border-radius:" + b.radiusSm + ";padding:4px 8px;background:" + c.paper + ";"
+    ]);
+  }
+
+  /** The technology line under a résumé role. */
+  function resumeStack() {
+    return join([prose(s.proseDense), "opacity:0.7;"]);
+  }
+
+  /** A profile link in the résumé header: GitHub, LinkedIn. */
+  function resumeLink() {
+    return join([
+      pixelText(s.chromeSmall),
+      "text-decoration:none;color:" + c.ink + ";",
+      "border:1px solid " + c.ink + ";border-radius:" + b.radiusSm + ";",
+      "padding:4px 8px;background:" + c.paper + ";white-space:nowrap;"
     ]);
   }
 
@@ -216,11 +298,16 @@
     ]);
   }
 
+  /**
+   * The boxed caption under a desktop icon. Wraps rather than overflowing:
+   * short names still sit on one line, and a name like "VS Code Extensions"
+   * stacks instead of spilling past the box.
+   */
   function desktopIconLabel() {
     return join([
       pixelText(s.icon, "line-height:1.35;"),
       "text-align:center;color:#10120f;background:" + c.paper + ";",
-      "border:1px solid " + c.ink + ";padding:2px 5px;max-width:100px;white-space:nowrap;"
+      "border:1px solid " + c.ink + ";padding:2px 5px;max-width:100px;"
     ]);
   }
 
@@ -253,10 +340,17 @@
     windowFrame: windowFrame,
     titleBar: titleBar,
     titleBarButton: titleBarButton,
+    titleBarZoom: titleBarZoom,
     titleBarTitle: titleBarTitle,
+    resizeGrip: resizeGrip,
     infoStrip: infoStrip,
     windowBody: windowBody,
     sectionLabel: sectionLabel,
+    sectionNote: sectionNote,
+    resumeLink: resumeLink,
+    resumeStack: resumeStack,
+    resumeSection: resumeSection,
+    resumeSectionOpen: resumeSectionOpen,
     chip: chip,
     button: button,
     prose: prose,

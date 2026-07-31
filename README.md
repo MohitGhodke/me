@@ -1,13 +1,13 @@
 # Mohit OS 1.0
 
-A portfolio site built as a small operating system: a menu bar, draggable
-windows, a desktop of icons, and a boot sequence. Static files, no build step,
+A portfolio site built as a small operating system: a menu bar, windows you can
+drag, resize and zoom to full screen, a desktop of icons, and a boot sequence. Static files, no build step,
 no framework to install.
 
 ```
 npm install     # only needed for the tests
 npm run dev     # http://localhost:4173
-npm test        # 68 tests, ~1s
+npm test        # 106 tests, ~2s
 ```
 
 ---
@@ -23,7 +23,9 @@ support.js               the Design Component runtime (generated — do not edit
 src/content/             ▸ THE COPY. Edit these; nothing else.
   site.js                  name, role, email, links, page metadata
   resume.js                summary, roles, education
-  projects.js              the case studies in the Work folder
+  projects.js              case studies in the Work folder (empty — yours to fill)
+  extensions.js            the VS Code extensions, in a folder inside Work
+  apps.js                  the iOS apps, in a folder inside Work
   about.js                 About Me.txt
   skills.js                the System Profile window
   playground.js            the terminal's side projects
@@ -36,7 +38,7 @@ src/design/              the design system
   styles.js                style builders composed from tokens
 
 src/core/                browser-agnostic logic, unit-tested in Node
-  window-manager.js        open/close/stack/drag/clamp, as pure state transitions
+  window-manager.js        open/close/stack/drag/resize/zoom/clamp, as pure state transitions
   menu-controller.js       menu bar latch-and-track behaviour
   clipboard.js             copy that reports honest success or failure
   shortcuts.js             key bindings, matched against data
@@ -51,7 +53,7 @@ scripts/dev-server.mjs   zero-dependency static server
 
 ### Why it's split this way
 
-- **Content is data.** Adding a fifth case study means adding an object to
+- **Content is data.** Adding a case study means adding an object to
   `projects.js`. The template already loops.
 - **The design system is one file.** `tokens.js` holds the palette; `styles.js`
   turns tokens into the repeated style strings. Change the accent colour once.
@@ -76,7 +78,8 @@ desktop, with the exact path (`projects[2] is missing \`summary\``).
 
 Adding a whole new window takes two steps:
 
-1. a row in `desktop.js` — `{ id, title, icon, meta, geometry }`
+1. a row in `desktop.js` — `{ id, title, icon, meta, geometry }`, or
+   `parent: "work"` instead of `icon` to nest it inside another folder
 2. a `<sc-if value="{{ w.yourId.open }}">` block in `MohitOS.dc.html`
 
 The window manager, the desktop icon, the list view, the mobile list and the
@@ -111,12 +114,12 @@ npm run test:watch    # re-runs on save
 
 | File | What it protects |
 | --- | --- |
-| `window-manager.test.js` | stacking, clamping, drag limits, immutability |
+| `window-manager.test.js` | stacking, clamping, drag limits, resize, zoom, immutability |
 | `core.test.js` | menus, shortcuts, clipboard fallbacks, storage failures |
 | `content.test.js` | the validator actually catches broken content |
 | `view-model.test.js` | state → render values |
 | `template.test.js` | every `{{ hole }}` in the template still resolves |
-| `smoke.test.js` | boots the real page in jsdom and clicks through it |
+| `smoke.test.js` | boots the real page in jsdom and clicks through it, including the résumé's screen-vs-print split |
 
 `template.test.js` is the one that matters when refactoring: a hole that no
 longer resolves is a silently blank window in the browser, and it turns that

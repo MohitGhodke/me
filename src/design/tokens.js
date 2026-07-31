@@ -114,7 +114,13 @@
     minTouchTarget: 44,
     /** Gap kept between a window and the edges of the stage. */
     stageGutter: 24,
-    desktopIconWidth: 104
+    desktopIconWidth: 104,
+    /** A window can be dragged down to this, but no smaller: the chrome and a
+     *  line or two of content still have to fit. */
+    minWindowWidth: 280,
+    minWindowHeight: 160,
+    /** The grow handle in a window's bottom-right corner. */
+    resizeGripSize: 16
   };
 
   var api = {

@@ -54,19 +54,67 @@
       problems.push("resume.roles must list at least one role");
     } else {
       c.resume.roles.forEach(function (role, i) {
-        requireFields(role, ["title", "company", "period", "description"], "resume.roles[" + i + "]");
+        var at = "resume.roles[" + i + "]";
+        requireFields(role, ["title", "company", "period"], at);
+        if (!isStringArray(role.stack)) {
+          problems.push(at + ".stack must be a non-empty list of technologies");
+        }
+        // Optional: a role only carries a line when there is something real to
+        // say. Present-and-blank would render an empty paragraph.
+        if (role.description != null && !isNonEmptyString(role.description)) {
+          problems.push(at + ".description must be a non-empty string when present");
+        }
       });
     }
 
-    if (!Array.isArray(c.projects) || !c.projects.length) {
-      problems.push("projects must list at least one case study");
+    // Each résumé section opens a window and prints that window's contents, so
+    // a section pointing at nothing would be a dead row and a gap in the PDF.
+    if (!Array.isArray(c.resume.sections)) {
+      problems.push("resume.sections must be a list");
     } else {
-      c.projects.forEach(function (p, i) {
-        requireFields(p, ["file", "title", "meta", "summary"], "projects[" + i + "]");
-        if (!isStringArray(p.outcomes)) problems.push("projects[" + i + "].outcomes must be a non-empty list of strings");
-        if (!isStringArray(p.tags)) problems.push("projects[" + i + "].tags must be a non-empty list of strings");
+      var resumeWindowIds = c.desktop.windows.map(function (w) { return w.id; });
+      c.resume.sections.forEach(function (sec, i) {
+        var at = "resume.sections[" + i + "]";
+        requireFields(sec, ["window", "label", "summary"], at);
+        if (sec.window && resumeWindowIds.indexOf(sec.window) === -1) {
+          problems.push(at + ' opens unknown window "' + sec.window + '"');
+        }
       });
     }
+
+    /**
+     * Case studies, extensions and apps are the same shape and share one detail
+     * window, so they share one check — a new folder of them costs a line.
+     *
+     * `noun` non-null means the collection is the only thing in its folder, so
+     * an empty one would render an empty window and is a mistake. `projects`
+     * passes null: the Work folder still has the folders nested inside it, so
+     * having no case studies yet is a legitimate state, not a broken one.
+     */
+    function validateItems(list, where, noun) {
+      if (!Array.isArray(list)) {
+        problems.push(where + " must be a list");
+        return;
+      }
+      if (noun && !list.length) {
+        problems.push(where + " must list at least one " + noun);
+        return;
+      }
+      list.forEach(function (p, i) {
+        var at = where + "[" + i + "]";
+        requireFields(p, ["file", "title", "meta", "summary"], at);
+        if (!isStringArray(p.outcomes)) problems.push(at + ".outcomes must be a non-empty list of strings");
+        if (!isStringArray(p.tags)) problems.push(at + ".tags must be a non-empty list of strings");
+        // Optional, but a blank or relative `repo` would render a dead button.
+        if (p.repo != null && !/^https?:\/\/\S+$/.test(p.repo)) {
+          problems.push(at + ".repo must be an absolute http(s) URL");
+        }
+      });
+    }
+
+    validateItems(c.projects, "projects", null);
+    validateItems(c.extensions, "extensions", "extension");
+    validateItems(c.apps, "apps", "app");
 
     requireFields(c.about, ["greeting"], "about");
     if (!isStringArray(c.about.paragraphs)) problems.push("about.paragraphs must be a non-empty list of strings");
@@ -78,6 +126,10 @@
         requireFields(g, ["heading", "kind"], "skills.groups[" + i + "]");
         if (g.kind !== "chips" && g.kind !== "lines") {
           problems.push('skills.groups[' + i + '].kind must be "chips" or "lines"');
+        }
+        // Optional, but present-and-blank would render an empty paragraph.
+        if (g.note != null && !isNonEmptyString(g.note)) {
+          problems.push("skills.groups[" + i + "].note must be a non-empty string when present");
         }
         if (!isStringArray(g.items)) problems.push("skills.groups[" + i + "].items must be a non-empty list of strings");
       });
@@ -102,6 +154,17 @@
       }
       if (w.icon && ["doc", "folder", "app"].indexOf(w.icon) === -1) {
         problems.push('desktop.windows[' + i + '].icon must be "doc", "folder" or "app"');
+      }
+    });
+
+    // Checked after the loop, so a `parent` may name a window declared later.
+    var windowIds = c.desktop.windows.map(function (w) { return w.id; });
+    c.desktop.windows.forEach(function (w, i) {
+      if (w.parent == null) return;
+      if (windowIds.indexOf(w.parent) === -1) {
+        problems.push('desktop.windows[' + i + '].parent points at unknown window "' + w.parent + '"');
+      } else if (w.parent === w.id) {
+        problems.push("desktop.windows[" + i + "] cannot be its own parent");
       }
     });
 
@@ -140,6 +203,8 @@
       site: parts.site,
       resume: parts.resume,
       projects: parts.projects,
+      extensions: parts.extensions,
+      apps: parts.apps,
       about: parts.about,
       skills: parts.skills,
       playground: parts.playground,
@@ -160,6 +225,8 @@
     site: req("site", "./site.js"),
     resume: req("resume", "./resume.js"),
     projects: req("projects", "./projects.js"),
+    extensions: req("extensions", "./extensions.js"),
+    apps: req("apps", "./apps.js"),
     about: req("about", "./about.js"),
     skills: req("skills", "./skills.js"),
     playground: req("playground", "./playground.js"),

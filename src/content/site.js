@@ -4,7 +4,8 @@
  * Everything here is plain data. Nothing in this file affects layout; change a
  * value, reload the page, done.
  *
- * ⚠︎ PLACEHOLDER: `links` and `location` still hold sample values.
+ * ⚠︎ PLACEHOLDER: the Writing URL in `links` is still a guess — point it at a
+ * real page or delete the entry.
  */
 ;(function (global) {
   "use strict";
@@ -12,8 +13,8 @@
   var site = {
     name: "Mohit Ghodke",
     role: "Lead Software Engineer",
-    location: "Pune, IN",                                    // PLACEHOLDER
-    email: "hello@mohitghodke.com",
+    location: "Pune, IN",
+    email: "mohitghodke@gmail.com",
     url: "https://mohitghodke.com",
 
     /** Shown on the wallpaper under the OS name. */
@@ -32,10 +33,14 @@
     /**
      * Profile links. `id` is referenced by menus and the contact window, so
      * rename with care; `url` and `label` are free.
+     *
+     * `onResume` puts the link in the résumé header, next to the email — where
+     * a reader looks first and where it also has to survive being printed.
+     * Leave it off anything you wouldn't want on a PDF.
      */
     links: [
-      { id: "github", label: "GitHub", url: "https://github.com/MohitGhodke" },       // PLACEHOLDER
-      { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/" },        // PLACEHOLDER
+      { id: "github", label: "GitHub", url: "https://github.com/MohitGhodke", onResume: true },
+      { id: "linkedin", label: "LinkedIn", url: "https://www.linkedin.com/in/mohit-ghodke-41754215/", onResume: true },
       { id: "writing", label: "Writing", url: "https://mohitghodke.com/writing" }     // PLACEHOLDER
     ],
 

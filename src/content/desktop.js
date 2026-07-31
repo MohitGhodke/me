@@ -18,6 +18,7 @@
    * @property {string}  title      shown in the title bar
    * @property {string=} icon       "doc" | "folder" | "app" — omit to hide from the desktop
    * @property {string=} meta       subtitle in list view and on mobile
+   * @property {string=} parent     id of a folder window this one sits inside
    * @property {object}  geometry   default frame { w, h, x, y } in CSS px
    */
   var windows = [
@@ -25,29 +26,43 @@
       id: "resume",
       title: "Resume.doc",
       icon: "doc",
-      meta: "9 years, one page",
-      geometry: { w: 580, h: 540, x: 90, y: 60 }
+      meta: "13 years, one page",
+      geometry: { w: 580, h: 820, x: 90, y: 30 }
     },
     {
       id: "work",
       title: "Work",
       icon: "folder",
-      meta: "4 case studies",
+      meta: "Extensions and iOS apps",
       geometry: { w: 520, h: 320, x: 150, y: 120 }
+    },
+    // Lives inside the Work folder rather than on the desktop: `parent` puts a
+    // folder icon in that window, and omitting `icon` keeps it off the desktop.
+    {
+      id: "extensions",
+      title: "VS Code Extensions",
+      parent: "work",
+      geometry: { w: 540, h: 340, x: 180, y: 160 }
+    },
+    {
+      id: "apps",
+      title: "iOS Apps",
+      parent: "work",
+      geometry: { w: 500, h: 320, x: 210, y: 190 }
     },
     {
       id: "about",
       title: "About Me.txt",
       icon: "doc",
       meta: "Who I am",
-      geometry: { w: 460, h: 400, x: 190, y: 150 }
+      geometry: { w: 500, h: 644, x: 200, y: 76 }
     },
     {
       id: "skills",
       title: "Skills",
       icon: "app",
-      meta: "Languages, platform, leading",
-      geometry: { w: 430, h: 470, x: 260, y: 90 }
+      meta: "AI, backend, front end",
+      geometry: { w: 470, h: 716, x: 240, y: 48 }
     },
     {
       id: "play",
@@ -63,11 +78,12 @@
       meta: "Get in touch",
       geometry: { w: 430, h: 470, x: 300, y: 120 }
     },
-    // Opened from inside the Work folder, so it has no desktop icon.
+    // The shared detail window. Opened from inside either folder, so it has no
+    // desktop icon of its own; its title bar shows whichever file was clicked.
     {
       id: "project",
-      title: "Case",
-      geometry: { w: 560, h: 500, x: 220, y: 80 }
+      title: "Details",
+      geometry: { w: 580, h: 690, x: 210, y: 46 }
     }
   ];
 
@@ -101,6 +117,8 @@
       items: [
         { label: "Open Resume", act: "resume", shortcut: "resume" },
         { label: "Open Work Folder", act: "work", shortcut: "work" },
+        { label: "Open VS Code Extensions", act: "extensions", shortcut: "extensions" },
+        { label: "Open iOS Apps", act: "apps" },
         { label: "Open Playground", act: "play" },
         { kind: "separator" },
         { label: "Save Resume as PDF…", act: "print", shortcut: "print" },
@@ -150,6 +168,7 @@
   var shortcuts = [
     { key: "r", mod: true, action: "resume" },
     { key: "w", mod: true, action: "work" },
+    { key: "e", mod: true, action: "extensions" },
     { key: "p", mod: true, action: "print" },
     // Only when nothing is selected, so ⌘C still copies a selection normally.
     { key: "c", mod: true, action: "copymail", requiresNoSelection: true, passive: true }
@@ -160,7 +179,9 @@
     osName: "MOHIT OS 1.0",
     desktopHint: "Double-click an icon to open it.",
     mobileHint: "MOHIT OS 1.0 — tap a row to open it.",
-    workHint: "Double-click to open a case",
+    workHint: "Double-click to open",
+    extensionsHint: "Double-click to read about one",
+    appsHint: "Double-click to read about one",
     listHeader: { name: "Name", kind: "Kind" },
     boot: { title: "Welcome to Mohit OS", status: "Starting up…" },
     shutdown: { message: "It is now safe to close this browser tab.", restart: "Start Up Again" }

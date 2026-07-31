@@ -20,6 +20,17 @@
     return n + " " + noun + (n === 1 ? "" : "s");
   }
 
+  /** Stand-in for the detail window when its collection holds nothing yet. */
+  var EMPTY_ITEM = {
+    file: "",
+    title: "",
+    meta: "",
+    image: "",
+    summary: "",
+    outcomes: [],
+    tags: []
+  };
+
   /**
    * @param {object} content  the assembled content object
    */
@@ -34,6 +45,11 @@
       infoStrip: styles.infoStrip(),
       sectionLabel: styles.sectionLabel(),
       sectionLabelRule: styles.sectionLabel({ rule: true }),
+      sectionNote: styles.sectionNote(),
+      resumeLink: styles.resumeLink(),
+      resumeStack: styles.resumeStack(),
+      resumeSection: styles.resumeSection(),
+      resumeSectionOpen: styles.resumeSectionOpen(),
       // The résumé is the printed artefact; its headings sit one step larger.
       sectionLabelResume: styles.sectionLabel({ size: tokens.size.chrome }),
       chip: styles.chip("solid"),
@@ -115,24 +131,46 @@
     }
 
     /**
-     * Per-window open flag and frame style, keyed by id — so the template says
-     * `{{ w.resume.open }}` and adding a window never touches this function.
+     * Per-window open flag, frame style and chrome, keyed by id — so the
+     * template says `{{ w.resume.open }}` and adding a window never touches
+     * this function.
+     *
+     * The zoom box and the resize grip live here rather than in `s` because
+     * both collapse on mobile, which `s` is built too early to know.
      */
     function buildWindows(ctx) {
       var out = {};
       content.windows.forEach(function (win) {
         var open = ctx.wm.isOpen(ctx.state, win.id);
+        var frame = open ? ctx.wm.frame(ctx.state, win.id) : null;
+        var zoomed = !!(frame && frame.zoomed);
         out[win.id] = {
           open: open,
           title: win.title,
-          style: open ? styles.windowFrame(ctx.wm.frame(ctx.state, win.id), ctx.isMobile) : ""
+          zoomed: zoomed,
+          // The one affordance whose meaning flips with state, so it says which.
+          zoomLabel: (zoomed ? "Restore " : "Zoom ") + win.title,
+          zoomStyle: styles.titleBarZoom(ctx.isMobile),
+          gripStyle: styles.resizeGrip(ctx.isMobile),
+          style: open ? styles.windowFrame(frame, ctx.isMobile) : ""
         };
       });
       return out;
     }
 
-    function buildProject(index) {
-      var p = content.projects[index] || content.projects[0];
+    /**
+     * The one detail window, resolved against whichever folder was opened.
+     * `ref.list` names a content collection — "projects" or "extensions" — so
+     * a new folder of the same shape needs no change here.
+     *
+     * @param {{list: string, index: number}} ref
+     */
+    function buildItem(ref) {
+      var list = content[(ref && ref.list) || "projects"] || content.projects;
+      // A collection can legitimately be empty — no case studies written yet —
+      // and `proj` is built on every render whether the window is open or not,
+      // so resolve to a blank item rather than throwing.
+      var p = list[ref && ref.index] || list[0] || EMPTY_ITEM;
       return {
         file: p.file,
         title: p.title,
@@ -140,8 +178,143 @@
         image: p.image || "",
         summary: p.summary,
         outcomes: p.outcomes,
-        tags: p.tags
+        tags: p.tags,
+        // Shipped work links out to its source; a case study usually can't.
+        repo: p.repo || "",
+        hasRepo: !!p.repo
       };
+    }
+
+    /**
+     * The full contents of a window, flattened for the printed résumé.
+     *
+     * Derived from the same content the window itself renders, so the PDF can
+     * never fall out of step with the site. Every branch returns the same shape
+     * — `{ heading, hasHeading, text }` rows — so the template needs one loop
+     * rather than one block per section.
+     *
+     * @param {string} windowId
+     * @returns {{heading: string, hasHeading: boolean, text: string}[]}
+     */
+    function detailFor(windowId) {
+      var rows = [];
+
+      function row(heading, text) {
+        if (text) rows.push({ heading: heading || "", hasHeading: !!heading, text: text });
+      }
+
+      if (windowId === "skills") {
+        content.skills.groups.forEach(function (g) {
+          var chips = g.items.join(" · ");
+          // A group with a note gets two rows so the prose isn't glued to the
+          // list; without one, the heading sits directly on the list.
+          if (g.note) {
+            row(g.heading, g.note);
+            row("", chips);
+          } else {
+            row(g.heading, chips);
+          }
+        });
+        return rows;
+      }
+
+      // "Work" is a folder, so it prints what the folders inside it hold.
+      if (windowId === "work") {
+        content.extensions
+          .concat(content.apps)
+          .concat(content.projects)
+          .forEach(function (p) {
+            row(p.title, p.meta);
+            row("", p.summary);
+          });
+        return rows;
+      }
+
+      if (windowId === "about") {
+        content.about.paragraphs.forEach(function (para) { row("", para); });
+        return rows;
+      }
+
+      return rows;
+    }
+
+    /**
+     * Résumé roles. The stack is joined here rather than looped in the template
+     * so it stays one line on the page and one line in the PDF.
+     */
+    function buildResumeRoles() {
+      return content.resume.roles.map(function (r) {
+        return {
+          title: r.title,
+          company: r.company,
+          period: r.period,
+          stackLine: (r.stack || []).join(" · "),
+          description: r.description || "",
+          hasDescription: !!r.description
+        };
+      });
+    }
+
+    /** "https://github.com/MohitGhodke" → "github.com/MohitGhodke". */
+    function bareUrl(url) {
+      return url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+    }
+
+    /**
+     * Profile links for the résumé header. The label is what a reader clicks;
+     * the bare URL is what replaces it on paper, where "GitHub" is useless.
+     */
+    function buildResumeLinks() {
+      return content.site.links
+        .filter(function (l) { return l.onResume; })
+        .map(function (l) {
+          return { label: l.label, url: l.url, bare: bareUrl(l.url) };
+        });
+    }
+
+    /** Résumé sections: a summary on screen, the whole window on paper. */
+    function buildResumeSections() {
+      return (content.resume.sections || []).map(function (sec) {
+        return {
+          window: sec.window,
+          label: sec.label,
+          summary: sec.summary,
+          openLabel: "Open " + sec.label + " →",
+          detail: detailFor(sec.window)
+        };
+      });
+    }
+
+    /**
+     * A folder's contents: any window registered as a child of it, then its
+     * files — folders first, the way a file browser sorts them.
+     *
+     * One list with an `isFolder` / `isFile` flag per row lets the template
+     * loop once, so nesting another folder is a `parent` in desktop.js and
+     * nothing here.
+     *
+     * @param {object[]} list    the items in this folder
+     * @param {string}   name    the content collection they came from
+     * @param {string}   ownerId the window id whose children belong here
+     */
+    function buildFolder(list, name, ownerId) {
+      var rows = content.windows
+        .filter(function (w) { return w.parent === ownerId; })
+        .map(function (w) {
+          return { isFolder: true, isFile: false, app: w.id, label: w.title, ref: "" };
+        });
+
+      list.forEach(function (p, i) {
+        rows.push({
+          isFolder: false,
+          isFile: true,
+          app: "",
+          label: p.file,
+          ref: name + ":" + i
+        });
+      });
+
+      return rows;
     }
 
     /**
@@ -152,7 +325,7 @@
      * @param {string|null} ctx.openMenu
      * @param {boolean} ctx.isMobile
      * @param {boolean} ctx.isApplePlatform
-     * @param {number}  ctx.projectIndex
+     * @param {{list: string, index: number}} ctx.item  what the detail window shows
      * @param {string}  ctx.clock
      * @param {string}  ctx.toast
      * @param {boolean} ctx.showBoot
@@ -160,6 +333,9 @@
      */
     function build(ctx) {
       var anyWindowOpen = ctx.wm.anyOpen(ctx.state);
+      var workItems = buildFolder(content.projects, "projects", "work");
+      var extensionItems = buildFolder(content.extensions, "extensions", "extensions");
+      var appItems = buildFolder(content.apps, "apps", "apps");
       var menuCtx = {
         openMenu: ctx.openMenu,
         view: ctx.view,
@@ -181,15 +357,24 @@
         s: s,
         menus: buildMenus(menuCtx),
         icons: buildIcons(),
-        files: content.projects.map(function (p, i) { return { i: i, file: p.file }; }),
-        proj: buildProject(ctx.projectIndex),
+        resumeLinks: buildResumeLinks(),
+        resumeRoles: buildResumeRoles(),
+        resumeSections: buildResumeSections(),
+        workItems: workItems,
+        extensionItems: extensionItems,
+        appItems: appItems,
+        proj: buildItem(ctx.item),
         w: buildWindows(ctx),
         links: content.site.links,
         mailto: mailto,
 
+        // Counted from what the folder actually shows, so the nested folder is
+        // included and the strip can't drift from the grid beside it.
         counts: {
           desktop: plural(content.desktopIcons.length, "item"),
-          work: plural(content.projects.length, "item")
+          work: plural(workItems.length, "item"),
+          extensions: plural(extensionItems.length, "item"),
+          apps: plural(appItems.length, "item")
         },
 
         // Surfaced in the UI as well as the console: a content mistake should be

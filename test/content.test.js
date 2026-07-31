@@ -10,18 +10,24 @@ const assert = require("node:assert/strict");
 
 const { content, validate, assemble } = require("../src/content/index.js");
 
+/** The content files `assemble()` expects — see src/content/index.js. */
+const PARTS = [
+  "site",
+  "resume",
+  "projects",
+  "extensions",
+  "apps",
+  "about",
+  "skills",
+  "playground",
+  "contact",
+  "desktop"
+];
+
 /** A deep copy of the real content, ready to be broken on purpose. */
 function mutate(fn) {
-  const parts = {
-    site: structuredClone(content.site),
-    resume: structuredClone(content.resume),
-    projects: structuredClone(content.projects),
-    about: structuredClone(content.about),
-    skills: structuredClone(content.skills),
-    playground: structuredClone(content.playground),
-    contact: structuredClone(content.contact),
-    desktop: structuredClone(content.desktop)
-  };
+  const parts = {};
+  for (const key of PARTS) parts[key] = structuredClone(content[key]);
   fn(parts);
   return validate(assemble(parts));
 }
@@ -30,9 +36,20 @@ test("the shipped content passes validation", () => {
   assert.deepEqual(content.problems, []);
 });
 
+// The canary for every test below: they all mutate a copy built from PARTS, so
+// a content file missing from that list makes them fail for the wrong reason.
+// This names the real cause instead.
+test("the test helper copies every content file the app assembles", () => {
+  assert.deepEqual(
+    mutate(() => {}),
+    [],
+    "an untouched copy must validate — add any new content file to PARTS"
+  );
+});
+
 test("a missing field is reported with its path", () => {
-  const problems = mutate((c) => { delete c.projects[1].summary; });
-  assert.ok(problems.some((p) => p.includes("projects[1]") && p.includes("summary")), problems.join("; "));
+  const problems = mutate((c) => { delete c.extensions[1].summary; });
+  assert.ok(problems.some((p) => p.includes("extensions[1]") && p.includes("summary")), problems.join("; "));
 });
 
 test("an empty string counts as missing", () => {
@@ -41,13 +58,104 @@ test("an empty string counts as missing", () => {
 });
 
 test("outcomes and tags must be lists of strings", () => {
-  const problems = mutate((c) => { c.projects[0].tags = "Go, Kafka"; });
-  assert.ok(problems.some((p) => p.includes("projects[0].tags")));
+  const problems = mutate((c) => { c.extensions[0].tags = "TypeScript, MCP"; });
+  assert.ok(problems.some((p) => p.includes("extensions[0].tags")));
+});
+
+test("having no case studies yet is allowed; an empty extensions folder is not", () => {
+  // Work still shows the folders nested inside it, so an empty list is fine.
+  assert.deepEqual(mutate((c) => { c.projects.length = 0; }), []);
+
+  // The extensions folder has nothing else in it, so emptying it is a mistake.
+  assert.ok(
+    mutate((c) => { c.extensions.length = 0; })
+      .some((p) => p.includes("extensions must list at least one"))
+  );
+
+  // Not a list at all is a mistake either way.
+  assert.ok(mutate((c) => { c.projects = null; }).some((p) => p.includes("projects must be a list")));
+});
+
+test("a case study added later is held to the same shape", () => {
+  const problems = mutate((c) => { c.projects.push({ file: "new.case" }); });
+  ["title", "meta", "summary"].forEach((field) =>
+    assert.ok(
+      problems.some((p) => p.includes("projects[0]") && p.includes(field)),
+      `projects[0] should have been flagged for ${field}: ${problems.join("; ")}`
+    )
+  );
+});
+
+test("a repo link is optional, but must be a real URL when present", () => {
+  assert.deepEqual(mutate((c) => { delete c.extensions[0].repo; }), [], "omitting it is fine");
+
+  for (const bad of ["", "  ", "github.com/me/thing", "/repos/thing"]) {
+    const problems = mutate((c) => { c.extensions[0].repo = bad; });
+    assert.ok(
+      problems.some((p) => p.includes("extensions[0].repo")),
+      `"${bad}" should have been rejected, got: ${problems.join("; ")}`
+    );
+  }
+});
+
+test("a role needs a stack; its description is optional", () => {
+  assert.ok(
+    mutate((c) => { delete c.resume.roles[0].stack; })
+      .some((p) => p.includes("resume.roles[0].stack")),
+    "a role with no technologies should be caught"
+  );
+  assert.ok(
+    mutate((c) => { c.resume.roles[0].stack = "C#, Angular"; })
+      .some((p) => p.includes("resume.roles[0].stack")),
+    "the stack must be a list, not a string"
+  );
+
+  // No role carries a description yet, and that is a valid state.
+  assert.deepEqual(mutate(() => {}), []);
+  assert.ok(
+    mutate((c) => { c.resume.roles[0].description = "  "; })
+      .some((p) => p.includes("resume.roles[0].description")),
+    "a blank description should be caught rather than rendered empty"
+  );
+});
+
+test("a résumé section must open a window that exists", () => {
+  const problems = mutate((c) => { c.resume.sections[0].window = "writing"; });
+  assert.ok(
+    problems.some((p) => p.includes("resume.sections[0]") && p.includes("writing")),
+    problems.join("; ")
+  );
+
+  ["window", "label", "summary"].forEach((field) => {
+    assert.ok(
+      mutate((c) => { delete c.resume.sections[0][field]; })
+        .some((p) => p.includes("resume.sections[0]") && p.includes(field)),
+      `a section missing \`${field}\` should be caught`
+    );
+  });
+
+  // Having none is fine — the résumé just stops offering anywhere to go.
+  assert.deepEqual(mutate((c) => { c.resume.sections.length = 0; }), []);
 });
 
 test("a skill group with an unknown kind is rejected", () => {
   const problems = mutate((c) => { c.skills.groups[0].kind = "table"; });
   assert.ok(problems.some((p) => p.includes("skills.groups[0].kind")));
+});
+
+test("a skill group's note is optional, but not allowed to be blank", () => {
+  const noted = content.skills.groups.filter((g) => g.note);
+  assert.notEqual(noted.length, 0, "at least one section should explain itself");
+
+  assert.deepEqual(mutate((c) => { delete c.skills.groups[0].note; }), [], "omitting it is fine");
+
+  for (const bad of ["", "   "]) {
+    assert.ok(
+      mutate((c) => { c.skills.groups[0].note = bad; })
+        .some((p) => p.includes("skills.groups[0].note")),
+      `"${bad}" should have been rejected`
+    );
+  }
 });
 
 test("two windows may not share an id", () => {

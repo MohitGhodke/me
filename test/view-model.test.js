@@ -29,6 +29,58 @@ test("on mobile a window fills the stage instead of floating", () => {
   assert.doesNotMatch(vals.w.resume.style, /left:\d+px/);
 });
 
+test("a zoomed window loses the rounding and the shadow it has nothing to cast on", () => {
+  const wm = windowManager();
+  const open = wm.open(wm.empty(), "resume");
+
+  const floating = buildVals({ wm, state: open }).w.resume.style;
+  assert.match(floating, /box-shadow/);
+
+  const zoomed = buildVals({ wm, state: wm.toggleZoom(open, "resume") }).w.resume.style;
+  assert.doesNotMatch(zoomed, /box-shadow/);
+  assert.doesNotMatch(zoomed, /border-radius/);
+  assert.match(zoomed, /left:0px;top:0px/);
+});
+
+test("the zoom box says which way it will go", () => {
+  const wm = windowManager();
+  const open = wm.open(wm.empty(), "resume");
+
+  assert.equal(buildVals({ wm, state: open }).w.resume.zoomed, false);
+  assert.match(buildVals({ wm, state: open }).w.resume.zoomLabel, /^Zoom /);
+
+  const zoomed = buildVals({ wm, state: wm.toggleZoom(open, "resume") }).w.resume;
+  assert.equal(zoomed.zoomed, true);
+  assert.match(zoomed.zoomLabel, /^Restore /);
+});
+
+test("the zoom box and the resize grip collapse on mobile", () => {
+  const wm = windowManager();
+  const state = wm.open(wm.empty(), "resume");
+
+  const desktop = buildVals({ wm, state }).w.resume;
+  assert.match(desktop.gripStyle, /cursor:nwse-resize/);
+  assert.match(desktop.zoomStyle, /cursor:pointer/);
+
+  const mobile = buildVals({ wm, state, isMobile: true }).w.resume;
+  assert.equal(mobile.gripStyle, "display:none;");
+  assert.equal(mobile.zoomStyle, "display:none;");
+});
+
+test("an item only offers a source link when it has a repo", () => {
+  // Every extension is public, so every one of them links out.
+  content.extensions.forEach((_, i) => {
+    const shipped = buildVals({ item: { list: "extensions", index: i } }).proj;
+    assert.equal(shipped.hasRepo, true, `extensions[${i}] should link to its repo`);
+    assert.match(shipped.repo, /^https:\/\//);
+  });
+
+  // Anything that does not resolve offers no button rather than a dead one.
+  const blank = buildVals({ item: { list: "projects", index: 0 } }).proj;
+  assert.equal(blank.hasRepo, false);
+  assert.equal(blank.repo, "");
+});
+
 test("only the open menu is marked open", () => {
   const vals = buildVals({ openMenu: "file" });
   const open = vals.menus.filter((m) => m.open).map((m) => m.id);
@@ -85,16 +137,178 @@ test("desktop icons follow the registry, one kind flag each", () => {
 
 test("icon and file counts are pluralised from the content", () => {
   const vals = buildVals();
-  assert.equal(vals.counts.work, content.projects.length + " items");
-  assert.equal(vals.counts.desktop, content.desktopIcons.length + " items");
+  const items = (n) => `${n} item${n === 1 ? "" : "s"}`;
+  // Work holds its case studies plus the folders nested inside it.
+  assert.equal(vals.counts.work, items(vals.workItems.length));
+  assert.equal(vals.counts.desktop, items(content.desktopIcons.length));
+  assert.equal(vals.counts.extensions, items(content.extensions.length));
 });
 
-test("the case-study window follows the selected project", () => {
-  assert.equal(buildVals({ projectIndex: 2 }).proj.file, content.projects[2].file);
+test("the detail window follows the selected item", () => {
+  content.extensions.forEach((x, i) => {
+    assert.equal(buildVals({ item: { list: "extensions", index: i } }).proj.file, x.file);
+  });
 });
 
-test("an out-of-range project index falls back to the first case", () => {
-  assert.equal(buildVals({ projectIndex: 99 }).proj.file, content.projects[0].file);
+test("an item that cannot be resolved renders blank instead of throwing", () => {
+  // `proj` is built on every render, open or not, so none of these may throw —
+  // including the default state pointing at a collection with nothing in it.
+  const cases = [
+    { list: "extensions", index: 99 },
+    { list: "projects", index: 0 },   // no case studies written yet
+    { list: "nope", index: 0 },       // a collection that does not exist
+    undefined
+  ];
+
+  for (const item of cases) {
+    const proj = buildVals({ item }).proj;
+    assert.equal(typeof proj.file, "string", `${JSON.stringify(item)} should still build`);
+    assert.ok(Array.isArray(proj.outcomes), "outcomes must stay loopable");
+    assert.ok(Array.isArray(proj.tags), "tags must stay loopable");
+  }
+
+  // An out-of-range index within a populated collection still shows something.
+  assert.equal(
+    buildVals({ item: { list: "extensions", index: 99 } }).proj.file,
+    content.extensions[0].file
+  );
+});
+
+test("the Work folder lists its nested folders first, then its case studies", () => {
+  const vals = buildVals();
+  const nested = content.windows.filter((w) => w.parent === "work");
+  assert.notEqual(nested.length, 0, "the extensions folder should be nested in Work");
+
+  const folders = vals.workItems.filter((r) => r.isFolder);
+  const files = vals.workItems.filter((r) => r.isFile);
+
+  assert.deepEqual(folders.map((r) => r.app), nested.map((w) => w.id));
+  assert.deepEqual(folders.map((r) => r.label), nested.map((w) => w.title));
+  assert.deepEqual(files.map((r) => r.ref), content.projects.map((_, i) => `projects:${i}`));
+
+  // Folders come before files, and every row is exactly one of the two.
+  assert.deepEqual(
+    vals.workItems.map((r) => r.isFolder),
+    [...folders.map(() => true), ...files.map(() => false)]
+  );
+  vals.workItems.forEach((r) => assert.notEqual(r.isFolder, r.isFile));
+
+  // The strip counts what the grid shows, nested folder included.
+  const shown = nested.length + content.projects.length;
+  assert.equal(vals.counts.work, `${shown} item${shown === 1 ? "" : "s"}`);
+});
+
+test("the extensions folder holds only files, tagged with their collection", () => {
+  const vals = buildVals();
+
+  assert.deepEqual(
+    vals.extensionItems.map((r) => r.label),
+    content.extensions.map((x) => x.file)
+  );
+  assert.deepEqual(
+    vals.extensionItems.map((r) => r.ref),
+    content.extensions.map((_, i) => `extensions:${i}`)
+  );
+  assert.ok(vals.extensionItems.every((r) => r.isFile), "nothing is nested inside it yet");
+  assert.equal(vals.counts.extensions, `${content.extensions.length} items`);
+});
+
+test("the iOS Apps folder holds its apps, tagged with their collection", () => {
+  const vals = buildVals();
+
+  assert.deepEqual(
+    vals.appItems.map((r) => r.label),
+    content.apps.map((a) => a.file)
+  );
+  assert.deepEqual(
+    vals.appItems.map((r) => r.ref),
+    content.apps.map((_, i) => `apps:${i}`)
+  );
+  assert.ok(vals.appItems.every((r) => r.isFile), "nothing is nested inside it yet");
+});
+
+test("every nested folder is reachable only through Work", () => {
+  const onDesktop = buildVals().icons.map((i) => i.id);
+  const nested = content.windows.filter((w) => w.parent === "work").map((w) => w.id);
+
+  assert.deepEqual(nested, ["extensions", "apps"], "both folders should be nested in Work");
+  nested.forEach((id) =>
+    assert.ok(!onDesktop.includes(id), `"${id}" should not have a desktop icon`)
+  );
+  assert.ok(onDesktop.includes("work"), "Work is what the visitor opens first");
+});
+
+test("every role renders its stack as one line, description only when there is one", () => {
+  const vals = buildVals();
+  assert.equal(vals.resumeRoles.length, content.resume.roles.length);
+
+  vals.resumeRoles.forEach((role, i) => {
+    const source = content.resume.roles[i];
+    assert.equal(role.stackLine, source.stack.join(" · "), "the stack should read as one line");
+    source.stack.forEach((tech) =>
+      assert.ok(role.stackLine.includes(tech), `"${tech}" missing from the role line`)
+    );
+    assert.equal(role.hasDescription, !!source.description);
+    if (!source.description) {
+      assert.equal(role.description, "", "no description means nothing to render");
+    }
+  });
+});
+
+test("every résumé section opens a real window and carries printable detail", () => {
+  const vals = buildVals();
+  const windowIds = content.windows.map((w) => w.id);
+
+  assert.notEqual(vals.resumeSections.length, 0, "the résumé should have sections");
+
+  vals.resumeSections.forEach((sec) => {
+    assert.ok(windowIds.includes(sec.window), `"${sec.window}" is not a window`);
+    assert.ok(sec.label && sec.summary, "a section needs a label and a summary");
+    assert.match(sec.openLabel, /^Open .+ →$/);
+
+    // Every detail row is the same shape, which is what lets one loop render it.
+    assert.notEqual(sec.detail.length, 0, `"${sec.label}" prints nothing`);
+    sec.detail.forEach((row) => {
+      assert.equal(typeof row.text, "string");
+      assert.ok(row.text.trim(), "a printed row must carry text");
+      assert.equal(row.hasHeading, !!row.heading);
+    });
+  });
+});
+
+test("the printed résumé carries what its windows show, not a second copy", () => {
+  const vals = buildVals();
+  const textOf = (label) =>
+    vals.resumeSections.find((s) => s.label === label).detail.map((r) => r.heading + " " + r.text).join("\n");
+
+  // Skills: every group heading and every chip has to survive into the PDF.
+  const skills = textOf("Skills");
+  content.skills.groups.forEach((g) => {
+    assert.ok(skills.includes(g.heading), `"${g.heading}" missing from the printed résumé`);
+    g.items.forEach((item) =>
+      assert.ok(skills.includes(item), `skill "${item}" missing from the printed résumé`)
+    );
+    if (g.note) assert.ok(skills.includes(g.note), `the ${g.heading} note is missing`);
+  });
+
+  // Work: every extension and app, by title and summary.
+  const work = textOf("Selected work");
+  content.extensions.concat(content.apps).forEach((p) => {
+    assert.ok(work.includes(p.title), `"${p.title}" missing from the printed résumé`);
+    assert.ok(work.includes(p.summary), `the summary for "${p.title}" is missing`);
+  });
+});
+
+test("each collection resolves through the one detail window", () => {
+  // The folders differ; the window they open does not.
+  for (const [list, items] of [["extensions", content.extensions], ["apps", content.apps]]) {
+    items.forEach((item, i) => {
+      const proj = buildVals({ item: { list, index: i } }).proj;
+      assert.equal(proj.file, item.file, `${list}:${i} should render its own file`);
+      assert.equal(proj.title, item.title);
+      assert.deepEqual(proj.tags, item.tags);
+    });
+  }
 });
 
 test("icons and list view are mutually exclusive, and neither shows on mobile", () => {

@@ -32,6 +32,8 @@
 <script src="./src/content/site.js"></script>
 <script src="./src/content/resume.js"></script>
 <script src="./src/content/projects.js"></script>
+<script src="./src/content/extensions.js"></script>
+<script src="./src/content/apps.js"></script>
 <script src="./src/content/about.js"></script>
 <script src="./src/content/skills.js"></script>
 <script src="./src/content/playground.js"></script>
@@ -46,7 +48,7 @@
     <h1>Mohit Ghodke</h1>
     <p>Lead Software Engineer — systems, platform, scale.</p>
     <p>This portfolio is an interactive desktop and needs JavaScript. You can still
-      reach me at <a href="mailto:hello@mohitghodke.com">hello@mohitghodke.com</a>.</p>
+      reach me at <a href="mailto:mohitghodke@gmail.com">mohitghodke@gmail.com</a>.</p>
   </div>
 </noscript>
 <x-dc>
@@ -88,6 +90,10 @@
     *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
 
+  /* Detail that belongs only on the printed résumé: the site navigates to it,
+     the PDF has to carry it. Hidden on screen, expanded by the print rules. */
+  [data-print="only"] { display: none; }
+
   @media print {
     body { background: #fff !important; }
     [data-print="root"] { position: static !important; inset: auto !important; height: auto !important; background: #fff !important; background-image: none !important; }
@@ -97,7 +103,15 @@
     [data-print="doc"] { position: static !important; width: auto !important; height: auto !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important; overflow: visible !important; animation: none !important; }
     [data-print="doc"] > [data-print="chrome"] { display: none !important; }
     [data-print="doc"] [data-print="hide"] { display: none !important; }
+    /* `revert` restores each element's natural display — block for the section
+       detail, inline for a URL sitting inside a link. */
+    [data-print="doc"] [data-print="only"] { display: revert !important; }
+    [data-print="doc"] .mos-print-stack { display: flex !important; flex-direction: column; gap: 10px; }
     [data-print="doc"] [data-print="body"] { overflow: visible !important; padding: 0 !important; }
+    /* A section is a link on screen and a plain block on paper. */
+    [data-print="doc"] [role="button"] { cursor: auto !important; border-color: transparent !important; background: none !important; }
+    /* Don't split a section across a page break if it can be helped. */
+    [data-print="doc"] [data-print="only"] > * { break-inside: avoid; }
   }
 </style>
 </helmet>
@@ -238,15 +252,26 @@
     <!-- ================================================== window: Resume.doc -->
     <sc-if value="{{ w.resume.open }}" hint-placeholder-val="{{ false }}">
       <div data-print="doc" style="{{ w.resume.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="resume" data-print="chrome" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="resume" data-print="chrome" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="Close Resume" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.resume.title }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="{{ w.resume.zoomLabel }}" style="{{ w.resume.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="resume" data-print="hide" aria-hidden="true" style="{{ w.resume.gripStyle }}"></div>
         <div data-print="body" class="mos-selectable" style="{{ s.windowBodyResume }}">
           <div style="display: flex; flex-direction: column; gap: 4px; padding-bottom: 14px; border-bottom: 2px solid #1b1a18;">
             <div style="font-family: Silkscreen, monospace; font-size: 20px; letter-spacing: -0.01em;">{{ site.name }}</div>
             <div style="font-size: 13px; opacity: 0.75;">{{ site.role }} · {{ site.location }} · <a href="{{ mailto }}">{{ site.email }}</a></div>
+            <!-- Where a reader goes next. On paper the label gives way to the
+                 URL, because "GitHub" is not much use printed out. -->
+            <div style="display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px;">
+              <sc-for list="{{ resumeLinks }}" as="ln" hint-placeholder-count="2">
+                <a href="{{ ln.url }}" target="_blank" rel="noopener noreferrer"
+                   style="{{ s.resumeLink }}" style-hover="background:#1b1a18;color:#f5f2e8;">
+                  <span data-print="hide">{{ ln.label }}</span><span data-print="only">{{ ln.bare }}</span>
+                </a>
+              </sc-for>
+            </div>
           </div>
           <div style="display: flex; flex-direction: column; gap: 22px; padding-top: 18px;">
 
@@ -257,13 +282,44 @@
 
             <div style="display: flex; flex-direction: column; gap: 12px;">
               <div style="{{ s.sectionLabelResume }}">Experience</div>
-              <sc-for list="{{ resume.roles }}" as="r" hint-placeholder-count="3">
+              <sc-for list="{{ resumeRoles }}" as="r" hint-placeholder-count="3">
                 <div style="display: flex; flex-direction: column; gap: 5px;">
                   <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; font-weight: 600;"><span>{{ r.title }} — {{ r.company }}</span><span style="opacity: 0.6; font-weight: 400; white-space: nowrap;">{{ r.period }}</span></div>
-                  <div style="font-size: 13px; line-height: 1.6; opacity: 0.85;">{{ r.description }}</div>
+                  <sc-if value="{{ r.hasDescription }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size: 13px; line-height: 1.6; opacity: 0.85;">{{ r.description }}</div>
+                  </sc-if>
+                  <div style="{{ s.resumeStack }}">{{ r.stackLine }}</div>
                 </div>
               </sc-for>
             </div>
+
+            <!-- Sections that stay short here and open a window for the rest.
+                 On paper the "Open …" chip drops out and `data-print="only"`
+                 expands to everything that window holds, so the PDF is complete
+                 while the page stays readable. -->
+            <sc-for list="{{ resumeSections }}" as="sec" hint-placeholder-count="2">
+              <div onClick="{{ handleOpen }}" onKeyDown="{{ keyOpen }}" data-app="{{ sec.window }}"
+                   role="button" tabIndex="0" aria-label="{{ sec.openLabel }}"
+                   style="{{ s.resumeSection }}"
+                   style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.04);">
+                <div style="{{ s.sectionLabelResume }}">{{ sec.label }}</div>
+                <div style="font-size: 13.5px; line-height: 1.65; text-wrap: pretty;">{{ sec.summary }}</div>
+                <div data-print="hide" style="{{ s.resumeSectionOpen }}">{{ sec.openLabel }}</div>
+
+                <!-- No inline `display` here: it would outrank the stylesheet
+                     rule that keeps this hidden until the page is printed. -->
+                <div data-print="only" class="mos-print-stack" style="padding-top: 4px;">
+                  <sc-for list="{{ sec.detail }}" as="d" hint-placeholder-count="3">
+                    <div style="display: flex; flex-direction: column; gap: 3px;">
+                      <sc-if value="{{ d.hasHeading }}" hint-placeholder-val="{{ true }}">
+                        <div style="font-size: 13px; font-weight: 600;">{{ d.heading }}</div>
+                      </sc-if>
+                      <div style="font-size: 12.5px; line-height: 1.6; opacity: 0.85;">{{ d.text }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
 
             <div style="display: flex; flex-direction: column; gap: 8px;">
               <div style="{{ s.sectionLabelResume }}">Education</div>
@@ -284,39 +340,121 @@
     <!-- ======================================================= window: Work -->
     <sc-if value="{{ w.work.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.work.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="work" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="work" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="Close Work" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.work.title }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="{{ w.work.zoomLabel }}" style="{{ w.work.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="work" aria-hidden="true" style="{{ w.work.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>{{ counts.work }}</span><span>{{ shell.workHint }}</span>
         </div>
         <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; align-content: start;">
-          <sc-for list="{{ files }}" as="p" hint-placeholder-count="4">
-            <div onDoubleClick="{{ launchProject }}" onClick="{{ tapProject }}" onKeyDown="{{ keyOpenProject }}"
-                 data-proj="{{ p.i }}" tabIndex="0" aria-label="{{ p.file }}"
+          <sc-for list="{{ workItems }}" as="p" hint-placeholder-count="5">
+            <!-- A nested folder — opens its own window, like the desktop icons do. -->
+            <sc-if value="{{ p.isFolder }}" hint-placeholder-val="{{ true }}">
+              <div onDoubleClick="{{ handleOpen }}" onClick="{{ handleTap }}" onKeyDown="{{ keyOpen }}"
+                   data-app="{{ p.app }}" tabIndex="0" aria-label="{{ p.label }}"
+                   style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
+                   style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
+                <div style="position: relative; width: 40px; height: 40px;">
+                  <div style="position: absolute; top: 2px; left: 0; width: 18px; height: 7px; border: 2px solid #1b1a18; border-bottom: none; border-radius: 3px 3px 0 0; background: #fdfbf4;"></div>
+                  <div style="position: absolute; top: 7px; left: 0; width: 40px; height: 28px; border: 2px solid #1b1a18; border-radius: 0 3px 3px 3px; background: #fdfbf4; box-shadow: inset 0 -6px 0 rgba(27,26,24,0.07);"></div>
+                </div>
+                <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ p.label }}</div>
+              </div>
+            </sc-if>
+
+            <!-- A case study — opens the shared detail window. -->
+            <sc-if value="{{ p.isFile }}" hint-placeholder-val="{{ true }}">
+              <div onDoubleClick="{{ launchItem }}" onClick="{{ tapItem }}" onKeyDown="{{ keyOpenItem }}"
+                   data-item="{{ p.ref }}" tabIndex="0" aria-label="{{ p.label }}"
+                   style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
+                   style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
+                <div style="position: relative; width: 32px; height: 40px; border: 2px solid #1b1a18; border-radius: 2px; background: #fdfbf4; overflow: hidden;">
+                  <div style="position: absolute; inset: 6px 5px auto 5px; height: 12px; background: repeating-linear-gradient(45deg, rgba(27,26,24,0.5) 0 2px, transparent 2px 4px);"></div>
+                  <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #f5f2e8; border-left: 2px solid #1b1a18; border-bottom: 2px solid #1b1a18;"></div>
+                </div>
+                <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ p.label }}</div>
+              </div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ========================================= window: VS Code Extensions
+         Same folder shape as Work, pointing at extensions.js. The icons carry
+         a `.vsix` badge so the kind is legible before anything is opened. -->
+    <sc-if value="{{ w.extensions.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.extensions.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="extensions" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="Close VS Code Extensions" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.extensions.title }}</div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="{{ w.extensions.zoomLabel }}" style="{{ w.extensions.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+        </div>
+        <div onMouseDown="{{ startResize }}" data-win="extensions" aria-hidden="true" style="{{ w.extensions.gripStyle }}"></div>
+        <div style="{{ s.infoStrip }}">
+          <span>{{ counts.extensions }}</span><span>{{ shell.extensionsHint }}</span>
+        </div>
+        <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; align-content: start;">
+          <sc-for list="{{ extensionItems }}" as="x" hint-placeholder-count="4">
+            <div onDoubleClick="{{ launchItem }}" onClick="{{ tapItem }}" onKeyDown="{{ keyOpenItem }}"
+                 data-item="{{ x.ref }}" tabIndex="0" aria-label="{{ x.label }}"
                  style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
                  style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
-              <div style="position: relative; width: 32px; height: 40px; border: 2px solid #1b1a18; border-radius: 2px; background: #fdfbf4; overflow: hidden;">
-                <div style="position: absolute; inset: 6px 5px auto 5px; height: 12px; background: repeating-linear-gradient(45deg, rgba(27,26,24,0.5) 0 2px, transparent 2px 4px);"></div>
-                <div style="position: absolute; top: -2px; right: -2px; width: 12px; height: 12px; background: #f5f2e8; border-left: 2px solid #1b1a18; border-bottom: 2px solid #1b1a18;"></div>
+              <div style="position: relative; width: 38px; height: 38px; border: 2px solid #1b1a18; border-radius: 4px; background: #fdfbf4; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <div style="width: 16px; height: 16px; background: oklch(0.62 0.14 40); border: 2px solid #1b1a18; transform: rotate(45deg);"></div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1b1a18; color: #fdfbf4; font-family: Silkscreen, monospace; font-size: 6px; text-align: center; letter-spacing: 0.06em; padding: 1px 0;">VSIX</div>
               </div>
-              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ p.file }}</div>
+              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ x.label }}</div>
             </div>
           </sc-for>
         </div>
       </div>
     </sc-if>
 
-    <!-- ==================================================== window: a case -->
+    <!-- ==================================================== window: iOS Apps
+         Same folder shape again, pointing at apps.js. The icon is a rounded
+         home-screen tile rather than the extensions' diamond, so the two
+         folders read differently at a glance. -->
+    <sc-if value="{{ w.apps.open }}" hint-placeholder-val="{{ false }}">
+      <div style="{{ w.apps.style }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="apps" style="{{ s.chromeBar }}">
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="Close iOS Apps" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
+          <div style="{{ s.chromeTitle }}">{{ w.apps.title }}</div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="{{ w.apps.zoomLabel }}" style="{{ w.apps.zoomStyle }}" style-hover="background:#1b1a18;"></div>
+        </div>
+        <div onMouseDown="{{ startResize }}" data-win="apps" aria-hidden="true" style="{{ w.apps.gripStyle }}"></div>
+        <div style="{{ s.infoStrip }}">
+          <span>{{ counts.apps }}</span><span>{{ shell.appsHint }}</span>
+        </div>
+        <div style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; align-content: start;">
+          <sc-for list="{{ appItems }}" as="app" hint-placeholder-count="2">
+            <div onDoubleClick="{{ launchItem }}" onClick="{{ tapItem }}" onKeyDown="{{ keyOpenItem }}"
+                 data-item="{{ app.ref }}" tabIndex="0" aria-label="{{ app.label }}"
+                 style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 1px dotted transparent; cursor: default;"
+                 style-hover="border-color:#1b1a18;background:rgba(27,26,24,0.05);">
+              <div style="position: relative; width: 38px; height: 38px; border: 2px solid #1b1a18; border-radius: 9px; background: #fdfbf4; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <div style="width: 18px; height: 18px; border: 2px solid #1b1a18; border-radius: 50%; background: oklch(0.62 0.14 40);"></div>
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; background: #1b1a18; color: #fdfbf4; font-family: Silkscreen, monospace; font-size: 6px; text-align: center; letter-spacing: 0.06em; padding: 1px 0;">APP</div>
+              </div>
+              <div style="font-family: Silkscreen, monospace; font-size: 9.5px; text-align: center; line-height: 1.35;">{{ app.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ============================================ window: one item's detail -->
     <sc-if value="{{ w.project.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.project.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="project" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="project" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="Close case study" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ proj.file }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="{{ w.project.zoomLabel }}" style="{{ w.project.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="project" aria-hidden="true" style="{{ w.project.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4;">
           <div style="height: 190px; border-bottom: 2px solid #1b1a18; background: #eae5d6; background-image: repeating-linear-gradient(135deg, rgba(27,26,24,0.12) 0 6px, transparent 6px 12px); display: flex; align-items: center; justify-content: center;">
             <div style="font-family: Silkscreen, monospace; font-size: 10px; background: #f5f2e8; border: 2px solid #1b1a18; padding: 6px 10px;">{{ proj.image }}</div>
@@ -340,6 +478,13 @@
                 <div style="{{ s.chipOutline }}">{{ t }}</div>
               </sc-for>
             </div>
+
+            <!-- Shipped work reads better short: the detail is in the repo. -->
+            <sc-if value="{{ proj.hasRepo }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex;">
+                <a href="{{ proj.repo }}" target="_blank" rel="noopener noreferrer" style="{{ s.btn }}" style-hover="background:#1b1a18;color:#f5f2e8;">Source on GitHub →</a>
+              </div>
+            </sc-if>
           </div>
         </div>
       </div>
@@ -348,11 +493,12 @@
     <!-- =============================================== window: About Me.txt -->
     <sc-if value="{{ w.about.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.about.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="about" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="about" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="Close About Me" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.about.title }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="{{ w.about.zoomLabel }}" style="{{ w.about.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="about" aria-hidden="true" style="{{ w.about.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #fdfbf4; padding: 26px 28px 32px; display: flex; flex-direction: column; gap: 16px;">
           <div style="font-family: Silkscreen, monospace; font-size: 15px;">{{ about.greeting }}</div>
           <sc-for list="{{ about.paragraphs }}" as="para" hint-placeholder-count="2">
@@ -371,11 +517,12 @@
     <!-- ===================================================== window: Skills -->
     <sc-if value="{{ w.skills.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.skills.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="skills" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="skills" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="Close Skills" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.skills.title }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="{{ w.skills.zoomLabel }}" style="{{ w.skills.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="skills" aria-hidden="true" style="{{ w.skills.gripStyle }}"></div>
         <div style="{{ s.infoStrip }}">
           <span>System Profile</span><span>{{ skills.subtitle }}</span>
         </div>
@@ -383,6 +530,10 @@
           <sc-for list="{{ skills.groups }}" as="g" hint-placeholder-count="3">
             <div style="display: flex; flex-direction: column; gap: 10px;">
               <div style="{{ s.sectionLabelRule }}">{{ g.heading }}</div>
+              <!-- Optional: a section that needs framing rather than just a list. -->
+              <sc-if value="{{ g.note }}" hint-placeholder-val="{{ true }}">
+                <div style="{{ s.sectionNote }}">{{ g.note }}</div>
+              </sc-if>
               <sc-if value="{{ g.kind === 'chips' }}" hint-placeholder-val="{{ true }}">
                 <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                   <sc-for list="{{ g.items }}" as="skill" hint-placeholder-count="5">
@@ -406,11 +557,12 @@
     <!-- ================================================= window: Playground -->
     <sc-if value="{{ w.play.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.play.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="play" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="play" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="Close Playground" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.play.title }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="{{ w.play.zoomLabel }}" style="{{ w.play.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="play" aria-hidden="true" style="{{ w.play.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #1b1a18; color: #d9f2c4; font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
           <div style="opacity: 0.6;">{{ playground.lastLogin }}</div>
           <div style="margin-top: 12px;">{{ playground.command }}</div>
@@ -430,11 +582,12 @@
     <!-- ==================================================== window: Contact -->
     <sc-if value="{{ w.contact.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.contact.style }}">
-        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" data-win="contact" style="{{ s.chromeBar }}">
+        <div onMouseDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="contact" style="{{ s.chromeBar }}">
           <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="Close Contact" style="{{ s.chromeClose }}" style-hover="background:#1b1a18;"></div>
           <div style="{{ s.chromeTitle }}">{{ w.contact.title }}</div>
-          <div style="{{ s.chromeGrow }}"></div>
+          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="{{ w.contact.zoomLabel }}" style="{{ w.contact.zoomStyle }}" style-hover="background:#1b1a18;"></div>
         </div>
+        <div onMouseDown="{{ startResize }}" data-win="contact" aria-hidden="true" style="{{ w.contact.gripStyle }}"></div>
         <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: #f5f2e8; padding: 22px 24px 28px; display: flex; flex-direction: column; gap: 16px;">
           <div style="{{ s.prose }}">{{ contact.intro }}</div>
 
@@ -538,7 +691,7 @@ class Component extends DCLogic {
     showBoot: false,
     isMobile: false,
     clock: "",
-    projectIndex: 0,
+    item: { list: "projects", index: 0 },
     menu: null,
     view: "icons",
     toast: "",
@@ -600,6 +753,7 @@ class Component extends DCLogic {
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
     this.endDrag();
+    this.endResize();
   }
 
   /** Publish the palette so the stylesheet in <helmet> shares one source. */
@@ -745,22 +899,32 @@ class Component extends DCLogic {
     if (next) this.setState({ windows: next });
   };
 
-  launchProject = (e) => {
-    this.setState({ projectIndex: Number(e.currentTarget.dataset.proj) });
+  /**
+   * Open the detail window on one item. `data-item` is "<collection>:<index>"
+   * — "projects:2", "extensions:0" — so a new folder needs no new handler.
+   */
+  launchItem = (e) => {
+    const [list, index] = String(e.currentTarget.dataset.item).split(":");
+    this.setState({ item: { list, index: Number(index) } });
     this.openWindow("project");
   };
 
-  tapProject = (e) => { if (this.state.isMobile) this.launchProject(e); };
+  tapItem = (e) => { if (this.state.isMobile) this.launchItem(e); };
 
   /* ----------------------------------------------------------------- drag */
 
   startDrag = (e) => {
+    // A press on the close or zoom box is the start of a click, not a drag.
+    if (e.target !== e.currentTarget && e.target.closest && e.target.closest('[role="button"]')) {
+      return;
+    }
+
     const id = e.currentTarget.dataset.win;
     this.focusWin(e);
     if (this.state.isMobile) return;
 
     const frame = this.windowManager.get(this.state.windows, id);
-    if (!frame) return;
+    if (!frame || frame.zoomed) return;
 
     this.drag = { id, offsetX: e.clientX - frame.x, offsetY: e.clientY - frame.y };
     window.addEventListener("mousemove", this.onDragMove);
@@ -787,6 +951,54 @@ class Component extends DCLogic {
     window.removeEventListener("mouseup", this.endDrag);
   };
 
+  /* --------------------------------------------------------------- resize */
+
+  /**
+   * The grow handle. Sizes are tracked from the frame the window started at
+   * plus the pointer's travel, so a drag that runs past a limit and comes back
+   * picks up where it left off instead of drifting.
+   */
+  startResize = (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.win;
+    this.focusWin(e);
+    if (this.state.isMobile) return;
+
+    const frame = this.windowManager.frame(this.state.windows, id);
+    this.resize = { id, fromX: e.clientX, fromY: e.clientY, w: frame.w, h: frame.h };
+    window.addEventListener("mousemove", this.onResizeMove);
+    window.addEventListener("mouseup", this.endResize);
+    e.preventDefault();
+  };
+
+  onResizeMove = (e) => {
+    const resize = this.resize;
+    if (!resize) return;
+    this.setState((s) => ({
+      windows: this.windowManager.resizeTo(
+        s.windows,
+        resize.id,
+        resize.w + (e.clientX - resize.fromX),
+        resize.h + (e.clientY - resize.fromY)
+      )
+    }));
+  };
+
+  endResize = () => {
+    this.resize = null;
+    window.removeEventListener("mousemove", this.onResizeMove);
+    window.removeEventListener("mouseup", this.endResize);
+  };
+
+  /** The zoom box, and a double-click on the title bar: fill the stage or come back. */
+  toggleZoom = (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.win;
+    this.focusWin(e);
+    if (this.state.isMobile) return;
+    this.setState((s) => ({ windows: this.windowManager.toggleZoom(s.windows, id) }));
+  };
+
   /* ------------------------------------------------------------- keyboard */
 
   /** Enter/Space on a div that already has a click handler. */
@@ -803,10 +1015,10 @@ class Component extends DCLogic {
     this.openWindow(e.currentTarget.dataset.app);
   };
 
-  keyOpenProject = (e) => {
+  keyOpenItem = (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
     e.preventDefault();
-    this.launchProject(e);
+    this.launchItem(e);
   };
 
   /* -------------------------------------------------------------- contact */
@@ -844,7 +1056,7 @@ class Component extends DCLogic {
       openMenu: s.menu,
       isMobile: s.isMobile,
       isApplePlatform: this.isApplePlatform,
-      projectIndex: s.projectIndex,
+      item: s.item,
       clock: s.clock,
       toast: s.toast,
       showBoot: s.showBoot,
@@ -860,11 +1072,13 @@ class Component extends DCLogic {
       handleClose: this.handleClose,
       focusWin: this.focusWin,
       startDrag: this.startDrag,
-      launchProject: this.launchProject,
-      tapProject: this.tapProject,
+      startResize: this.startResize,
+      toggleZoom: this.toggleZoom,
+      launchItem: this.launchItem,
+      tapItem: this.tapItem,
       keyActivate: this.keyActivate,
       keyOpen: this.keyOpen,
-      keyOpenProject: this.keyOpenProject,
+      keyOpenItem: this.keyOpenItem,
       submitContact: this.submitContact
     });
   }

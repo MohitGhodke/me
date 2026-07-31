@@ -4,6 +4,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const { createWindowManager } = require("../src/core/window-manager.js");
+const tokens = require("../src/design/tokens.js");
 const { viewport } = require("./helpers/fixtures.js");
 
 const geometry = {
@@ -11,9 +12,27 @@ const geometry = {
   beta: { w: 600, h: 500, x: 100, y: 80 }
 };
 
+/** The default 1440×900 stage, less the menu bar. */
+const STAGE_HEIGHT = 900 - tokens.layout.menuBarHeight;
+
 function manager(size) {
   return createWindowManager({ geometry, viewport: viewport(...(size || [])) });
 }
+
+/** A manager over a viewport the test can change under it. */
+function growable(size) {
+  const at = size;
+  return {
+    at,
+    wm: createWindowManager({
+      geometry,
+      viewport: { width: () => at.width, height: () => at.height }
+    })
+  };
+}
+
+const size = (frame) => ({ w: frame.w, h: frame.h });
+const box = (frame) => ({ x: frame.x, y: frame.y, w: frame.w, h: frame.h });
 
 test("a fresh desktop has nothing open", () => {
   const wm = manager();
@@ -64,6 +83,8 @@ test("transitions never mutate the state they were given", () => {
   const snapshot = JSON.stringify(before);
   wm.close(before, "alpha");
   wm.dragTo(before, "alpha", 10, 10);
+  wm.resizeTo(before, "alpha", 700, 600);
+  wm.toggleZoom(before, "alpha");
   wm.closeAll(before);
   wm.tidy(before);
   assert.equal(JSON.stringify(before), snapshot);
@@ -122,6 +143,135 @@ test("dragging cannot push a window fully off screen", () => {
 
   s = wm.dragTo(s, "alpha", 99999, 99999);
   assert.equal(wm.get(s, "alpha").x, 1440 - 90);
+});
+
+/* -------------------------------------------------------------------- resize */
+
+test("resizing a window changes the size it renders at", () => {
+  const wm = manager();
+  const s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 700, 620);
+  assert.deepEqual(size(wm.frame(s, "alpha")), { w: 700, h: 620 });
+});
+
+test("a window cannot be resized down to nothing", () => {
+  const wm = manager();
+  const s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 10, 10);
+  assert.deepEqual(size(wm.frame(s, "alpha")), {
+    w: tokens.layout.minWindowWidth,
+    h: tokens.layout.minWindowHeight
+  });
+});
+
+test("resizing stops at the edge of the stage", () => {
+  const wm = manager(); // alpha opens at 50,40
+  const s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 9999, 9999);
+  assert.deepEqual(size(wm.frame(s, "alpha")), { w: 1440 - 50, h: STAGE_HEIGHT - 40 });
+});
+
+test("a resized window comes back the size the visitor left it", () => {
+  const wm = manager();
+  let s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 640, 500);
+  s = wm.open(wm.close(s, "alpha"), "alpha");
+  assert.deepEqual(size(wm.frame(s, "alpha")), { w: 640, h: 500 });
+});
+
+test("the drag limit follows the size the window is now", () => {
+  const wm = manager();
+  let s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 800, 400);
+  s = wm.dragTo(s, "alpha", -9999, -9999);
+  assert.equal(wm.get(s, "alpha").x, -800 + 120);
+});
+
+test("a window resized past a shrinking viewport is trimmed, then given it back", () => {
+  const { at, wm } = growable({ width: 1440, height: 900 });
+  let s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 900, 700);
+
+  at.width = 600;
+  s = wm.reflow(s);
+  assert.equal(wm.frame(s, "alpha").w, 600, "it should not overhang a narrow viewport");
+
+  at.width = 1440;
+  assert.equal(wm.frame(s, "alpha").w, 900, "the visitor's size survives the detour");
+});
+
+/* ---------------------------------------------------------------------- zoom */
+
+test("zooming fills the stage, and zooming again restores the old frame", () => {
+  const wm = manager();
+  let s = wm.dragTo(wm.open(wm.empty(), "alpha"), "alpha", 120, 90);
+
+  s = wm.toggleZoom(s, "alpha");
+  assert.deepEqual(box(wm.frame(s, "alpha")), { x: 0, y: 0, w: 1440, h: STAGE_HEIGHT });
+  assert.equal(wm.frame(s, "alpha").zoomed, true);
+
+  s = wm.toggleZoom(s, "alpha");
+  assert.deepEqual(box(wm.frame(s, "alpha")), { x: 120, y: 90, w: 400, h: 300 });
+  assert.equal(wm.frame(s, "alpha").zoomed, false);
+});
+
+test("unzooming gives back a size the window was resized to, not its default", () => {
+  const wm = manager();
+  let s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 700, 620);
+  s = wm.toggleZoom(s, "alpha");
+  s = wm.toggleZoom(s, "alpha");
+  assert.deepEqual(size(wm.frame(s, "alpha")), { w: 700, h: 620 });
+});
+
+test("a zoomed window has nowhere left to be dragged", () => {
+  const wm = manager();
+  let s = wm.toggleZoom(wm.open(wm.empty(), "alpha"), "alpha");
+  s = wm.dragTo(s, "alpha", 400, 300);
+  assert.deepEqual(box(wm.frame(s, "alpha")), { x: 0, y: 0, w: 1440, h: STAGE_HEIGHT });
+});
+
+test("resizing a zoomed window takes it out of zoom", () => {
+  const wm = manager();
+  let s = wm.toggleZoom(wm.open(wm.empty(), "alpha"), "alpha");
+  s = wm.resizeTo(s, "alpha", 500, 400);
+  const frame = wm.frame(s, "alpha");
+  assert.equal(frame.zoomed, false);
+  assert.deepEqual(size(frame), { w: 500, h: 400 });
+});
+
+test("a zoomed window keeps filling the stage when the viewport changes", () => {
+  const { at, wm } = growable({ width: 1440, height: 900 });
+  let s = wm.toggleZoom(wm.open(wm.empty(), "beta"), "beta");
+
+  at.width = 1000;
+  at.height = 700;
+  s = wm.reflow(s);
+
+  assert.deepEqual(box(wm.frame(s, "beta")), {
+    x: 0,
+    y: 0,
+    w: 1000,
+    h: 700 - tokens.layout.menuBarHeight
+  });
+});
+
+test("a zoomed window stays zoomed when it is closed and opened again", () => {
+  const wm = manager();
+  let s = wm.toggleZoom(wm.open(wm.empty(), "alpha"), "alpha");
+  s = wm.open(wm.close(s, "alpha"), "alpha");
+  assert.equal(wm.frame(s, "alpha").zoomed, true);
+});
+
+test("clean up puts a resized, zoomed window back to its default frame", () => {
+  const wm = manager();
+  let s = wm.resizeTo(wm.open(wm.empty(), "alpha"), "alpha", 800, 700);
+  s = wm.toggleZoom(s, "alpha");
+  s = wm.tidy(s);
+
+  const frame = wm.frame(s, "alpha");
+  assert.deepEqual(box(frame), { x: 50, y: 40, w: 400, h: 300 });
+  assert.equal(frame.zoomed, false);
+});
+
+test("resizing or zooming a window that was never opened is a no-op", () => {
+  const wm = manager();
+  const empty = wm.empty();
+  assert.deepEqual(wm.resizeTo(empty, "alpha", 500, 400), empty);
+  assert.deepEqual(wm.toggleZoom(empty, "alpha"), empty);
 });
 
 test("an unregistered window id fails loudly", () => {
