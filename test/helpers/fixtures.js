@@ -34,7 +34,8 @@ function buildVals(overrides) {
         clock: "9:41",
         toast: "",
         showBoot: false,
-        isOff: false
+        isOff: false,
+        ai: { status: "idle", lines: [], input: "", busy: false }
       },
       overrides
     )

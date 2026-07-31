@@ -143,6 +143,11 @@
       });
     }
 
+    requireFields(c.assistant, ["modelLabel", "modelSize", "greeting", "prompt"], "assistant");
+    if (!isStringArray(c.assistant.consentLines)) {
+      problems.push("assistant.consentLines must be a non-empty list of strings");
+    }
+
     var seen = Object.create(null);
     c.desktop.windows.forEach(function (w, i) {
       requireFields(w, ["id", "title"], "desktop.windows[" + i + "]");
@@ -152,7 +157,7 @@
       if (!g || ["w", "h", "x", "y"].some(function (k) { return typeof g[k] !== "number"; })) {
         problems.push("desktop.windows[" + i + "].geometry needs numeric w, h, x and y");
       }
-      if (w.icon && ["doc", "folder", "app"].indexOf(w.icon) === -1) {
+      if (w.icon && ["doc", "folder", "app", "ai"].indexOf(w.icon) === -1) {
         problems.push('desktop.windows[' + i + '].icon must be "doc", "folder" or "app"');
       }
     });
@@ -208,6 +213,7 @@
       about: parts.about,
       skills: parts.skills,
       playground: parts.playground,
+      assistant: parts.assistant,
       contact: parts.contact,
       desktop: parts.desktop,
 
@@ -230,6 +236,7 @@
     about: req("about", "./about.js"),
     skills: req("skills", "./skills.js"),
     playground: req("playground", "./playground.js"),
+    assistant: req("assistant", "./assistant.js"),
     contact: req("contact", "./contact.js"),
     desktop: req("desktop", "./desktop.js")
   });

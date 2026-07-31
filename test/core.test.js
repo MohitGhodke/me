@@ -7,6 +7,8 @@ const { createMenuController } = require("../src/core/menu-controller.js");
 const shortcuts = require("../src/core/shortcuts.js");
 const { copyText } = require("../src/core/clipboard.js");
 const system = require("../src/core/system.js");
+const { buildContext } = require("../src/core/assistant.js");
+const { content } = require("../src/content/index.js");
 
 /* ------------------------------------------------------------------- menus */
 
@@ -172,4 +174,19 @@ test("storage never throws, whatever the browser does", () => {
     if (original) Object.defineProperty(globalThis, "localStorage", original);
     else delete globalThis.localStorage;
   }
+});
+
+/* ---------------------------------------------------------------- assistant */
+
+test("buildContext folds the site's own content into the model's system prompt", () => {
+  const ctx = buildContext(content);
+  assert.ok(ctx.includes(content.site.name), "should mention the site owner by name");
+  assert.ok(ctx.includes(content.resume.roles[0].company), "should mention a real employer");
+  assert.ok(ctx.includes(content.playground.entries[0].name), "should mention a playground project");
+});
+
+test("buildContext stays well under the 1B model's context window", () => {
+  // ~4 chars/token is a safe rule of thumb; the model's window is 4096 tokens
+  // and has to fit the conversation and the reply too, not just this context.
+  assert.ok(buildContext(content).length <= 6000);
 });

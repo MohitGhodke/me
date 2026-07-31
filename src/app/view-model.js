@@ -125,7 +125,8 @@
           kind: w.icon,
           isFolder: w.icon === "folder",
           isDoc: w.icon === "doc",
-          isApp: w.icon === "app"
+          isApp: w.icon === "app",
+          isAi: w.icon === "ai"
         };
       });
     }
@@ -334,6 +335,7 @@
      * @param {string}  ctx.toast
      * @param {boolean} ctx.showBoot
      * @param {boolean} ctx.isOff
+     * @param {{status: string, lines: object[], input: string, busy: boolean}} ctx.ai
      */
     function build(ctx) {
       var anyWindowOpen = ctx.wm.anyOpen(ctx.state);
@@ -356,6 +358,15 @@
         playground: content.playground,
         contact: content.contact,
         shell: content.desktop.shell,
+
+        // ---- Chirp: ctx.ai is the component's own state, passed
+        // through as-is; aiCopy/aiDisabled/aiShowCursor are derived from it.
+        ai: ctx.ai,
+        aiCopy: content.assistant,
+        aiDisabled: !!(ctx.ai && (ctx.ai.status === "unsupported" || ctx.ai.busy)),
+        // The decorative blinking cursor stands in for the empty input, so it
+        // has no reason to show while there's nothing to type into.
+        aiShowCursor: !!(ctx.ai && !ctx.ai.input && ctx.ai.status !== "unsupported" && !ctx.ai.busy),
 
         // ---- derived view data
         s: s,

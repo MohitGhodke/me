@@ -20,6 +20,7 @@ const PARTS = [
   "about",
   "skills",
   "playground",
+  "assistant",
   "contact",
   "desktop"
 ];
@@ -83,6 +84,17 @@ test("a case study added later is held to the same shape", () => {
       problems.some((p) => p.includes("projects[0]") && p.includes(field)),
       `projects[0] should have been flagged for ${field}: ${problems.join("; ")}`
     )
+  );
+});
+
+test("the ai assistant's consent copy must be a non-empty list", () => {
+  assert.ok(
+    mutate((c) => { c.assistant.consentLines = []; })
+      .some((p) => p.includes("assistant.consentLines"))
+  );
+  assert.ok(
+    mutate((c) => { delete c.assistant.greeting; })
+      .some((p) => p.includes("assistant") && p.includes("greeting"))
   );
 });
 

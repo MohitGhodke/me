@@ -170,7 +170,7 @@ test("desktop icons follow the registry, one kind flag each", () => {
   const vals = buildVals();
   assert.equal(vals.icons.length, content.desktopIcons.length);
   vals.icons.forEach((icon) => {
-    const flags = [icon.isFolder, icon.isDoc, icon.isApp].filter(Boolean);
+    const flags = [icon.isFolder, icon.isDoc, icon.isApp, icon.isAi].filter(Boolean);
     assert.equal(flags.length, 1, `${icon.id} should have exactly one icon kind`);
   });
 });
@@ -358,6 +358,18 @@ test("icons and list view are mutually exclusive, and neither shows on mobile", 
   );
   const mobile = buildVals({ isMobile: true });
   assert.deepEqual([mobile.viewIcons, mobile.viewList, mobile.isDesktop], [false, false, false]);
+});
+
+test("the ai state passes through untouched; aiDisabled follows status and busy", () => {
+  const lines = [{ kind: "system", text: "hi" }];
+  const idle = buildVals({ ai: { status: "idle", lines, input: "x", busy: false } });
+  assert.equal(idle.ai.lines, lines);
+  assert.equal(idle.ai.input, "x");
+  assert.equal(idle.aiDisabled, false);
+
+  assert.equal(buildVals({ ai: { status: "unsupported", lines: [], input: "", busy: false } }).aiDisabled, true);
+  assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: true } }).aiDisabled, true);
+  assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: false } }).aiDisabled, false);
 });
 
 test("style strings are well-formed CSS declarations", () => {

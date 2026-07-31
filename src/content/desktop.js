@@ -78,6 +78,13 @@
       meta: "Get in touch",
       geometry: { w: 430, h: 470, x: 300, y: 120 }
     },
+    {
+      id: "ai",
+      title: "Chirp AI",
+      icon: "ai",
+      meta: "Local AI, ask anything",
+      geometry: { w: 520, h: 440, x: 170, y: 90 }
+    },
     // The shared detail window. Opened from inside either folder, so it has no
     // desktop icon of its own; its title bar shows whichever file was clicked.
     {
