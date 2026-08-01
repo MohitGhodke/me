@@ -11,6 +11,7 @@ const {
   buildContext,
   matchQuip,
   asksAboutChirp,
+  asksWhoOwnerIs,
   framePrompt,
   createReplyFilter,
   createAssistantSession
@@ -209,16 +210,18 @@ test("buildContext tells the model the shipped work is public and installable", 
 test("buildContext stays well under the 1B model's context window", () => {
   // ~4 chars/token is a safe rule of thumb; the model's window is 4096 tokens
   // and has to fit the conversation and the reply too, not just this context.
-  assert.ok(buildContext(content).length <= 6000);
+  // The other two are bounded now — MAX_HISTORY_MESSAGES and max_tokens — so
+  // this is the only part of the window that could quietly grow.
+  assert.ok(buildContext(content).length <= 6600);
 });
 
 test("the notes are not being silently truncated", () => {
-  // `buildContext` cuts the tail at 6000 characters, and the tail is the
-  // contact details — so growing the content past the budget doesn't break
-  // anything visibly, it just quietly stops Chirp knowing the email address.
+  // `buildContext` cuts the tail at the cap, and the tail is the contact
+  // details — so growing the content past the budget doesn't break anything
+  // visibly, it just quietly stops Chirp knowing the email address.
   // This is the loud version of that: shorten something when it fails.
   const ctx = buildContext(content);
-  assert.ok(ctx.length < 6000, `the notes are at the 6000-char cap (${ctx.length}) and are being cut`);
+  assert.ok(ctx.length < 6600, `the notes are at the 6600-char cap (${ctx.length}) and are being cut`);
   assert.ok(ctx.includes("# Contact"), "the last section survived the cut");
   assert.ok(ctx.includes(content.site.email), "the email address survived the cut");
 });
@@ -286,6 +289,55 @@ test("an answer that is part paste keeps the part that is not", () => {
     clean("# Experience\nhe leads the teams that build them, and has for four years.\n- Lead Software Engineer at EG A/S (Jun 2026 — Now): C#/.NET, Angular, Azure"),
     "he leads the teams that build them, and has for four years."
   );
+});
+
+// Straight out of a real transcript: asked "so who is mohit?", the bird
+// answered with the persona sentence from its own system prompt, and
+// introduced itself as the man. The prompt rewrites the opening and keeps the
+// middle, so this is caught on a run of words anywhere in the line.
+test("the model's own instructions are never handed back as an answer", () => {
+  const live = createReplyFilter(buildContext(content));
+
+  assert.equal(
+    live(
+      "As for Mohit Ghodke, I'm a small pixel bird who's been perched on his monitor " +
+      "since his first day as a developer. I've watched him work ever since, and I'm here " +
+      "to answer questions about him for visitors to his portfolio site."
+    ),
+    "",
+    "that is the persona line, not an answer about the human"
+  );
+  assert.equal(live("Answer in 2-4 short, plain-text sentences, lowercase and friendly."), "");
+});
+
+test("a bird that describes itself in its own words is still allowed to", () => {
+  // The line above is caught for quoting the prompt, not for being about the
+  // bird — Chirp introducing itself is a perfectly good answer.
+  const live = createReplyFilter(buildContext(content));
+  const own = "i'm chirp, about 600mb of bird living in this tab. mohit is the human. *chirp*";
+  assert.equal(live(own), own);
+});
+
+test("an aside with no answer in front of it is not an answer", () => {
+  // The other half of that transcript: "$ so who is mohit?" answered with a
+  // bare "*chirp*" — all that was left after a pasted heading was stripped.
+  assert.equal(clean("# Experience\n*chirp*"), "");
+  assert.equal(clean("*chirp*"), "");
+  assert.equal(clean("*hops closer*"), "");
+  assert.equal(clean("yes. *chirp*"), "yes. *chirp*", "an answer with an aside is fine");
+});
+
+test("the prompt tells the model it is not the man", () => {
+  const ctx = buildContext(content);
+  assert.match(ctx, /he is a human and you are his bird/i);
+  assert.match(ctx, /never by describing yourself/i);
+  // The answer to "who is he?" has to exist somewhere that isn't a heading:
+  // headings are stripped, and reaching for the persona instead is the bug.
+  assert.ok(
+    ctx.includes(`${content.site.name} is a person — a ${content.site.role}`),
+    "the man needs a plain sentence of his own to be answered from"
+  );
+  assert.match(ctx, /Q: so who is mohit\?/i, "and a worked example of being asked");
 });
 
 test("the filter works against the notes the app actually ships", () => {
@@ -450,6 +502,18 @@ test("a question aimed at the bird is sent with a steer, others go as typed", ()
   assert.ok(framed.startsWith("when is your birthday?"), "the visitor's words come first");
   assert.match(framed, /as for mohit/i, "and the model is told to answer for both");
   assert.equal(framePrompt("what are his skills?"), "what are his skills?");
+});
+
+test("a question about the man carries the reminder that he is the man", () => {
+  // The steer that stops "so who is mohit?" being answered with the bird's
+  // own persona line.
+  ["who is mohit?", "so who is mohit", "tell me about him", "what does he do?"].forEach((q) => {
+    assert.equal(asksWhoOwnerIs(q), true, q);
+    assert.match(framePrompt(q), /Asked about the human, not about you/);
+  });
+
+  assert.equal(asksWhoOwnerIs("who are you?"), false, "that one is about the bird");
+  assert.equal(asksWhoOwnerIs("what are his skills?"), false, "no steer needed, no steer sent");
 });
 
 test("the prompt spells out both halves of an 'about you' answer", () => {

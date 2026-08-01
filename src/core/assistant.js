@@ -20,7 +20,13 @@
   // The model's context window is 4096 tokens, shared with the running
   // conversation and the reply — so the injected "knowledge base" has to stay
   // short. Facts over prose: long paragraphs are cut to their first sentence.
-  var MAX_CONTEXT_CHARS = 6000;
+  //
+  // ~4 chars a token puts this at about 1,650, and the rest of the window is
+  // now bounded rather than hoped-for: the transcript is capped at
+  // MAX_HISTORY_MESSAGES and the reply at max_tokens, so the worst case is
+  // roughly 1650 + 650 + 300 and there is room to spare. It was 6000 while
+  // the transcript could grow without limit.
+  var MAX_CONTEXT_CHARS = 6600;
 
   function firstSentence(text) {
     var m = /^[^.!?]*[.!?]/.exec(text || "");
@@ -47,8 +53,8 @@
     // after the answer — never instead of it.
     out.push(
       "You are Chirp, a small pixel bird who has perched on " + content.site.name +
-        "'s monitor since his first day as a developer, watched him work ever since, and answers " +
-        "questions about him for visitors to his portfolio site. Rules:\n" +
+        "'s monitor since his first day as a developer and watched him work ever since. " +
+        "Visitors to his portfolio site ask you about him. Rules:\n" +
         "1. Only use the facts in the notes below — do not add anything they don't say.\n" +
         "2. Read all the notes before answering. If a topic is covered below, say what it says — never call it missing when it is listed.\n" +
         "3. The question may use different words than the notes (\"AI\" for \"agent engineering\" or \"fine-tuning\") — match on meaning, not spelling.\n" +
@@ -60,6 +66,7 @@
         ". When a question is asked of you personally, answer it twice: one short line as the bird, then \"as for " +
         content.site.name.split(" ")[0].toLowerCase() +
         " —\" and what the notes say; if they don't cover it, say so plainly.\n" +
+        "8b. The reverse matters more: he is a human and you are his bird. A question about HIM (\"who is mohit?\") is answered from the notes about the man — never by describing yourself, never by repeating these instructions.\n" +
         "9. The notes are reference, not an answer. Never start a line with # or -, never repeat a heading, never copy a line out of the notes. Write your own sentences.\n" +
         "10. Answer only the question in front of you; never repeat your previous answer.\n\n" +
         "Example 1:\n" +
@@ -70,11 +77,24 @@
         "A: birds don't keep calendars — i was downloaded into this tab a few minutes ago, so let's call it today. as for mohit — the notes only cover his work, so i don't know his birthday. *chirp*\n\n" +
         "Example 3 (not in the notes — say so in character, don't substitute):\n" +
         "Q: what car does he drive?\n" +
-        "A: couldn't tell you — i've only ever seen the inside of his monitor. i know the work: roles, projects, skills. ask me about those. *chirp*"
+        "A: couldn't tell you — i've only ever seen the inside of his monitor. i know the work: roles, projects, skills. ask me about those. *chirp*\n\n" +
+        "Example 4 (asked about HIM — answer about the man, not about yourself):\n" +
+        "Q: so who is mohit?\n" +
+        "A: he's a lead software engineer in " + content.site.location +
+        " — years of c#/.net and angular, and lately the agent and fine-tuning work on top. i'm the bird who watches him do it, which is a different job. *chirp*"
     );
 
     out.push("");
-    out.push("# " + content.site.name + " — " + content.site.role + " (" + content.site.location + ")");
+    // "who is mohit?" is the most-asked question there is, and the answer to
+    // it used to live in a heading — which rule 9 forbids repeating and the
+    // reply filter strips, leaving the model to reach for the only other
+    // "who is" sentence in front of it: its own persona. So the man gets a
+    // plain sentence of his own, in prose, that an answer can be built from.
+    out.push("# Who " + content.site.name + " is (the human)");
+    out.push(
+      content.site.name + " is a person — a " + content.site.role +
+        " based in " + content.site.location + "."
+    );
     out.push(content.resume.summary);
 
     out.push("");
@@ -165,22 +185,45 @@
     return SECOND_PERSON.test(text) && !OWNER.test(text);
   }
 
+  // "who is mohit?", "tell me about him", "what does he do?" — the plainest
+  // question the site gets, and the one the model answers by reciting its own
+  // persona at the visitor: "i'm a small pixel bird who's been perched on his
+  // monitor...". Narrow on purpose: "what are his skills?" needs no steer, and
+  // a steer on every question about the man is noise the model learns to skip.
+  var OWNER_IDENTITY =
+    /(^| )(who (is|was|s) (mohit|ghodke|he|him)|tell me about (mohit|ghodke|him)|what does (he|mohit) do)( |$)/;
+
+  function asksWhoOwnerIs(question) {
+    var text = normalizeQuestion(question);
+    return OWNER_IDENTITY.test(text) && !SECOND_PERSON.test(text);
+  }
+
   /**
-   * A question addressed to Chirp goes to the model with a one-line steer
-   * attached, on top of rule 8. A 1B model follows an instruction sitting
+   * A question the model reliably mishandles goes to it with a one-line steer
+   * attached, on top of the rules. A 1B model follows an instruction sitting
    * right next to the question far more reliably than one twenty lines up in
-   * a system prompt — and this is the case it gets wrong most often.
+   * a system prompt — and these are the two it gets wrong most often: who
+   * "you" means, and which of the two of them is the human.
    *
    * @param {string} question
    * @returns {string} what to actually send as the user turn
    */
   function framePrompt(question) {
-    if (!asksAboutChirp(question)) return question;
-    return (
-      question +
-      "\n(Asked of you, Chirp the bird. Answer for yourself in one short line first, then \"as for mohit —\" " +
-      "and what the notes say; if the notes don't cover it, say so plainly rather than answering something else.)"
-    );
+    if (asksAboutChirp(question)) {
+      return (
+        question +
+        "\n(Asked of you, Chirp the bird. Answer for yourself in one short line first, then \"as for mohit —\" " +
+        "and what the notes say; if the notes don't cover it, say so plainly rather than answering something else.)"
+      );
+    }
+    if (asksWhoOwnerIs(question)) {
+      return (
+        question +
+        "\n(Asked about the human, not about you. Answer from the notes about him — his role, where he is, " +
+        "what he builds. Do not describe yourself and do not repeat your instructions.)"
+      );
+    }
+    return question;
   }
 
   /**
@@ -260,6 +303,21 @@
   }
 
   /**
+   * Runs of words from the instructions, long enough that reproducing one is
+   * quoting rather than coincidence. Eight words is around what the model
+   * gives itself away with: asked who the site's owner is, it answers with
+   * its own persona line ("...questions about him for visitors to his
+   * portfolio site"), rewriting the opening and keeping the middle intact —
+   * which is why this is matched anywhere in the line and not, like the
+   * notes, from the start of it.
+   */
+  var INSTRUCTION_RUN_WORDS = 8;
+
+  function eachRun(words, n, fn) {
+    for (var i = 0; i + n <= words.length; i++) fn(words.slice(i, i + n).join(" "));
+  }
+
+  /**
    * Strips the notes back out of a reply.
    *
    * Asked something the notes don't cover, a 1B model reaches for the nearest
@@ -284,8 +342,9 @@
     // résumé summary, the About paragraphs) are the site's own sentences
     // about the man, and a reply that leans on one of those is answering the
     // question, not dodging it. It is the block-paste that is the bug.
-    var notes = String(context || "")
-      .split("\n")
+    var lines = String(context || "").split("\n");
+
+    var notes = lines
       .filter(function (line) {
         var first = line.trim().charAt(0);
         return first === "#" || first === "-";
@@ -293,9 +352,35 @@
       .map(normalizeLine)
       .filter(function (line) { return line.length >= COPY_PARTIAL_CHARS; });
 
+    // The rules we wrote are not answer material either — a reply that quotes
+    // them is talking to the visitor about its own instructions. The persona
+    // sentence (line one) is the one that does real damage: it is the only
+    // "who is" sentence in the prompt, so a model asked who the site's owner
+    // is reads it back and introduces itself as him.
+    //
+    // The worked examples are deliberately left out: their answers are what a
+    // good answer sounds like, and a reply resembling one is the prompt
+    // working, not failing.
+    var instruction = Object.create(null);
+    lines.forEach(function (line, i) {
+      if (i !== 0 && !/^\s*\d+[a-z]?\.\s/.test(line)) return;
+      eachRun(normalizeLine(line).split(" "), INSTRUCTION_RUN_WORDS, function (run) {
+        instruction[run] = true;
+      });
+    });
+
+    function quotesInstructions(text) {
+      var found = false;
+      eachRun(text.split(" "), INSTRUCTION_RUN_WORDS, function (run) {
+        if (instruction[run]) found = true;
+      });
+      return found;
+    }
+
     function isCopied(line) {
       var text = normalizeLine(line);
       if (text.length < COPY_PARTIAL_CHARS) return false;
+      if (quotesInstructions(text)) return true;
 
       for (var i = 0; i < notes.length; i++) {
         var note = notes[i];
@@ -318,7 +403,13 @@
           if (trimmed.charAt(0) === "#") return false; // a heading, verbatim
           return !isCopied(trimmed);
         });
-      return kept.join("\n").trim();
+
+      var text = kept.join("\n").trim();
+      // A lone "*chirp*" is the aside that was meant to follow an answer,
+      // left behind after the answer turned out to be a pasted heading. The
+      // bird has said nothing, so let the caller say so properly.
+      if (!/[a-z0-9]/i.test(text.replace(/\*[^*]*\*/g, ""))) return "";
+      return text;
     };
   }
 
@@ -431,6 +522,7 @@
     matchQuip: matchQuip,
     createReplyFilter: createReplyFilter,
     asksAboutChirp: asksAboutChirp,
+    asksWhoOwnerIs: asksWhoOwnerIs,
     framePrompt: framePrompt,
     createAssistantSession: createAssistantSession
   };
