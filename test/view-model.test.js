@@ -85,18 +85,38 @@ test("the handles a finger drags claim the gesture from the browser", () => {
   assert.doesNotMatch(vals.s.chromeBar, /touch-action/);
 });
 
-test("an item only offers a source link when it has a repo", () => {
-  // Every extension is public, so every one of them links out.
-  content.extensions.forEach((_, i) => {
-    const shipped = buildVals({ item: { list: "extensions", index: i } }).proj;
-    assert.equal(shipped.hasRepo, true, `extensions[${i}] should link to its repo`);
-    assert.match(shipped.repo, /^https:\/\//);
+test("shipped work says it is live and links to where you get it", () => {
+  // These two folders are the published software, so every item in them has
+  // to carry the badge and the button — that is what separates them from the
+  // playground's experiments.
+  ["extensions", "apps"].forEach((list) => {
+    content[list].forEach((_, i) => {
+      const shipped = buildVals({ item: { list, index: i } }).proj;
+      assert.equal(shipped.hasAvailability, true, `${list}[${i}] should say where it is available`);
+      assert.equal(shipped.hasInstall, true, `${list}[${i}] should link to its listing`);
+      assert.match(shipped.installUrl, /^https:\/\//);
+      assert.ok(shipped.installLabel, `${list}[${i}] needs a label on its install button`);
+      assert.equal(shipped.hasLinks, true);
+    });
   });
 
-  // Anything that does not resolve offers no button rather than a dead one.
+  // The source link is the optional one: three of the four extension repos are
+  // private while they are being opened up, and a dead button is worse than
+  // none. The one that is public still links out.
+  const open = content.extensions.findIndex((x) => x.repo);
+  assert.notEqual(open, -1, "at least one extension should link to its source");
+  assert.match(buildVals({ item: { list: "extensions", index: open } }).proj.repo, /^https:\/\//);
+});
+
+test("an item with no links at all offers no buttons rather than dead ones", () => {
   const blank = buildVals({ item: { list: "projects", index: 0 } }).proj;
   assert.equal(blank.hasRepo, false);
   assert.equal(blank.repo, "");
+  assert.equal(blank.hasInstall, false);
+  assert.equal(blank.installUrl, "");
+  assert.equal(blank.hasAvailability, false);
+  // The whole button row is skipped, so an item with neither leaves no gap.
+  assert.equal(blank.hasLinks, false);
 });
 
 test("only the open menu is marked open", () => {

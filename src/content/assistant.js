@@ -54,6 +54,28 @@
     // narrow ones first. A reply is picked at random from `replies`.
     quips: [
       {
+        // Not small talk — the one factual question that must never be
+        // improvised. The extensions and the app are live and free, and a 1B
+        // model asked "can I actually use these?" will happily invent "they're
+        // personal projects". This answers it from the copy, exactly, first.
+        id: "availability",
+        patterns: [
+          // No bare "get" phrasings ("where can i get" also fits an email
+          // address): every pattern here has to be about obtaining software.
+          "marketplace", "app store", "where can i download", "how do i download",
+          "how do i install", "how to install",
+          "can i install", "can i download", "can i try", "can i use them",
+          "can anyone use", "is it available", "are they available", "publicly available",
+          "is it live", "are they live", "is it public", "are they public",
+          "in production", "is it free", "are they free", "for sale"
+        ],
+        replies: [
+          "yep — all four vs code extensions are on the vs code marketplace and dinkrum is on the app store, all free. open the work folder and each one has a button straight to its listing. *chirp*",
+          "they're live, not demos. the four extensions install from the vs code marketplace, dinkrum comes from the app store, nothing costs anything. the buttons in the work folder take you there.",
+          "real, shipped, free. vs code marketplace for the extensions, app store for dinkrum — every window in the work folder links out to the listing. go on, install one."
+        ]
+      },
+      {
         id: "chirp",
         patterns: ["chirp", "sing", "tweet", "say something", "make a sound", "your song"],
         replies: [

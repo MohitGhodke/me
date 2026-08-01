@@ -427,9 +427,12 @@ if (jsdom) {
     let body = text(dom);
     assert.ok(body.includes(extension.title), "the extension's headline is missing");
     assert.ok(body.includes(extension.outcomes[0]), "the outcomes are missing");
+    // The point of the window: it is a published extension, and this is the
+    // button that takes you to the listing.
+    assert.ok(body.includes(extension.availability), "the availability badge is missing");
     assert.ok(
-      query(dom, `a[href="${extension.repo}"]`),
-      "a published extension should link to its repo"
+      query(dom, `a[href="${extension.install.url}"]`),
+      "a published extension should link to its Marketplace listing"
     );
 
     // The one detail window has to re-route when a different item is opened.
@@ -464,8 +467,13 @@ if (jsdom) {
     assert.ok(body.includes(app.title), "the app's headline is missing");
     assert.ok(body.includes(app.outcomes[0]), "the outcomes are missing");
     assert.ok(body.includes(app.tags[0]), "the tags are missing");
+    assert.ok(body.includes(app.availability), "the availability badge is missing");
+    assert.ok(
+      query(dom, `a[href="${app.install.url}"]`),
+      "a shipped app should link to its App Store listing"
+    );
 
-    // Nothing to link to yet, so no button should be rendered at all.
+    // The source isn't public, so no button should be rendered at all.
     assert.equal(
       dom.window.document.querySelectorAll('a[href*="github.com"]').length,
       0,

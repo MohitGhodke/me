@@ -81,19 +81,33 @@ entry is:
   title: "…",                          // the headline
   meta: "Company · Year · Role",
   image: "architecture diagram",       // caption for the hero well
+  availability: "Live on the …",       // optional — the badge above the headline
   summary: "…",                        // one paragraph: the problem, and how it was solved
   outcomes: ["…", "…", "…"],           // the numbers — three reads best
   tags: ["Go", "Kafka"],               // the stack
+  install: { label: "…", url: "…" },   // optional — the filled "go and get it" button
   repo: "https://github.com/…"         // optional — draws a "Source on GitHub" button
 }
 ```
 
 Add a second and it appears in the folder on its own — no layout change.
 
-`repo` is the only optional field. Omit it and no button renders, which is
-usually right for employed work you can't link to; give it an absolute
-`http(s)` URL and the window links out. Anything else fails validation, so a
-typo can't ship as a dead button.
+`availability`, `install` and `repo` are the optional fields; the rest are
+required. Omit them and no badge or button renders, which is usually right for
+employed work you can't link to.
+
+**`availability` and `install` are how a visitor learns the thing is real and
+downloadable.** `availability` is a few words ("Live on the VS Code Marketplace
+— free") and renders as an accent badge above the headline, ahead of everything
+else in the window; it also goes into the printed résumé and into Chirp's notes,
+so the fact survives both `⌘P` and being asked out loud. `install` is
+`{ label, url }` and draws the filled button — the primary action, with the
+source link (where there is one) sitting next to it as the quieter option.
+
+Both URLs must be absolute `http(s)`, and `install` needs its label as well as
+its URL, so a half-filled button can't ship. `npm test` also fails if an
+extension or an app is added without either of them: they live in folders whose
+whole premise is that you can go and install what's inside.
 
 ### 3b. `extensions.js` — the VS Code Extensions folder
 
@@ -103,9 +117,17 @@ same detail window renders both — the two just live in different folders. The
 because `desktop.js` gives that window `parent: "work"`.
 
 Each entry is one shipped extension. Keep the write-ups short: state the
-friction first, then how the extension removes it, and let `repo` carry the
+friction first, then how the extension removes it, and let the listing carry the
 technical detail. Three `outcomes` bullets is the sweet spot — what you get,
 not how it's built.
+
+All four are **published on the VS Code Marketplace under the `MohitGhodke`
+publisher, free**, and every one carries the `availability` badge and the
+`install` button that says so. That is the thing visitors were missing, so if
+you edit anything here, keep it. Three of the four have no `repo`: those
+repositories are still private while the source is being opened up, and a
+"Source on GitHub" button that 404s is worse than no button — add one back per
+extension as its repo goes public.
 
 To nest another folder in Work the same way, give its window `parent: "work"`
 in `desktop.js` and leave `icon` off. The folder icon, the item count and the
@@ -116,10 +138,11 @@ double-click all follow; only the window's own template block is new.
 **Real content, not placeholder.** Same fields again, same detail window, also
 nested inside Work via `parent: "work"`.
 
-Holds `dinkrum.app` today. The second app goes in as a second object in this
-array — nothing else to touch. It has no `repo` line: the source isn't public,
-so no button renders rather than a dead one. Add `repo` (or swap in an App Store
-URL once it's live) and the button appears.
+Holds `dinkrum.app` today, **live on the App Store and free** — which the
+`availability` badge and the `install` button both say, so nobody has to guess
+whether it shipped. The second app goes in as a second object in this array —
+nothing else to touch. There is no `repo` line: the source isn't public, so no
+button renders rather than a dead one.
 
 Two things to keep honest in this write-up if the app changes:
 
@@ -131,9 +154,13 @@ Two things to keep honest in this write-up if the app changes:
 
 ### 4. `about.js` — About Me.txt
 
-**Real content.** Three paragraphs — the work, what draws you to it, and what
-you do away from a keyboard — plus a `Currently` callout. Set `callout` to
-`null` to drop the boxed note.
+**Real content.** Four paragraphs — the work, the fact that all of it is shipped
+and installable, what draws you to it, and what you do away from a keyboard —
+plus a `Currently` callout. Set `callout` to `null` to drop the boxed note.
+
+Chirp is handed only the **first sentence** of each paragraph, so anything it
+has to know goes before the first full stop. That's why the shipped-and-public
+paragraph opens with one short sentence instead of a long one.
 
 The `Currently` box goes stale faster than anything else on the site; it names
 what you're building right now, so revisit it when that changes.
@@ -186,6 +213,11 @@ The bird's copy, in three parts:
   a whole word or phrase; a reply is picked at random. This is where "can you
   chirp?" and "write my essay" are handled. Keep patterns specific — `"write a"`
   rather than `"write"` — or they swallow real questions.
+
+  The first quip, `availability`, is the exception to "quips are small talk":
+  "can I install these?" is a factual question a 1B model was getting wrong, so
+  it is answered from the copy exactly rather than improvised. Keep its replies
+  true if the Marketplace or App Store situation changes.
 - **`intents`** — the verbs Chirp listens for when asked to work the desktop
   ("pull up his cv"), plus the lines it says while doing it. `{title}` and
   `{shortcut}` are filled in when a line is printed.

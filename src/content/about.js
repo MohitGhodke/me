@@ -17,6 +17,13 @@
         "fetch only the context a task actually needs, and small models " +
         "fine-tuned on a private corpus so the answers never have to leave the " +
         "building.",
+      // The short first sentence is deliberate: Chirp is handed the first
+      // sentence of each paragraph, and this is the fact visitors most often
+      // leave without — so it has to survive being cut at the full stop.
+      "Everything in the Work folder is shipped and public. Four VS Code " +
+        "extensions on the Marketplace and Dinkrum on the App Store, all free " +
+        "to install — I build them because I wanted them at work, and they are " +
+        "out there because a tool that only helps me isn't finished.",
       "What keeps pulling me back is making an expensive thing cheap. A model " +
         "doesn't need the whole repository to answer one question, and a 3B " +
         "model on a Raspberry Pi can handle plenty of what gets sent to " +
@@ -31,9 +38,9 @@
     callout: {
       heading: "Currently",
       body:
-        "Opening up the VS Code extensions, and building a second iOS app. Both " +
-        "are the same question in different clothes: how little does a model " +
-        "actually need to be told?"
+        "Opening up the source of the four published extensions, and building a " +
+        "second iOS app. Both are the same question in different clothes: how " +
+        "little does a model actually need to be told?"
     }
   };
 

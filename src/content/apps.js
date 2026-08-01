@@ -5,14 +5,21 @@
  * `extensions.js`; the same detail window renders all three. The folder sits
  * inside Work, because `desktop.js` gives that window `parent: "work"`.
  *
- *   file     the filename shown under the icon — keep the ".app" suffix
- *   title    the headline inside the window: what it does for you
- *   meta     "App Name · Platform · Year"
- *   image    caption for the hero well (swap for a real screenshot when you have one)
- *   summary  one paragraph: the friction first, then how the app answers it
- *   outcomes three bullets — what you get, not how it is built
- *   tags     the stack
- *   repo     optional; draws a "Source on GitHub" button in the window
+ *   file         the filename shown under the icon — keep the ".app" suffix
+ *   title        the headline inside the window: what it does for you
+ *   meta         "App Name · Platform · Year"
+ *   image        caption for the hero well (swap for a real screenshot when you have one)
+ *   availability where it can be got, in a few words — renders as a badge
+ *   summary      one paragraph: the friction first, then how the app answers it
+ *   outcomes     three bullets — what you get, not how it is built
+ *   tags         the stack
+ *   install      { label, url } — the button that takes you to the listing
+ *   repo         optional; draws a "Source on GitHub" button in the window
+ *
+ * Dinkrum is shipped, not a prototype: it is on the App Store and free, which
+ * is said in `availability` and linked from `install` so a visitor never has to
+ * wonder whether they can actually get it. It has no `repo` — the source isn't
+ * public, so no button renders rather than a dead one.
  *
  * Add the next app as a second object here and it appears in the folder on its
  * own — no layout change, no template change.
@@ -26,6 +33,7 @@
       title: "AI task management that stays on your phone",
       meta: "Dinkrum · iOS · 2026",
       image: "timeline and day cards",
+      availability: "Live on the App Store — free",
       summary:
         "Every task manager that got clever about scheduling did it by putting " +
         "your data on someone's server — an account, a sync engine, an " +
@@ -40,7 +48,11 @@
         "AES-256-GCM at rest, keys in the Keychain — no analytics, no third-party SDKs",
         "Siri, Shortcuts, Spotlight and a Live Activity timer; VoiceOver throughout"
       ],
-      tags: ["Swift / SwiftUI", "FoundationModels", "App Intents", "CryptoKit"]
+      tags: ["Swift / SwiftUI", "FoundationModels", "App Intents", "CryptoKit"],
+      install: {
+        label: "Download on the App Store →",
+        url: "https://apps.apple.com/app/dinkrum/id6759722313"
+      }
     }
   ];
 

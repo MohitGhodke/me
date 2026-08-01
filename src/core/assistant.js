@@ -96,17 +96,32 @@
     // whichever section header echoes its wording, so a vague shared heading
     // reliably loses to a section that happens to mention the same words
     // (the playground's inference-server entry mentions "VS Code" too).
+    // `availability` is carried per item rather than summarised once in the
+    // heading, because the question is usually asked about one of them ("can
+    // I get the token one?") and a model this small answers from the line it
+    // matched, not from the section it sits under.
     function listSection(heading, items) {
       if (!items || !items.length) return;
       out.push("");
       out.push("# " + heading);
       items.forEach(function (p) {
-        out.push("- " + p.title + " (" + p.meta + "): " + firstSentence(p.summary));
+        out.push(
+          "- " + p.title + " (" + p.meta + ")" +
+            (p.availability ? " [" + p.availability + "]" : "") +
+            ": " + firstSentence(p.summary)
+        );
       });
     }
 
-    listSection("VS Code Extensions", content.extensions);
-    listSection("iOS Apps", content.apps);
+    listSection(
+      "VS Code Extensions — published products, not prototypes: any developer " +
+        "can install them free from the VS Code Marketplace today",
+      content.extensions
+    );
+    listSection(
+      "iOS Apps — shipped, on the App Store, free to download today",
+      content.apps
+    );
     listSection("Case studies", content.projects);
 
     if ((content.playground.entries || []).length) {

@@ -109,6 +109,20 @@
         if (p.repo != null && !/^https?:\/\/\S+$/.test(p.repo)) {
           problems.push(at + ".repo must be an absolute http(s) URL");
         }
+        // Optional — employed work usually isn't downloadable. When it is,
+        // both halves have to be there: a badge saying it's live with no way
+        // to get it, or a button with no words on it, is worse than silence.
+        if (p.availability != null && !isNonEmptyString(p.availability)) {
+          problems.push(at + ".availability must be a non-empty string when present");
+        }
+        if (p.install != null) {
+          if (!isNonEmptyString(p.install.label)) {
+            problems.push(at + ".install is missing `label`");
+          }
+          if (!/^https?:\/\/\S+$/.test(p.install.url || "")) {
+            problems.push(at + ".install.url must be an absolute http(s) URL");
+          }
+        }
       });
     }
 

@@ -185,10 +185,35 @@ test("buildContext folds the site's own content into the model's system prompt",
   assert.ok(ctx.includes(content.playground.entries[0].name), "should mention a playground project");
 });
 
+test("buildContext tells the model the shipped work is public and installable", () => {
+  const ctx = buildContext(content);
+  // The single most common thing Chirp got wrong: describing four published
+  // Marketplace extensions and an App Store app as private side projects.
+  assert.match(ctx, /VS Code Marketplace/i);
+  assert.match(ctx, /App Store/i);
+  content.extensions.concat(content.apps).forEach((item) => {
+    assert.ok(
+      ctx.includes(item.availability),
+      `${item.file} should carry its availability into the model's notes`
+    );
+  });
+});
+
 test("buildContext stays well under the 1B model's context window", () => {
   // ~4 chars/token is a safe rule of thumb; the model's window is 4096 tokens
   // and has to fit the conversation and the reply too, not just this context.
   assert.ok(buildContext(content).length <= 6000);
+});
+
+test("the notes are not being silently truncated", () => {
+  // `buildContext` cuts the tail at 6000 characters, and the tail is the
+  // contact details — so growing the content past the budget doesn't break
+  // anything visibly, it just quietly stops Chirp knowing the email address.
+  // This is the loud version of that: shorten something when it fails.
+  const ctx = buildContext(content);
+  assert.ok(ctx.length < 6000, `the notes are at the 6000-char cap (${ctx.length}) and are being cut`);
+  assert.ok(ctx.includes("# Contact"), "the last section survived the cut");
+  assert.ok(ctx.includes(content.site.email), "the email address survived the cut");
 });
 
 /* -------------------------------------------------------------- Chirp quips */
@@ -205,6 +230,15 @@ test("a bird dare is answered by the bird, not the model", () => {
 test("off-topic tasks are turned down locally", () => {
   const reply = matchQuip("if i give you user story to write.. would u do that?", quips, first);
   assert.ok(reply && /mohit/i.test(reply), "should point back at what Chirp is for");
+});
+
+test("'can I actually get this?' is answered from the copy, not improvised", () => {
+  ["where can i download these?", "can i install the extensions?", "is it free?", "are they on the marketplace?"]
+    .forEach((question) => {
+      const reply = matchQuip(question, quips, first);
+      assert.ok(reply, `"${question}" should be answered locally`);
+      assert.match(reply, /marketplace/i, `"${question}" should name where to get them`);
+    });
 });
 
 test("real questions are left for the model to answer", () => {

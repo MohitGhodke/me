@@ -48,6 +48,7 @@
       sectionLabel: styles.sectionLabel(),
       sectionLabelRule: styles.sectionLabel({ rule: true }),
       sectionNote: styles.sectionNote(),
+      statusBadge: styles.statusBadge(),
       resumeLink: styles.resumeLink(),
       resumeStack: styles.resumeStack(),
       resumeSection: styles.resumeSection(),
@@ -188,9 +189,20 @@
         summary: p.summary,
         outcomes: p.outcomes,
         tags: p.tags,
+        // Whether a visitor can go and get the thing is the first question the
+        // window has to answer, so it renders as a badge above the title
+        // rather than as a line of prose they have to reach.
+        availability: p.availability || "",
+        hasAvailability: !!p.availability,
+        installLabel: (p.install && p.install.label) || "",
+        installUrl: (p.install && p.install.url) || "",
+        hasInstall: !!(p.install && p.install.url),
         // Shipped work links out to its source; a case study usually can't.
         repo: p.repo || "",
-        hasRepo: !!p.repo
+        hasRepo: !!p.repo,
+        // One flag for the whole button row, so an item with neither link
+        // doesn't leave an empty gap under its tags.
+        hasLinks: !!(p.repo || (p.install && p.install.url))
       };
     }
 
@@ -233,7 +245,10 @@
           .concat(content.apps)
           .concat(content.projects)
           .forEach(function (p) {
-            row(p.title, p.meta);
+            // On paper there is no button to click, so where the thing can be
+            // got has to be in the words — otherwise the PDF reads as a list
+            // of side projects rather than of shipped, published software.
+            row(p.title, p.availability ? p.meta + " · " + p.availability : p.meta);
             row("", p.summary);
           });
         return rows;

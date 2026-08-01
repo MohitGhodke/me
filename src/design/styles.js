@@ -231,6 +231,21 @@
   }
 
   /**
+   * "Live on the VS Code Marketplace" above an item's headline.
+   *
+   * Filled with the accent rather than outlined like a tag: it is a fact about
+   * the thing being available, not another piece of its stack, and it has to
+   * win the glance against four tag chips further down the window.
+   */
+  function statusBadge() {
+    return join([
+      pixelText(s.chromeSmall, "letter-spacing:0.02em;line-height:1.5;"),
+      "align-self:flex-start;border:" + b.frame + ";border-radius:" + b.radiusSm + ";",
+      "padding:4px 8px;background:" + c.accent + ";color:" + c.accentText + ";"
+    ]);
+  }
+
+  /**
    * The framing sentence under a section heading. Set a measure so it stays
    * readable when the window is zoomed to full screen.
    */
@@ -386,6 +401,7 @@
     infoStrip: infoStrip,
     windowBody: windowBody,
     sectionLabel: sectionLabel,
+    statusBadge: statusBadge,
     sectionNote: sectionNote,
     resumeLink: resumeLink,
     resumeStack: resumeStack,

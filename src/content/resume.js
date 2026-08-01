@@ -22,8 +22,8 @@
       "tooling around delivery — orchestration agents that keep context out of " +
       "the prompt, retrieval-augmented answers, and small language models " +
       "fine-tuned to run offline against a private corpus. Four VS Code " +
-      "extensions and an iOS app built on Apple's on-device models are the part " +
-      "you can go and look at.",
+      "extensions on the Marketplace and an iOS app on the App Store — all " +
+      "published, all free — are the part you can go and install.",
 
     /**
      * Newest first. Titles, employers and dates are from LinkedIn.
@@ -97,7 +97,8 @@
         window: "work",
         label: "Selected work",
         summary:
-          "Four VS Code extensions and an iOS app — all shipped, all mine."
+          "Four VS Code extensions on the Marketplace and an iOS app on the " +
+          "App Store — shipped, public, free to install."
       }
     ]
   };

@@ -39,7 +39,7 @@
       id: "work",
       title: "Work",
       icon: "folder",
-      meta: "Extensions and iOS apps",
+      meta: "Shipped, downloadable work",
       // "his work" and "the work" rather than a bare "work": on its own the
       // word is usually a verb ("who did he work for?"), and a keyword that
       // fires on half the questions asked makes Chirp tiresome.
@@ -52,7 +52,12 @@
       id: "extensions",
       title: "VS Code Extensions",
       parent: "work",
-      keywords: ["extensions", "extension", "vs code", "vscode", "vs code extensions", "plugins"],
+      keywords: [
+        "extensions", "extension", "vs code", "vscode", "vs code extensions", "plugins",
+        // The listing is where they live, so "open the marketplace ones" lands
+        // on this folder — the mirror of "app store" on iOS Apps below.
+        "marketplace", "vs code marketplace"
+      ],
       geometry: { w: 540, h: 340, x: 180, y: 160 }
     },
     {
@@ -209,9 +214,12 @@
     osName: "MOHIT OS 1.0",
     desktopHint: "Double-click an icon to open it.",
     mobileHint: "MOHIT OS 1.0 — tap a row to open it.",
-    workHint: "Double-click to open",
-    extensionsHint: "Double-click to read about one",
-    appsHint: "Double-click to read about one",
+    workHint: "All shipped and public — double-click to open",
+    // The strip is the only copy read before anything is opened, so it says
+    // the one thing the icons can't: these are published, installable tools,
+    // not screenshots of things that were built once.
+    extensionsHint: "All live on the VS Code Marketplace",
+    appsHint: "Live on the App Store",
     listHeader: { name: "Name", kind: "Kind" },
     boot: { title: "Welcome to Mohit OS", status: "Starting up…" },
     shutdown: { message: "It is now safe to close this browser tab.", restart: "Start Up Again" }

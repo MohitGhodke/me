@@ -110,6 +110,44 @@ test("a repo link is optional, but must be a real URL when present", () => {
   }
 });
 
+test("an install link needs both halves, or neither", () => {
+  assert.deepEqual(mutate((c) => { delete c.apps[0].install; }), [], "omitting it is fine");
+
+  for (const bad of ["", "  ", "marketplace.visualstudio.com/items", "/items?itemName=x"]) {
+    const problems = mutate((c) => { c.extensions[0].install.url = bad; });
+    assert.ok(
+      problems.some((p) => p.includes("extensions[0].install.url")),
+      `"${bad}" should have been rejected, got: ${problems.join("; ")}`
+    );
+  }
+
+  assert.ok(
+    mutate((c) => { delete c.extensions[0].install.label; })
+      .some((p) => p.includes("extensions[0].install") && p.includes("label")),
+    "a button with no words on it should be caught"
+  );
+});
+
+test("every shipped extension and app says where to get it", () => {
+  // The whole point of these two folders is that a visitor can go and install
+  // the thing. An entry added later without a listing would quietly read as
+  // another unshipped side project, which is the confusion this guards.
+  [["extensions", content.extensions], ["apps", content.apps]].forEach(([where, items]) => {
+    items.forEach((item, i) => {
+      assert.ok(item.availability, `${where}[${i}] (${item.file}) needs an availability line`);
+      assert.ok(item.install && item.install.url, `${where}[${i}] (${item.file}) needs an install link`);
+    });
+  });
+});
+
+test("an availability badge is optional, but not allowed to be blank", () => {
+  assert.deepEqual(mutate((c) => { delete c.extensions[0].availability; }), [], "omitting it is fine");
+  assert.ok(
+    mutate((c) => { c.extensions[0].availability = "  "; })
+      .some((p) => p.includes("extensions[0].availability"))
+  );
+});
+
 test("a role needs a stack; its description is optional", () => {
   assert.ok(
     mutate((c) => { delete c.resume.roles[0].stack; })
