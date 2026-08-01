@@ -376,16 +376,20 @@ test("icons and list view are mutually exclusive, and neither shows on mobile", 
   assert.deepEqual([mobile.viewIcons, mobile.viewList, mobile.isDesktop], [false, false, false]);
 });
 
-test("the ai state passes through untouched; aiDisabled follows status and busy", () => {
+test("the ai state passes through untouched; only a reply in flight closes the input", () => {
   const lines = [{ kind: "system", text: "hi" }];
   const idle = buildVals({ ai: { status: "idle", lines, input: "x", busy: false } });
   assert.equal(idle.ai.lines, lines);
   assert.equal(idle.ai.input, "x");
   assert.equal(idle.aiDisabled, false);
 
-  assert.equal(buildVals({ ai: { status: "unsupported", lines: [], input: "", busy: false } }).aiDisabled, true);
   assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: true } }).aiDisabled, true);
   assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: false } }).aiDisabled, false);
+  assert.equal(
+    buildVals({ ai: { status: "unsupported", lines: [], input: "", busy: false } }).aiDisabled,
+    false,
+    "no WebGPU still leaves Chirp able to open windows, so the input stays usable"
+  );
 });
 
 test("light and dark define the same set of colors, so neither can drift from the other", () => {

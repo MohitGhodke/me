@@ -220,3 +220,37 @@ test("every shortcut targets a real action", () => {
     assert.ok(known, `shortcut ${s.key} points at unknown action "${s.action}"`);
   });
 });
+
+test("a keyword claimed by two windows is rejected", () => {
+  // Chirp would have to guess which one to open, and a guess that opens the
+  // wrong window over what someone is reading is worse than not understanding.
+  const problems = mutate((c) => {
+    c.desktop.windows.find((w) => w.id === "skills").keywords.push("cv");
+  });
+  assert.ok(
+    problems.some((p) => p.includes("cv") && p.includes("resume") && p.includes("skills")),
+    problems.join("; ")
+  );
+});
+
+test("keywords must be a list of strings when present", () => {
+  const problems = mutate((c) => {
+    c.desktop.windows.find((w) => w.id === "about").keywords = "bio";
+  });
+  assert.ok(problems.some((p) => p.includes("keywords")), problems.join("; "));
+});
+
+test("a window with no keywords is allowed — it just can't be asked for by name", () => {
+  const problems = mutate((c) => {
+    delete c.desktop.windows.find((w) => w.id === "play").keywords;
+  });
+  assert.deepEqual(problems, []);
+});
+
+test("Chirp's instruction vocabulary has to be there", () => {
+  assert.ok(mutate((c) => { delete c.assistant.intents; }).some((p) => p.includes("assistant.intents")));
+  assert.ok(
+    mutate((c) => { c.assistant.intents.openVerbs = []; }).some((p) => p.includes("openVerbs")),
+    "an empty verb list would silently downgrade every instruction into an offer"
+  );
+});

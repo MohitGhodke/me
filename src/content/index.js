@@ -163,11 +163,51 @@
       });
     }
 
+    // Chirp's instruction vocabulary: verbs and spoken lines here, window
+    // names on the window rows. Missing verbs would silently downgrade every
+    // "open the résumé" into an offer, which is a hard bug to spot by eye.
+    if (!c.assistant.intents) {
+      problems.push("assistant.intents is missing");
+    } else {
+      [
+        "openVerbs", "closeVerbs", "closeAllPhrases", "itWords", "acceptWords",
+        "openedLines", "alreadyOpenLines", "closedLines", "notOpenLines",
+        "closedAllLines", "nothingOpenLines", "offerLines"
+      ].forEach(function (field) {
+        if (!isStringArray(c.assistant.intents[field])) {
+          problems.push("assistant.intents." + field + " must be a non-empty list of strings");
+        }
+      });
+      requireFields(c.assistant.intents, ["shortcutHint"], "assistant.intents");
+    }
+
     var seen = Object.create(null);
+    var keywordOwner = Object.create(null);
     c.desktop.windows.forEach(function (w, i) {
       requireFields(w, ["id", "title"], "desktop.windows[" + i + "]");
       if (seen[w.id]) problems.push('desktop.windows: duplicate id "' + w.id + '"');
       seen[w.id] = true;
+
+      // Optional — a window without keywords simply can't be asked for by name.
+      // What isn't optional is that a keyword mean one window: Chirp resolves
+      // ambiguity by guessing, and a guess that opens the wrong window over
+      // what someone was reading is worse than not understanding at all.
+      if (w.keywords != null) {
+        if (!isStringArray(w.keywords)) {
+          problems.push("desktop.windows[" + i + "].keywords must be a non-empty list of strings");
+        } else {
+          w.keywords.forEach(function (keyword) {
+            var key = String(keyword).toLowerCase().trim();
+            if (keywordOwner[key]) {
+              problems.push(
+                'desktop.windows: keyword "' + key + '" is claimed by both "' +
+                  keywordOwner[key] + '" and "' + w.id + '"'
+              );
+            }
+            keywordOwner[key] = w.id;
+          });
+        }
+      }
       var g = w.geometry;
       if (!g || ["w", "h", "x", "y"].some(function (k) { return typeof g[k] !== "number"; })) {
         problems.push("desktop.windows[" + i + "].geometry needs numeric w, h, x and y");

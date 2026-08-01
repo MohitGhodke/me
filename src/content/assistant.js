@@ -167,6 +167,55 @@
       }
     ],
 
+    // Chirp lives on the desktop, so it can work the desktop: "pull up his cv"
+    // opens the résumé window instead of describing it. The vocabulary is
+    // deliberately closed — verbs here, window names on the window rows in
+    // desktop.js — so an instruction is recognised by matching, never guessed
+    // at by the model. A wrong joke is a bad joke; a wrong window opening over
+    // what you were reading is an annoyance.
+    //
+    // `{title}` and `{shortcut}` are filled in when the line is printed.
+    intents: {
+      // An open verb next to a window name is an instruction, and Chirp acts on
+      // it. A window named without one is just a question about that topic —
+      // answered in words, with an offer to open it.
+      openVerbs: [
+        "show", "show me", "open", "open up", "see", "view", "read", "let me see", "can i see",
+        "pull up", "bring up", "take me to", "go to", "launch", "display", "i want to see"
+      ],
+      closeVerbs: ["close", "hide", "shut", "dismiss", "get rid of", "shoo", "put away"],
+      closeAllPhrases: [
+        "close everything", "close them all", "close all", "close all windows",
+        "clear the desktop", "clean up the desktop", "tidy up", "shoo them all"
+      ],
+      // "close it" — whatever Chirp opened last.
+      itWords: ["it", "that", "this", "them", "that one"],
+      // What counts as taking Chirp up on an offer.
+      acceptWords: ["y", "yes", "yeah", "yep", "sure", "ok", "okay", "please", "go on", "do it", "open it"],
+
+      openedLines: [
+        "*flaps over and pulls up {title}*",
+        "*hops across the desktop and opens {title}*",
+        "{title}, coming right up. *wing-flap*"
+      ],
+      alreadyOpenLines: [
+        "{title} is already open — brought it to the front. *chirp*",
+        "it's open already. *nudges {title} to the front*"
+      ],
+      closedLines: [
+        "*shoos {title} off the desktop*",
+        "{title}, gone. *satisfied chirp*"
+      ],
+      notOpenLines: ["{title} isn't open — nothing to shoo. *chirp*"],
+      closedAllLines: ["*flaps wildly* — desktop cleared."],
+      nothingOpenLines: ["nothing's open but me, and i'm staying put. *chirp*"],
+      offerLines: [
+        "want me to open {title}? say y.",
+        "i can pull up {title} if you'd rather read it yourself — say y."
+      ],
+      shortcutHint: "({shortcut} opens it next time)"
+    },
+
     inputPlaceholder: "ask a question, or y/n"
   };
 

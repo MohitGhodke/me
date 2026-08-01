@@ -370,10 +370,13 @@
         // through as-is; aiCopy/aiDisabled/aiShowCursor are derived from it.
         ai: ctx.ai,
         aiCopy: content.assistant,
-        aiDisabled: !!(ctx.ai && (ctx.ai.status === "unsupported" || ctx.ai.busy)),
+        // Only a reply in flight closes the input. A browser without WebGPU
+        // can't run the model, but Chirp can still work the desktop — "open
+        // his résumé" needs no model — so the line stays open there too.
+        aiDisabled: !!(ctx.ai && ctx.ai.busy),
         // The decorative blinking cursor stands in for the empty input, so it
         // has no reason to show while there's nothing to type into.
-        aiShowCursor: !!(ctx.ai && !ctx.ai.input && ctx.ai.status !== "unsupported" && !ctx.ai.busy),
+        aiShowCursor: !!(ctx.ai && !ctx.ai.input && !ctx.ai.busy),
 
         // ---- derived view data
         s: s,

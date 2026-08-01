@@ -30,6 +30,7 @@ src/content/             ▸ THE COPY. Edit these; nothing else.
   skills.js                the System Profile window
   playground.js            the terminal's side projects
   contact.js               contact copy and form behaviour
+  assistant.js             Chirp's copy: consent, quips, and the desktop verbs it obeys
   desktop.js               which windows exist, the menu bar, keyboard shortcuts
   index.js                 assembles the above and validates it at boot
 
@@ -42,6 +43,8 @@ src/core/                browser-agnostic logic, unit-tested in Node
   menu-controller.js       menu bar latch-and-track behaviour
   clipboard.js             copy that reports honest success or failure
   shortcuts.js             key bindings, matched against data
+  assistant.js             the in-browser model: system prompt, session, local quips
+  intents.js               a visitor's line → an action the desktop already has
   system.js                clock, viewport, safe localStorage, external links
 
 src/app/

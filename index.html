@@ -34,6 +34,7 @@
 <script src="./src/core/shortcuts.js"></script>
 <script src="./src/core/system.js"></script>
 <script src="./src/core/assistant.js"></script>
+<script src="./src/core/intents.js"></script>
 <script src="./src/content/site.js"></script>
 <script src="./src/content/resume.js"></script>
 <script src="./src/content/projects.js"></script>
@@ -769,11 +770,18 @@ if (!OS || !OS.content || !OS.createViewModel) {
   );
 }
 
-const { content, styles, tokens, system, clipboard, shortcuts, assistant } = OS;
+const { content, styles, tokens, system, clipboard, shortcuts, assistant, intents } = OS;
 const { motion } = tokens;
 
 /** Actions that simply open the window of the same name. */
 const OPENS_WINDOW = content.windows.map((w) => w.id);
+
+/**
+ * What Chirp listens for when a visitor asks it to work the desktop: the verbs
+ * from the assistant copy, the window names from the window registry. One
+ * object so a new window teaches Chirp about itself just by carrying keywords.
+ */
+const AI_INTENTS = Object.assign({ windows: content.windows }, content.assistant.intents);
 
 /**
  * One style per kind of line the Chirp terminal prints. Computed here
@@ -822,6 +830,13 @@ class Component extends DCLogic {
     this.state.windows = this.windowManager.empty();
     this.isApplePlatform = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || "");
     this.aiSession = null;
+
+    // Chirp's memory of its own hands: the window it opened last (what "close
+    // it" refers to), a window worth offering after the current answer, and
+    // one already offered and waiting on a "y".
+    this.aiOpened = null;
+    this.aiOfferCandidate = null;
+    this.aiPendingOffer = null;
 
     // A visitor's own choice always wins; absent one, follow the OS/browser
     // preference — resolved here, synchronously, so the very first paint is
@@ -1324,6 +1339,28 @@ class Component extends DCLogic {
 
     this.setState((s) => ({ ai: { ...s.ai, input: "" } }));
 
+    // An instruction to the desktop needs no model, so it is carried out
+    // whatever state the conversation is in — including at the consent prompt,
+    // where "show me his resume" should open the résumé rather than count as a
+    // refusal to download anything.
+    if (this.aiAct(value)) return;
+
+    if (ai.status === "ready" && this.aiPendingOffer && intents.isAccepted(value, content.assistant.intents.acceptWords)) {
+      const offered = this.aiPendingOffer;
+      this.aiPendingOffer = null;
+      this.aiPrint("user", content.assistant.prompt + " " + value);
+      this.aiOpenWindow(offered);
+      return;
+    }
+
+    // No model here, and the line wasn't an instruction — say so again rather
+    // than swallowing it, since the input stays open for instructions.
+    if (ai.status === "unsupported") {
+      this.aiPrint("user", content.assistant.prompt + " " + value);
+      this.aiPrint("system", content.assistant.unsupported);
+      return;
+    }
+
     if (ai.status === "awaiting-consent" || ai.status === "declined" || ai.status === "error") {
       if (/^y(es)?$/i.test(value)) {
         system.storage.set(Component.AI_CONSENT_KEY, "1");
@@ -1376,6 +1413,118 @@ class Component extends DCLogic {
       });
   };
 
+  /* --------------------------------------------------- Chirp's own two wings */
+
+  /** One of `lines` from the assistant copy, filled in and printed as Chirp. */
+  aiSay(lines, values) {
+    this.aiPrint("assistant", intents.line(lines, values));
+  }
+
+  /** The window title Chirp uses when it talks about a window. */
+  aiTitleOf(id) {
+    return (content.windowById[id] || {}).title || id;
+  }
+
+  /**
+   * Opens a window on Chirp's say-so and reports it in the transcript, with
+   * the keyboard shortcut for next time where there is one — the point is to
+   * teach the desktop, not to become the only way to use it.
+   */
+  aiOpenWindow(id) {
+    this.openWindow(id);
+    this.aiOpened = id;
+
+    const copy = content.assistant.intents;
+    const binding = content.shortcutByAction[id];
+    const hint =
+      binding && !this.state.isMobile
+        ? " " + intents.line([copy.shortcutHint], { shortcut: shortcuts.label(binding, this.isApplePlatform) })
+        : "";
+
+    this.aiPrint("assistant", intents.line(copy.openedLines, { title: this.aiTitleOf(id) }) + hint);
+  }
+
+  /**
+   * Chirp works the desktop it lives on: "pull up his cv" opens the résumé
+   * window, because the window *is* the answer — no model, no streaming, the
+   * line lands before the visitor's finger leaves Enter.
+   *
+   * Only an explicit instruction acts. A window named without a verb ("what's
+   * in his cv?") stays a question: the model answers it, and Chirp offers the
+   * window afterwards rather than grabbing the wheel off a passing mention.
+   *
+   * @param {string} question  the line the visitor typed
+   * @returns {boolean} true when it was an instruction, and has been carried out
+   */
+  aiAct = (question) => {
+    const intent = intents.matchIntent(question, AI_INTENTS);
+    if (!intent) return false;
+
+    const copy = content.assistant.intents;
+
+    // Not an instruction — remember the window so the answer can end with an
+    // offer. Only worth remembering when there is going to be an answer and the
+    // window isn't open already; anything else would surface as a stale offer
+    // several lines later.
+    if (intent.kind === "offer") {
+      const worthOffering =
+        this.state.ai.status === "ready" && !this.windowManager.isOpen(this.state.windows, intent.target);
+      this.aiOfferCandidate = worthOffering ? intent.target : null;
+      return false;
+    }
+
+    // "close it" — whatever Chirp opened last. With nothing to point at, this
+    // isn't an instruction after all; let the model take the line instead.
+    const target = intent.kind === "close" ? intent.target || this.aiOpened : intent.target;
+    if (intent.kind === "close" && !target) return false;
+
+    this.aiPrint("user", content.assistant.prompt + " " + question);
+
+    if (intent.kind === "closeall") {
+      // Everything except the window the conversation is happening in — a bird
+      // that answers "close everything" by vanishing has taken the request too
+      // literally. Chirp's own window still closes when asked for by name, and
+      // the File menu's Close All still means all.
+      const sweep = content.windows
+        .map((w) => w.id)
+        .filter((id) => id !== "ai" && this.windowManager.isOpen(this.state.windows, id));
+
+      if (!sweep.length) {
+        this.aiSay(copy.nothingOpenLines);
+        return true;
+      }
+      this.setState((s) => ({
+        windows: sweep.reduce((state, id) => this.windowManager.close(state, id), s.windows)
+      }));
+      this.aiOpened = null;
+      this.aiSay(copy.closedAllLines);
+      return true;
+    }
+
+    if (intent.kind === "close") {
+      if (!this.windowManager.isOpen(this.state.windows, target)) {
+        this.aiSay(copy.notOpenLines, { title: this.aiTitleOf(target) });
+        return true;
+      }
+      this.setState((s) => ({ windows: this.windowManager.close(s.windows, target) }));
+      if (this.aiOpened === target) this.aiOpened = null;
+      this.aiSay(copy.closedLines, { title: this.aiTitleOf(target) });
+      return true;
+    }
+
+    // Already open: bring it forward rather than saying nothing, so the
+    // instruction still has a visible effect.
+    if (this.windowManager.isOpen(this.state.windows, target)) {
+      const next = this.windowManager.bringFront(this.state.windows, target);
+      if (next) this.setState({ windows: next });
+      this.aiSay(copy.alreadyOpenLines, { title: this.aiTitleOf(target) });
+      return true;
+    }
+
+    this.aiOpenWindow(target);
+    return true;
+  };
+
   /**
    * Flaps the bird until the first token of a reply lands. The model can take
    * a few seconds to say anything at all, and a terminal that prints nothing
@@ -1419,6 +1568,12 @@ class Component extends DCLogic {
 
     const asked = aiLine("user", content.assistant.prompt + " " + question);
 
+    // A new question retires any offer still waiting on a "y" — "yes" three
+    // questions later means something else entirely.
+    this.aiPendingOffer = null;
+    const offer = this.aiOfferCandidate;
+    this.aiOfferCandidate = null;
+
     // Small talk, bird dares and "write my essay" never reach the model —
     // they're answered from the site's own copy, instantly. See `matchQuip`.
     const quip = assistant.matchQuip(question, content.assistant.quips);
@@ -1457,6 +1612,11 @@ class Component extends DCLogic {
       .then(() => {
         this.aiStopThinking(true); // an empty reply would leave the bird flapping
         this.setState((s) => ({ ai: { ...s.ai, busy: false } }));
+        // The answer came in words; the window it came from is one "y" away.
+        if (offer && !this.windowManager.isOpen(this.state.windows, offer)) {
+          this.aiPendingOffer = offer;
+          this.aiSay(content.assistant.intents.offerLines, { title: this.aiTitleOf(offer) });
+        }
         this.aiSettle();
       })
       .catch(() => {

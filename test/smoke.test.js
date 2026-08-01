@@ -105,6 +105,30 @@ if (jsdom) {
   /** The inline frame style of an open window, found via its title bar. */
   const frameStyle = (dom, id) => query(dom, `[data-win="${id}"]`).parentElement.style;
 
+  /**
+   * Type a line into Chirp and press Enter, the way a visitor does.
+   *
+   * The input is React-controlled, so its value has to be set through the
+   * prototype's own setter — assigning `.value` directly is invisible to React
+   * and the keypress would submit an empty line.
+   */
+  async function askChirp(dom, question) {
+    const { content } = require("../src/content/index.js");
+    const input = query(dom, `input[aria-label="${content.assistant.inputPlaceholder}"]`);
+    assert.ok(input, "Chirp needs an input to type into");
+    assert.ok(!input.disabled, "the input should be usable — Chirp works without the model too");
+
+    const setValue = Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, "value").set;
+    setValue.call(input, question);
+    input.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
+    await settle(dom);
+
+    input.dispatchEvent(
+      new dom.window.KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+    );
+    return settle(dom);
+  }
+
   const text = (dom) => dom.window.document.body.textContent;
   const query = (dom, selector) => dom.window.document.querySelector(selector);
 
@@ -488,6 +512,51 @@ if (jsdom) {
     assert.ok(form.elements.name, "the name field needs a name attribute");
     assert.ok(form.elements.message, "the message field needs a name attribute");
 
+    dom.window.close();
+  });
+
+  // jsdom has no WebGPU, so the model never loads here — which is exactly the
+  // point: opening a window is Chirp's own doing, not the model's, and it has
+  // to work on a browser that can't run one.
+  test("asking Chirp to open a window opens it, and to close it closes it", async () => {
+    const dom = await bootPage();
+    const { content } = require("../src/content/index.js");
+
+    await fire(dom, query(dom, '[data-app="ai"]'), "dblclick");
+    assert.ok(query(dom, '[data-win="ai"]'), "the Chirp window should be open");
+    assert.ok(!query(dom, '[data-win="resume"]'), "the résumé should not be open yet");
+
+    await askChirp(dom, "can you show me his resume?");
+    assert.ok(query(dom, '[data-win="resume"]'), "Chirp did not open the résumé");
+    assert.ok(text(dom).includes(content.resume.summary), "…and it should be the real window");
+
+    // "close it" points at whatever Chirp opened last.
+    await askChirp(dom, "close it");
+    assert.ok(!query(dom, '[data-win="resume"]'), "Chirp did not close the résumé");
+
+    assert.deepEqual(dom.problems, [], "the console should stay clean");
+    dom.window.close();
+  });
+
+  test("Chirp leaves a question alone, and clears up after itself", async () => {
+    const dom = await bootPage();
+
+    await fire(dom, query(dom, '[data-app="ai"]'), "dblclick");
+
+    // A window named without a verb is a question — no window may fly open.
+    await askChirp(dom, "what is in his resume?");
+    assert.ok(!query(dom, '[data-win="resume"]'), "a passing mention must not open a window");
+
+    await askChirp(dom, "open the playground");
+    await askChirp(dom, "show me his skills");
+    assert.ok(query(dom, '[data-win="play"]') && query(dom, '[data-win="skills"]'));
+
+    await askChirp(dom, "close everything");
+    assert.ok(!query(dom, '[data-win="play"]'), "the playground should be gone");
+    assert.ok(!query(dom, '[data-win="skills"]'), "skills too");
+    assert.ok(query(dom, '[data-win="ai"]'), "…including Chirp's own window, which it lives in");
+
+    assert.deepEqual(dom.problems, [], "the console should stay clean");
     dom.window.close();
   });
 

@@ -20,6 +20,11 @@
    * @property {string=} meta       subtitle in list view and on mobile
    * @property {string=} parent     id of a folder window this one sits inside
    * @property {object}  geometry   default frame { w, h, x, y } in CSS px
+   * @property {string[]=} keywords what a visitor might call this window when
+   *           asking Chirp to open it ("pull up his cv"). Matched as whole
+   *           words or phrases, and unique across windows — validation rejects
+   *           a keyword claimed by two of them, since Chirp could only guess.
+   *           Omit to keep a window out of Chirp's reach.
    */
   var windows = [
     {
@@ -27,6 +32,7 @@
       title: "Resume.doc",
       icon: "doc",
       meta: "13 years, one page",
+      keywords: ["resume", "resume doc", "cv", "career", "work history", "employment", "job history"],
       geometry: { w: 580, h: 820, x: 90, y: 30 }
     },
     {
@@ -34,6 +40,10 @@
       title: "Work",
       icon: "folder",
       meta: "Extensions and iOS apps",
+      // "his work" and "the work" rather than a bare "work": on its own the
+      // word is usually a verb ("who did he work for?"), and a keyword that
+      // fires on half the questions asked makes Chirp tiresome.
+      keywords: ["work folder", "his work", "the work", "portfolio", "shipped work", "case studies", "case study"],
       geometry: { w: 520, h: 320, x: 150, y: 120 }
     },
     // Lives inside the Work folder rather than on the desktop: `parent` puts a
@@ -42,12 +52,14 @@
       id: "extensions",
       title: "VS Code Extensions",
       parent: "work",
+      keywords: ["extensions", "extension", "vs code", "vscode", "vs code extensions", "plugins"],
       geometry: { w: 540, h: 340, x: 180, y: 160 }
     },
     {
       id: "apps",
       title: "iOS Apps",
       parent: "work",
+      keywords: ["ios", "ios apps", "iphone", "iphone apps", "app store", "mobile apps"],
       geometry: { w: 500, h: 320, x: 210, y: 190 }
     },
     {
@@ -55,6 +67,7 @@
       title: "About Me.txt",
       icon: "doc",
       meta: "Who I am",
+      keywords: ["about", "about me", "bio", "biography", "background", "who he is", "who is he"],
       geometry: { w: 500, h: 644, x: 200, y: 76 }
     },
     {
@@ -62,6 +75,7 @@
       title: "Skills",
       icon: "app",
       meta: "AI, backend, front end",
+      keywords: ["skills", "skill", "tech stack", "stack", "technologies", "toolkit", "expertise"],
       geometry: { w: 470, h: 716, x: 240, y: 48 }
     },
     {
@@ -69,6 +83,7 @@
       title: "Playground",
       icon: "app",
       meta: "Side projects",
+      keywords: ["playground", "side projects", "experiments", "tinkering", "hobby projects"],
       geometry: { w: 500, h: 400, x: 130, y: 190 }
     },
     {
@@ -76,6 +91,7 @@
       title: "Contact",
       icon: "app",
       meta: "Get in touch",
+      keywords: ["contact", "contact form", "get in touch", "reach him", "hire him", "message him"],
       geometry: { w: 430, h: 470, x: 300, y: 120 }
     },
     {
@@ -83,6 +99,9 @@
       title: "Chirp AI",
       icon: "ai",
       meta: "Local AI, ask anything",
+      // Only ever the target of "close chirp": Chirp can't offer to open the
+      // window the conversation is already happening in.
+      keywords: ["chirp ai", "this window", "yourself"],
       geometry: { w: 520, h: 440, x: 170, y: 90 }
     },
     // The shared detail window. Opened from inside either folder, so it has no

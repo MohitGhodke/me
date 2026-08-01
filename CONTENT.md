@@ -174,10 +174,37 @@ The form has no backend: submitting opens the visitor's mail client with the
 fields already filled in, so nothing is silently dropped. To collect messages
 over HTTP instead, set `formAction` to a form endpoint.
 
-### 8. `desktop.js` — structure, not copy
+### 8. `assistant.js` — Chirp's voice and hands
+
+The bird's copy, in three parts:
+
+- **The terminal lines** — greeting, consent prompt, error and `thinkingFrames`,
+  the little ASCII bird that flaps while the model works. ASCII only: Silkscreen
+  has no glyph for most symbols and draws a blank box.
+- **`quips[]`** — `{ id, patterns[], replies[] }`. Answered locally and
+  instantly, with no model involved, when a `pattern` appears in the question as
+  a whole word or phrase; a reply is picked at random. This is where "can you
+  chirp?" and "write my essay" are handled. Keep patterns specific — `"write a"`
+  rather than `"write"` — or they swallow real questions.
+- **`intents`** — the verbs Chirp listens for when asked to work the desktop
+  ("pull up his cv"), plus the lines it says while doing it. `{title}` and
+  `{shortcut}` are filled in when a line is printed.
+
+An **open verb next to a window name** is an instruction and Chirp acts on it.
+A window named *without* one is a question: the model answers it and Chirp
+offers the window afterwards, waiting on a `y`. That split is what stops a
+passing mention from throwing a window over whatever you were reading.
+
+### 9. `desktop.js` — structure, not copy
 
 Only touch this to change *which* windows exist, what the menu bar says, or
 which keys do what. Window titles and desktop labels live here too.
+
+Each window may carry `keywords[]` — what a visitor might call it when asking
+Chirp to open it. They match as whole words or phrases, the most specific match
+wins ("work history" is the résumé; "the work" is the folder), and a keyword may
+belong to only one window: validation rejects one claimed by two, because Chirp
+would have to guess. Omit `keywords` to keep a window out of Chirp's reach.
 
 ---
 
@@ -187,6 +214,7 @@ which keys do what. Window titles and desktop labels live here too.
 
    ```js
    { id: "writing", title: "Writing", icon: "doc", meta: "Essays",
+     keywords: ["writing", "essays", "blog"],
      geometry: { w: 480, h: 420, x: 200, y: 100 } }
    ```
 
@@ -198,9 +226,9 @@ which keys do what. Window titles and desktop labels live here too.
    </sc-if>
    ```
 
-The icon, the list view, the mobile list, `Close All Windows` and the window
-manager pick it up from step 1. `npm test` fails if you do step 1 and forget
-step 2.
+The icon, the list view, the mobile list, `Close All Windows`, the window
+manager and — if you gave it `keywords` — Chirp all pick it up from step 1.
+`npm test` fails if you do step 1 and forget step 2.
 
 ## Adding a menu command
 
