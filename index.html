@@ -839,6 +839,10 @@ class Component extends DCLogic {
     this.aiOfferCandidate = null;
     this.aiPendingOffer = null;
 
+    // Set once a load has failed: the next `y` bins the cached copy before
+    // trying again, rather than retrying onto whatever broke it.
+    this.aiRetryClean = false;
+
     // A visitor's own choice always wins; absent one, follow the OS/browser
     // preference — resolved here, synchronously, so the very first paint is
     // already in the right theme rather than flashing light and correcting.
@@ -1468,7 +1472,7 @@ class Component extends DCLogic {
         system.storage.set(Component.AI_CONSENT_KEY, "1");
         this.setState((s) => ({ ai: { ...s.ai, status: "loading", busy: true } }));
         this.aiSettle();
-        this.aiLoad();
+        this.aiLoad(this.aiRetryClean);
       } else {
         this.aiPrint("system", content.assistant.declined);
         this.setState((s) => ({ ai: { ...s.ai, status: "declined" } }));
@@ -1480,9 +1484,15 @@ class Component extends DCLogic {
     if (ai.status === "ready") this.aiAsk(value);
   };
 
-  /** Downloads (or re-loads from the browser's own cache) and boots the model. */
-  aiLoad = () => {
-    this.aiPrint("system", content.assistant.loadingLabel);
+  /**
+   * Downloads (or re-loads from the browser's own cache) and boots the model.
+   *
+   * @param {boolean=} fresh  bin the cached copy first. Set on every retry
+   *   after a failure: the usual reason the second attempt dies the way the
+   *   first one did is the half-written cache entry the first one left.
+   */
+  aiLoad = (fresh) => {
+    this.aiPrint("system", fresh ? content.assistant.clearingLabel : content.assistant.loadingLabel);
 
     this.aiSession = assistant.createAssistantSession({
       onProgress: (report) => {
@@ -1502,14 +1512,20 @@ class Component extends DCLogic {
     });
 
     this.aiSession
-      .load()
+      .load({ fresh: !!fresh })
       .then(() => {
+        this.aiRetryClean = false;
         this.aiPrint("system", content.assistant.readyLine);
         this.setState((s) => ({ ai: { ...s.ai, status: "ready", busy: false } }));
         this.aiSettle();
       })
-      .catch(() => {
-        this.aiPrint("system", content.assistant.errorLine);
+      .catch((err) => {
+        // A load that died quietly reads differently from one that threw:
+        // "stuck" is worth saying out loud, because the fix (bin it and start
+        // again) sounds like a waste of 600MB unless the visitor knows why.
+        const stalled = err && err.message === "model-stalled";
+        this.aiRetryClean = true; // whatever went wrong, don't retry onto it
+        this.aiPrint("system", stalled ? content.assistant.stalledLine : content.assistant.errorLine);
         this.setState((s) => ({ ai: { ...s.ai, status: "error", busy: false } }));
         this.aiSettle();
       });

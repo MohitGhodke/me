@@ -149,7 +149,17 @@
       });
     }
 
-    requireFields(c.assistant, ["modelLabel", "modelSize", "greeting", "prompt"], "assistant");
+    // Every one of these is printed straight into the terminal, so a typo in
+    // the name of one shows a visitor the word "undefined" at the exact
+    // moment something has already gone wrong.
+    requireFields(
+      c.assistant,
+      [
+        "modelLabel", "modelSize", "greeting", "prompt", "declined", "loadingLabel",
+        "clearingLabel", "readyLine", "unsupported", "errorLine", "stalledLine"
+      ],
+      "assistant"
+    );
     if (!isStringArray(c.assistant.consentLines)) {
       problems.push("assistant.consentLines must be a non-empty list of strings");
     }

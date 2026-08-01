@@ -212,7 +212,7 @@ test("buildContext stays well under the 1B model's context window", () => {
   // and has to fit the conversation and the reply too, not just this context.
   // The other two are bounded now — MAX_HISTORY_MESSAGES and max_tokens — so
   // this is the only part of the window that could quietly grow.
-  assert.ok(buildContext(content).length <= 6600);
+  assert.ok(buildContext(content).length <= 6000);
 });
 
 test("the notes are not being silently truncated", () => {
@@ -221,7 +221,7 @@ test("the notes are not being silently truncated", () => {
   // visibly, it just quietly stops Chirp knowing the email address.
   // This is the loud version of that: shorten something when it fails.
   const ctx = buildContext(content);
-  assert.ok(ctx.length < 6600, `the notes are at the 6600-char cap (${ctx.length}) and are being cut`);
+  assert.ok(ctx.length < 6000, `the notes are at the 6000-char cap (${ctx.length}) and are being cut`);
   assert.ok(ctx.includes("# Contact"), "the last section survived the cut");
   assert.ok(ctx.includes(content.site.email), "the email address survived the cut");
 });
@@ -295,27 +295,28 @@ test("an answer that is part paste keeps the part that is not", () => {
 // answered with the persona sentence from its own system prompt, and
 // introduced itself as the man. The prompt rewrites the opening and keeps the
 // middle, so this is caught on a run of words anywhere in the line.
-test("the model's own instructions are never handed back as an answer", () => {
+test("the model's own rules are never handed back as an answer", () => {
   const live = createReplyFilter(buildContext(content));
-
   assert.equal(
-    live(
-      "As for Mohit Ghodke, I'm a small pixel bird who's been perched on his monitor " +
-      "since his first day as a developer. I've watched him work ever since, and I'm here " +
-      "to answer questions about him for visitors to his portfolio site."
-    ),
+    live("Two or three short lowercase sentences. No markdown. One small bird aside at the end."),
     "",
-    "that is the persona line, not an answer about the human"
+    "that is rule 5 being read out to the visitor"
   );
-  assert.equal(live("Answer in 2-4 short, plain-text sentences, lowercase and friendly."), "");
+  assert.equal(live("Use only the notes below. If they say it, it is true."), "");
 });
 
-test("a bird that describes itself in its own words is still allowed to", () => {
-  // The line above is caught for quoting the prompt, not for being about the
-  // bird — Chirp introducing itself is a perfectly good answer.
+// The regression that made Chirp answer "i don't know" to everything: its
+// character lives in phrases the prompt used to suggest, so indexing the
+// prompt threw away every answer written in the bird's own voice. Only the
+// numbered rules are indexed now, and the rules are kept free of bird talk.
+test("the bird's own voice is never mistaken for a paste", () => {
   const live = createReplyFilter(buildContext(content));
-  const own = "i'm chirp, about 600mb of bird living in this tab. mohit is the human. *chirp*";
-  assert.equal(live(own), own);
+  [
+    "i've been perched on his monitor since his first day as a developer, so yes — he knows angular.",
+    "i was asleep in the desk lamp, off chasing a moth. no idea. *chirp*",
+    "thirteen years on this man's monitor and that has never once come up. ask me about the work.",
+    "i'm chirp, about 600mb of bird living in this tab. mohit is the human. *chirp*"
+  ].forEach((line) => assert.equal(live(line), line, line));
 });
 
 test("an aside with no answer in front of it is not an answer", () => {
@@ -329,7 +330,7 @@ test("an aside with no answer in front of it is not an answer", () => {
 
 test("the prompt tells the model it is not the man", () => {
   const ctx = buildContext(content);
-  assert.match(ctx, /he is a human and you are his bird/i);
+  assert.match(ctx, /is the human\. A question about him is answered about him/i);
   assert.match(ctx, /never by describing yourself/i);
   // The answer to "who is he?" has to exist somewhere that isn't a heading:
   // headings are stripped, and reaching for the persona instead is the bug.
@@ -444,6 +445,43 @@ test("the transcript is capped, so the notes never get crowded out of the window
   );
 });
 
+// A tab closed mid-download leaves a half-written cache entry, and the next
+// visit's fetch never settles: nothing fails, nothing arrives, and the
+// terminal says "downloading model…" forever with the input disabled. There
+// is no way out of that from the visitor's side, so the load has to give up.
+test("a download that goes silent gives up instead of hanging forever", async () => {
+  const session = createAssistantSession({
+    createEngine: () => new Promise(() => {}), // never settles, never ticks
+    stallMs: 60
+  });
+
+  await assert.rejects(() => session.load(), /model-stalled/);
+});
+
+test("a download that is still making progress is left alone", async () => {
+  const engine = { chat: { completions: {} } };
+  const session = createAssistantSession({
+    stallMs: 60,
+    // Slower than the stall window end to end, but never silent for longer
+    // than it — which is the distinction the watchdog has to make, or a slow
+    // connection loses its download to a timeout.
+    createEngine: (tick) =>
+      new Promise((resolve) => {
+        let ticks = 0;
+        const beat = setInterval(() => {
+          tick();
+          if (++ticks === 6) {
+            clearInterval(beat);
+            resolve(engine);
+          }
+        }, 30);
+      })
+  });
+
+  await session.load();
+  assert.ok(true, "a 180ms load survived a 60ms stall window by reporting progress");
+});
+
 test("there is something to say when the whole reply was a paste", () => {
   // `clean` returning "" is what makes the terminal print one of these, so an
   // empty list would leave the question hanging with no reply at all.
@@ -518,9 +556,9 @@ test("a question about the man carries the reminder that he is the man", () => {
 
 test("the prompt spells out both halves of an 'about you' answer", () => {
   const ctx = buildContext(content);
-  assert.match(ctx, /"you" and "your" mean YOU, the bird/);
-  assert.match(ctx, /never repeat a heading, never copy a line out of the notes/i,
-    "the '# About' dump has a rule against it");
+  assert.match(ctx, /"you" means you, the bird/);
+  assert.match(ctx, /Never copy the notes: no headings/i, "the '# About' dump has a rule against it");
+  assert.match(ctx, /Q: when is your birthday\?/i, "and a worked example of being asked about yourself");
 });
 
 test("every quip's replies are reachable", () => {

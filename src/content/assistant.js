@@ -31,7 +31,15 @@
       "this browser can't run the local model (no WebGPU). try a recent " +
       "Chrome or Edge.",
 
-    errorLine: "something went wrong loading the model. type y to try again.",
+    errorLine: "something went wrong loading the model. type y and i'll start over from scratch.",
+
+    // The download went silent rather than failing — usually a half-written
+    // copy left behind by a tab that closed mid-download. Retrying onto it
+    // fails the same way, so the retry bins it first; this line is why the
+    // visitor is being asked to spend the download again.
+    stalledLine:
+      "that download's gone quiet — there's a half-finished copy of me in this browser, left over from a tab that shut mid-flight. type y and i'll bin it and start again.",
+    clearingLabel: "binning the half-downloaded bird, starting fresh…",
 
     // Said when the model had nothing of its own to offer — usually because it
     // reached for a heading and pasted the notes underneath it instead of

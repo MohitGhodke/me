@@ -212,9 +212,22 @@ The bird's copy, in three parts:
   is that it has been perched on Mohit's monitor since his first day writing
   code — so it doesn't have a gap in its notes, it has an alibi, and not
   knowing is its best material. That backstory lives in three places, and they
-  should agree: the persona at the top of `buildContext`, the `how-long` quip,
-  and these lines. Each one should still land somewhere useful — the work, or
-  the contact window.
+  should agree: the persona line at the top of `buildContext`, the `how-long`
+  quip, and these lines. Each one should still land somewhere useful — the
+  work, or the contact window.
+
+  **Chirp's voice belongs here, not in the model's prompt.** The prompt is
+  six short rules and four example answers, and it stays that way: a 1B model
+  skims a long instruction block, and every word of it is a word the notes
+  don't get. Suggesting jokes in the rules also backfires — the reply filter
+  reads a reply built out of prompt phrases as a paste and bins it, so
+  scripting the bird's lines up there is what once left it saying "i don't
+  know" to everything.
+
+  `stalledLine` and `clearingLabel` cover a download that went quiet — closing
+  a tab mid-download leaves a half-written copy that the next visit hangs on
+  forever. The retry throws that copy away, which costs the visitor the
+  download again, so `stalledLine` is where you explain why.
 - **`quips[]`** — `{ id, patterns[], replies[] }`. Answered locally and
   instantly, with no model involved, when a `pattern` appears in the question as
   a whole word or phrase; a reply is picked at random. This is where "can you
