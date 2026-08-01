@@ -65,8 +65,24 @@
       menuSeparator: styles.menuSeparator(),
       windowBodyResume: styles.windowBody("page", "28px 30px 36px"),
       fieldInput: styles.field() + "min-height:" + tokens.layout.minTouchTarget + "px;",
-      fieldArea: styles.field() + "resize:none;"
+      fieldArea: styles.field() + "resize:none;",
+      aiInput: styles.aiInput(false),
+      aiPromptRow: styles.aiPromptRow(false),
+      aiCursor: styles.aiCursor(false)
     };
+
+    // The same bag with every text field grown to 16px. A phone is the only
+    // place it matters — iOS zooms the page in on a smaller one and never
+    // zooms back out — and it is built once here rather than per render,
+    // because which of the two applies is the only thing that changes.
+    var sPhone = Object.assign({}, s, {
+      fieldInput:
+        styles.field({ noZoom: true }) + "min-height:" + tokens.layout.minTouchTarget + "px;",
+      fieldArea: styles.field({ noZoom: true }) + "resize:none;",
+      aiInput: styles.aiInput(true),
+      aiPromptRow: styles.aiPromptRow(true),
+      aiCursor: styles.aiCursor(true)
+    });
 
     var mailto = "mailto:" + content.site.email;
 
@@ -162,7 +178,7 @@
           chromeStyle: styles.titleBar(!ctx.isMobile),
           zoomStyle: styles.titleBarZoom(ctx.isMobile),
           gripStyle: styles.resizeGrip(ctx.isMobile),
-          style: open ? styles.windowFrame(frame, ctx.isMobile) : ""
+          style: open ? styles.windowFrame(frame, ctx.isMobile, ctx.keyboardInset) : ""
         };
       });
       return out;
@@ -387,7 +403,16 @@
         // Only a reply in flight closes the input. A browser without WebGPU
         // can't run the model, but Chirp can still work the desktop — "open
         // his résumé" needs no model — so the line stays open there too.
-        aiDisabled: !!(ctx.ai && ctx.ai.busy),
+        // …except on a phone, where disabling costs more than it says. A
+        // disabled field loses focus, losing focus closes the keyboard, and
+        // iOS won't reopen it without another tap — so the visitor would have
+        // to tap the prompt again after every single answer. The flapping
+        // bird already says Chirp is busy, and `aiSubmit` ignores a line sent
+        // while it is, so nothing is lost by leaving the field alone.
+        aiDisabled: !!(ctx.ai && ctx.ai.busy && !ctx.isPhone),
+        // A phone opening the keyboard the moment the window appears buries
+        // the greeting under it. Let the visitor read first and tap to type.
+        aiAutoFocus: !ctx.isPhone,
         // The blinking cursor stands in for the input's own caret, which the
         // terminal look hides. So it shows exactly when that caret would: the
         // input focused, empty, and open for typing. Blinking at an unfocused
@@ -395,7 +420,7 @@
         aiShowCursor: !!(ctx.ai && ctx.ai.focused && !ctx.ai.input && !ctx.ai.busy),
 
         // ---- derived view data
-        s: s,
+        s: ctx.isPhone ? sPhone : s,
         // A phone has no room for five titles, a clock and a name: it keeps the
         // name. Every window the menus open is a row in the list below them,
         // and the résumé's links are in the window itself, so what goes with

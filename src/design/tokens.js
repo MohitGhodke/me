@@ -90,7 +90,16 @@
     label: 10,
     prose: 14,
     proseDense: 12.5,
-    heading: 15
+    heading: 15,
+    /**
+     * The smallest a field's text may be on a phone. iOS Safari zooms the
+     * whole page in when a field it is focusing has text under 16px, and
+     * doesn't zoom back out — the desktop is left scaled up and half
+     * off-screen, which is the end of the illusion. Every other way of
+     * stopping it (`maximum-scale`, `user-scalable=no`) takes pinch-zoom away
+     * from people who need it, so the text is simply big enough instead.
+     */
+    noZoom: 16
   };
 
   // Ink and rule change with the theme, so these compose the CSS custom
@@ -118,6 +127,8 @@
   var motion = {
     popIn: "popin .12s ease-out",
     dropIn: "dropin .08s ease-out",
+    /** The terminal caret. `steps(1)` is a square blink, not a fade. */
+    blink: "blink 1.1s steps(1) infinite",
     /** How long the boot splash stays up, ms. */
     bootMs: 2100,
     /** How long a toast stays up, ms. */

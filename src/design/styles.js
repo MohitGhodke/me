@@ -32,7 +32,9 @@
     linkHoverBg: "var(--mos-link-hover-bg)",
     rule: "var(--mos-rule)",
     ruleFaint: "var(--mos-rule-faint)",
-    wash: "var(--mos-wash)"
+    wash: "var(--mos-wash)",
+    termText: "var(--mos-term-text)",
+    termDim: "var(--mos-term-dim)"
   };
   var f = tokens.font;
   var s = tokens.size;
@@ -108,14 +110,26 @@
    * floating, so position and chrome collapse. A zoomed window fills the stage
    * too, so it drops the rounding and the drop shadow it has nothing to cast
    * onto.
+   *
+   * @param {number=} keyboardInset  pixels of screen the on-screen keyboard is
+   *   covering. A full-screen window is sized to the layout viewport, which
+   *   the keyboard doesn't change — so without this the input a phone just
+   *   opened the keyboard for is sitting underneath it. Lifting the whole
+   *   window instead of scrolling within it is what makes Chirp behave like a
+   *   chat app: transcript above, prompt on top of the keyboard.
    */
-  function windowFrame(frame, isMobile) {
+  function windowFrame(frame, isMobile, keyboardInset) {
     var base =
       "display:flex;flex-direction:column;border:" + b.frame + ";" +
       "background:" + c.paper + ";overflow:hidden;animation:" + m.popIn + ";";
 
     if (isMobile) {
-      return base + "position:absolute;inset:0;border-width:0;z-index:" + (900 + frame.z) + ";";
+      var bottom = keyboardInset > 0 ? keyboardInset : 0;
+      return join([
+        base,
+        "position:absolute;left:0;right:0;top:0;bottom:" + bottom + "px;",
+        "border-width:0;z-index:" + (900 + frame.z) + ";"
+      ]);
     }
     return join([
       base,
@@ -325,11 +339,69 @@
     return "font-size:" + (px || s.prose) + "px;line-height:1.65;text-wrap:pretty;";
   }
 
-  function field() {
+  /**
+   * @param {{noZoom?: boolean}=} options  `noZoom` holds the text at 16px so
+   *   iOS doesn't zoom the page in when it takes focus. Phones only — see
+   *   `tokens.size.noZoom`.
+   */
+  function field(options) {
+    var px = options && options.noZoom ? Math.max(s.prose, s.noZoom) : s.prose;
     return join([
-      "font-family:" + f.body + ";font-size:" + s.prose + "px;padding:9px 10px;",
+      "font-family:" + f.body + ";font-size:" + px + "px;padding:9px 10px;",
       "border:" + b.frame + ";border-radius:" + b.radiusSm + ";",
       "background:" + c.page + ";color:" + c.ink + ";outline:none;"
+    ]);
+  }
+
+  /**
+   * Chirp's prompt line. The transcript above it is the terminal's own 11px,
+   * but the one element a phone puts a keyboard under has to be 16px or the
+   * page zooms — so on a phone it is the input, and only the input, that
+   * grows. It also stops sharing the row's baseline with the `$`, which is
+   * what keeps the bigger text from looking like a mistake.
+   *
+   * @param {boolean} isPhone
+   */
+  /**
+   * The row Chirp's prompt sits on. On a phone it is the bottom edge of the
+   * screen, so it keeps clear of the home indicator — and gains the height a
+   * thumb expects of the one thing on screen it is meant to tap.
+   *
+   * @param {boolean} isPhone
+   */
+  function aiPromptRow(isPhone) {
+    return join([
+      "flex:0 0 auto;display:flex;align-items:center;gap:6px;",
+      "border-top:1px solid " + c.termDim + ";padding-top:10px;",
+      // The `$` sits in this row and inherits from it, so it grows with the
+      // input rather than being left behind at the terminal's own size.
+      isPhone ? "font-size:" + s.noZoom + "px;" : "",
+      isPhone ? "padding-bottom:env(safe-area-inset-bottom,0px);" : ""
+    ]);
+  }
+
+  /**
+   * The block that blinks where the caret would be, if the terminal hadn't
+   * hidden the real one. Sized to the text it stands in for.
+   *
+   * @param {boolean} isPhone
+   */
+  function aiCursor(isPhone) {
+    return join([
+      "display:inline-block;flex:0 0 auto;",
+      isPhone ? "width:9px;height:18px;" : "width:8px;height:13px;",
+      "background:" + c.termText + ";animation:" + m.blink + ";"
+    ]);
+  }
+
+  function aiInput(isPhone) {
+    return join([
+      "flex:1 1 auto;min-width:0;background:transparent;border:none;outline:none;",
+      // The block cursor next to the prompt stands in for the real caret.
+      "caret-color:transparent;color:" + c.termText + ";",
+      "font-family:" + f.pixel + ";",
+      "font-size:" + (isPhone ? s.noZoom : s.chrome) + "px;",
+      isPhone ? "padding:10px 0;min-height:" + l.minTouchTarget + "px;" : "padding:6px 0;min-height:28px;"
     ]);
   }
 
@@ -411,6 +483,9 @@
     button: button,
     prose: prose,
     field: field,
+    aiInput: aiInput,
+    aiPromptRow: aiPromptRow,
+    aiCursor: aiCursor,
     desktopIcon: desktopIcon,
     desktopIconLabel: desktopIconLabel,
     cssVariables: cssVariables

@@ -27,8 +27,21 @@ test("an open window is given a positioned frame", () => {
 test("on mobile a window fills the stage instead of floating", () => {
   const wm = windowManager();
   const vals = buildVals({ wm, state: wm.open(wm.empty(), "resume"), isMobile: true });
-  assert.match(vals.w.resume.style, /inset:0/);
+  assert.match(vals.w.resume.style, /left:0;right:0;top:0;bottom:0px/);
   assert.doesNotMatch(vals.w.resume.style, /left:\d+px/);
+});
+
+test("a full-screen window sits on top of the keyboard rather than under it", () => {
+  // The layout viewport doesn't shrink when a phone opens its keyboard, so a
+  // window pinned to the bottom of it puts the prompt under the keys — the
+  // visitor taps the input, the keyboard covers it, and they type blind.
+  const wm = windowManager();
+  const open = wm.open(wm.empty(), "ai");
+  const lifted = buildVals({ wm, state: open, isMobile: true, isPhone: true, keyboardInset: 336 });
+  assert.match(lifted.w.ai.style, /bottom:336px/);
+
+  const closed = buildVals({ wm, state: open, isMobile: true, isPhone: true, keyboardInset: 0 });
+  assert.match(closed.w.ai.style, /bottom:0px/, "and drops back down when the keyboard goes");
 });
 
 test("a zoomed window loses the rounding and the shadow it has nothing to cast on", () => {
@@ -404,12 +417,42 @@ test("the ai state passes through untouched; only a reply in flight closes the i
   assert.equal(idle.aiDisabled, false);
 
   assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: true } }).aiDisabled, true);
+  assert.equal(
+    buildVals({ ai: { status: "ready", lines: [], input: "", busy: true }, isPhone: true }).aiDisabled,
+    false,
+    "on a phone, disabling the field closes the keyboard and iOS won't reopen it"
+  );
+  assert.equal(buildVals({ isPhone: true }).aiAutoFocus, false, "and it should not open one uninvited");
+  assert.equal(buildVals({ isPhone: false }).aiAutoFocus, true);
   assert.equal(buildVals({ ai: { status: "ready", lines: [], input: "", busy: false } }).aiDisabled, false);
   assert.equal(
     buildVals({ ai: { status: "unsupported", lines: [], input: "", busy: false } }).aiDisabled,
     false,
     "no WebGPU still leaves Chirp able to open windows, so the input stays usable"
   );
+});
+
+// iOS zooms the whole page in when it focuses a field whose text is under
+// 16px, and never zooms back out — so on a phone the desktop is left scaled
+// up and half off-screen the first time anyone taps Chirp's prompt.
+test("no field a phone can focus is small enough to make iOS zoom the page", () => {
+  const phone = buildVals({ isPhone: true }).s;
+  [
+    ["aiInput", phone.aiInput],
+    ["fieldInput", phone.fieldInput],
+    ["fieldArea", phone.fieldArea]
+  ].forEach(([name, style]) => {
+    const px = Number(/font-size:([\d.]+)px/.exec(style)[1]);
+    assert.ok(px >= 16, `${name} is ${px}px on a phone, which iOS will zoom in on`);
+  });
+});
+
+test("everything with room for a real window keeps the type it was designed with", () => {
+  // The 16px floor is a phone workaround, not a design change: an iPad and a
+  // desktop both keep the terminal's own 11px prompt.
+  const desk = buildVals({ isPhone: false }).s;
+  assert.match(desk.aiInput, /font-size:11px/);
+  assert.match(desk.fieldInput, /font-size:14px/);
 });
 
 test("the blinking cursor only stands in for a caret that would really be there", () => {

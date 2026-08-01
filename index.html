@@ -630,10 +630,10 @@
               <div style="{{ ln.style }} white-space: pre-wrap;">{{ ln.text }}</div>
             </sc-for>
           </div>
-          <div style="flex: 0 0 auto; display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--mos-term-dim); padding-top: 10px;">
+          <div style="{{ s.aiPromptRow }}">
             <span>{{ aiCopy.prompt }}</span>
             <sc-if value="{{ aiShowCursor }}" hint-placeholder-val="{{ false }}">
-              <span aria-hidden="true" style="display: inline-block; width: 8px; height: 13px; flex: 0 0 auto; background: var(--mos-term-text); animation: blink 1.1s steps(1) infinite;"></span>
+              <span aria-hidden="true" style="{{ s.aiCursor }}"></span>
             </sc-if>
             <input
               ref="{{ setAiInputRef }}"
@@ -649,9 +649,9 @@
               autoCapitalize="off"
               autoCorrect="off"
               spellCheck="false"
-              autoFocus="{{ true }}"
+              autoFocus="{{ aiAutoFocus }}"
               aria-label="{{ aiCopy.inputPlaceholder }}"
-              style="flex: 1 1 auto; min-width: 0; background: transparent; border: none; outline: none; caret-color: transparent; color: var(--mos-term-text); font-family: Silkscreen, monospace; font-size: 11px; padding: 6px 0; min-height: 28px;" />
+              style="{{ s.aiInput }}" />
           </div>
         </div>
       </div>
@@ -793,6 +793,8 @@ class Component extends DCLogic {
     showBoot: false,
     isMobile: false,
     isPhone: false,
+    // Pixels of the screen the on-screen keyboard is covering — phones only.
+    keyboardInset: 0,
     clock: "",
     item: { list: "projects", index: 0 },
     menu: null,
@@ -902,6 +904,10 @@ class Component extends DCLogic {
 
     window.addEventListener("resize", this.onResize);
     window.addEventListener("keydown", this.onKeyDown);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", this.onViewportChange);
+      window.visualViewport.addEventListener("scroll", this.onViewportChange);
+    }
   }
 
   componentWillUnmount() {
@@ -912,6 +918,10 @@ class Component extends DCLogic {
     clearInterval(this.thinkingTimer);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
+    if (window.visualViewport) {
+      window.visualViewport.removeEventListener("resize", this.onViewportChange);
+      window.visualViewport.removeEventListener("scroll", this.onViewportChange);
+    }
     if (this.themeMedia) this.themeMedia.removeEventListener("change", this.onThemeMediaChange);
     this.endDrag();
     this.endResize();
@@ -962,6 +972,31 @@ class Component extends DCLogic {
       isPhone: system.isPhoneWidth(window.innerWidth),
       windows: this.windowManager.reflow(s.windows)
     }));
+  };
+
+  /**
+   * How much of the screen the on-screen keyboard is covering.
+   *
+   * A full-screen window is laid out against the layout viewport, which the
+   * keyboard doesn't resize — so the prompt the phone just opened a keyboard
+   * for ends up underneath it, and the visitor types blind. The visual
+   * viewport is the part still actually visible, and the difference between
+   * the two is the keyboard.
+   *
+   * Phones only: on anything with room for a real window this is zero, and a
+   * desktop browser reports the same difference for an ordinary pinch-zoom,
+   * which is not something to go moving windows around for.
+   */
+  onViewportChange = () => {
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const covered = system.isPhoneWidth(window.innerWidth)
+      ? Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop))
+      : 0;
+    // Small differences are the browser's own chrome sliding about, not a
+    // keyboard, and reflowing every window for those would be visible jitter.
+    const next = covered > 120 ? covered : 0;
+    if (next !== this.state.keyboardInset) this.setState({ keyboardInset: next });
   };
 
   /* ------------------------------------------------------------- feedback */
@@ -1288,7 +1323,13 @@ class Component extends DCLogic {
   aiSettle = () => {
     requestAnimationFrame(() => {
       if (this.aiScrollRef) this.aiScrollRef.scrollTop = this.aiScrollRef.scrollHeight;
-      if (this.aiInputRef && !this.aiInputRef.disabled) this.aiInputRef.focus();
+      // Not on a phone: focus there means the keyboard, and taking the bottom
+      // half of a small screen is the visitor's call, not ours. Nothing is
+      // lost by leaving it — a phone's field is never disabled, so focus is
+      // never taken away and never needs putting back.
+      if (!this.state.isPhone && this.aiInputRef && !this.aiInputRef.disabled) {
+        this.aiInputRef.focus();
+      }
       this.aiSyncFocus();
     });
   };
@@ -1773,6 +1814,7 @@ class Component extends DCLogic {
       openMenu: s.menu,
       isMobile: s.isMobile,
       isPhone: s.isPhone,
+      keyboardInset: s.keyboardInset,
       isApplePlatform: this.isApplePlatform,
       item: s.item,
       clock: s.clock,
