@@ -125,7 +125,9 @@
     /** Delay before the print dialog, so the resume window can paint first. */
     printDelayMs: 420,
     /** Menu-bar clock refresh interval, ms. */
-    clockMs: 20000
+    clockMs: 20000,
+    /** How fast Chirp flaps its wings while the model is thinking, ms/frame. */
+    chirpFlapMs: 260
   };
 
   var layout = {

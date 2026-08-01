@@ -147,6 +147,21 @@
     if (!isStringArray(c.assistant.consentLines)) {
       problems.push("assistant.consentLines must be a non-empty list of strings");
     }
+    // The thinking line is animated by cycling these, so an empty list would
+    // leave the terminal silent for the several seconds a reply takes.
+    if (!isStringArray(c.assistant.thinkingFrames)) {
+      problems.push("assistant.thinkingFrames must be a non-empty list of strings");
+    }
+    if (!Array.isArray(c.assistant.quips)) {
+      problems.push("assistant.quips must be a list");
+    } else {
+      c.assistant.quips.forEach(function (q, i) {
+        var at = "assistant.quips[" + i + "]";
+        requireFields(q, ["id"], at);
+        if (!isStringArray(q.patterns)) problems.push(at + ".patterns must be a non-empty list of strings");
+        if (!isStringArray(q.replies)) problems.push(at + ".replies must be a non-empty list of strings");
+      });
+    }
 
     var seen = Object.create(null);
     c.desktop.windows.forEach(function (w, i) {

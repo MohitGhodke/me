@@ -783,6 +783,7 @@ const OPENS_WINDOW = content.windows.map((w) => w.id);
 const AI_LINE_STYLE = {
   system: "color:var(--mos-term-dim);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
   progress: "color:var(--mos-term-dim);opacity:0.65;font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
+  thinking: "color:var(--mos-term-dim);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;letter-spacing:0.5px;",
   user: "color:var(--mos-term-text);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;",
   assistant: "color:var(--mos-term-text);font-family:Silkscreen,monospace;font-size:11px;line-height:1.8;"
 };
@@ -888,6 +889,7 @@ class Component extends DCLogic {
     clearTimeout(this.toastTimer);
     clearTimeout(this.printTimer);
     clearInterval(this.clockTimer);
+    clearInterval(this.thinkingTimer);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
     if (this.themeMedia) this.themeMedia.removeEventListener("change", this.onThemeMediaChange);
@@ -1374,37 +1376,91 @@ class Component extends DCLogic {
       });
   };
 
+  /**
+   * Flaps the bird until the first token of a reply lands. The model can take
+   * a few seconds to say anything at all, and a terminal that prints nothing
+   * in the meantime reads as broken — so the wait gets its own animated line,
+   * overwritten in place by the answer the moment there's an answer to print.
+   */
+  aiStartThinking() {
+    clearInterval(this.thinkingTimer);
+    const frames = content.assistant.thinkingFrames;
+    let frame = 0;
+    this.thinkingTimer = setInterval(() => {
+      frame = (frame + 1) % frames.length;
+      this.setState((s) => {
+        const lines = s.ai.lines.slice();
+        const last = lines[lines.length - 1];
+        // The answer (or an error) has already taken the line over — the
+        // flapping is done, it just hasn't been told yet.
+        if (!last || last.kind !== "thinking") return { ai: s.ai };
+        lines[lines.length - 1] = aiLine("thinking", frames[frame]);
+        return { ai: { ...s.ai, lines } };
+      });
+    }, motion.chirpFlapMs);
+  }
+
+  /** Stops the flapping and clears the frame if nothing replaced it. */
+  aiStopThinking(dropLine) {
+    clearInterval(this.thinkingTimer);
+    this.thinkingTimer = null;
+    if (!dropLine) return;
+    this.setState((s) => {
+      const lines = s.ai.lines.slice();
+      const last = lines[lines.length - 1];
+      if (last && last.kind === "thinking") lines.pop();
+      return { ai: { ...s.ai, lines } };
+    });
+  }
+
   /** Streams a reply token by token into a trailing assistant line. */
   aiAsk = (question) => {
     if (!this.aiContext) this.aiContext = assistant.buildContext(content);
+
+    const asked = aiLine("user", content.assistant.prompt + " " + question);
+
+    // Small talk, bird dares and "write my essay" never reach the model —
+    // they're answered from the site's own copy, instantly. See `matchQuip`.
+    const quip = assistant.matchQuip(question, content.assistant.quips);
+    if (quip) {
+      this.setState((s) => ({
+        ai: { ...s.ai, lines: s.ai.lines.concat([asked, aiLine("assistant", quip)]) }
+      }));
+      this.aiSettle();
+      return;
+    }
 
     this.setState((s) => ({
       ai: {
         ...s.ai,
         busy: true,
-        lines: s.ai.lines.concat([
-          aiLine("user", content.assistant.prompt + " " + question),
-          aiLine("assistant", "")
-        ])
+        lines: s.ai.lines.concat([asked, aiLine("thinking", content.assistant.thinkingFrames[0])])
       }
     }));
     this.aiSettle();
+    this.aiStartThinking();
 
     this.aiSession
       .ask(question, this.aiContext, (delta) => {
+        this.aiStopThinking(false);
         this.setState((s) => {
           const lines = s.ai.lines.slice();
-          const lastText = lines.length ? lines[lines.length - 1].text : "";
-          lines[lines.length - 1] = aiLine("assistant", lastText + delta);
+          const last = lines[lines.length - 1];
+          // The first token retires the flapping line; the rest append to
+          // the answer it left behind.
+          const grown = last && last.kind === "assistant" ? last.text : "";
+          lines[lines.length - 1] = aiLine("assistant", grown + delta);
           return { ai: { ...s.ai, lines } };
         });
         this.aiSettle();
       })
       .then(() => {
+        this.aiStopThinking(true); // an empty reply would leave the bird flapping
         this.setState((s) => ({ ai: { ...s.ai, busy: false } }));
         this.aiSettle();
       })
       .catch(() => {
+        this.aiStopThinking(true);
         this.aiPrint("system", content.assistant.errorLine);
         this.setState((s) => ({ ai: { ...s.ai, status: "error", busy: false } }));
         this.aiSettle();

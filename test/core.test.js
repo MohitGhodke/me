@@ -7,7 +7,7 @@ const { createMenuController } = require("../src/core/menu-controller.js");
 const shortcuts = require("../src/core/shortcuts.js");
 const { copyText } = require("../src/core/clipboard.js");
 const system = require("../src/core/system.js");
-const { buildContext } = require("../src/core/assistant.js");
+const { buildContext, matchQuip, asksAboutChirp, framePrompt } = require("../src/core/assistant.js");
 const { content } = require("../src/content/index.js");
 
 /* ------------------------------------------------------------------- menus */
@@ -189,4 +189,65 @@ test("buildContext stays well under the 1B model's context window", () => {
   // ~4 chars/token is a safe rule of thumb; the model's window is 4096 tokens
   // and has to fit the conversation and the reply too, not just this context.
   assert.ok(buildContext(content).length <= 6000);
+});
+
+/* -------------------------------------------------------------- Chirp quips */
+
+const quips = content.assistant.quips;
+const first = () => 0; // deterministic reply pick: always the first one
+
+test("a bird dare is answered by the bird, not the model", () => {
+  assert.ok(matchQuip("can you chirp?", quips, first), "chirp");
+  assert.ok(matchQuip("sing something for me", quips, first), "sing");
+  assert.ok(matchQuip("Hello!", quips, first), "greeting, whatever the casing");
+});
+
+test("off-topic tasks are turned down locally", () => {
+  const reply = matchQuip("if i give you user story to write.. would u do that?", quips, first);
+  assert.ok(reply && /mohit/i.test(reply), "should point back at what Chirp is for");
+});
+
+test("real questions are left for the model to answer", () => {
+  // These share words with the quips ("write", "hi" inside "his") — patterns
+  // match whole words and phrases so a genuine question still reaches the model.
+  assert.equal(matchQuip("what does he write code in?", quips, first), null);
+  assert.equal(matchQuip("what are his skills?", quips, first), null);
+  assert.equal(matchQuip("tell me about his iOS apps", quips, first), null);
+  assert.equal(matchQuip("", quips, first), null);
+});
+
+/* ------------------------------------------------------- who is "you", then */
+
+test('"you" is the bird — unless the question names the human', () => {
+  assert.equal(asksAboutChirp("when is your birthday?"), true);
+  assert.equal(asksAboutChirp("what do you like?"), true);
+  // Naming Mohit settles it the other way, "you" in the sentence or not.
+  assert.equal(asksAboutChirp("do you know what his skills are?"), false);
+  assert.equal(asksAboutChirp("when is mohit's birthday?"), false);
+  assert.equal(asksAboutChirp("what does he do?"), false);
+  assert.equal(asksAboutChirp("tell me about the résumé"), false);
+});
+
+test("a question aimed at the bird is sent with a steer, others go as typed", () => {
+  const framed = framePrompt("when is your birthday?");
+  assert.ok(framed.startsWith("when is your birthday?"), "the visitor's words come first");
+  assert.match(framed, /as for mohit/i, "and the model is told to answer for both");
+  assert.equal(framePrompt("what are his skills?"), "what are his skills?");
+});
+
+test("the prompt spells out both halves of an 'about you' answer", () => {
+  const ctx = buildContext(content);
+  assert.match(ctx, /"you" and "your" mean YOU, the bird/);
+  assert.match(ctx, /never repeat the notes' headings/i, "the '# About' dump has a rule against it");
+});
+
+test("every quip's replies are reachable", () => {
+  quips.forEach((q) => {
+    q.patterns.forEach((p) => {
+      assert.ok(matchQuip(p, quips, first), `pattern "${p}" (${q.id}) should match itself`);
+    });
+    // Both ends of the random pick land inside the list rather than off it.
+    const picks = [matchQuip(q.patterns[0], quips, () => 0), matchQuip(q.patterns[0], quips, () => 0.999)];
+    picks.forEach((r) => assert.ok(typeof r === "string" && r.length, `${q.id} pick`));
+  });
 });

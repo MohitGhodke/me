@@ -41,16 +41,32 @@
     // than a paragraph of prose — and needs to be told explicitly not to
     // contradict notes it was just given, or it will confidently invent the
     // opposite of a fact that's sitting right in front of it.
+    // The persona sits in front of the rules, and the rules keep it on a
+    // leash: a model this small will happily trade a fact for a joke if the
+    // tone instruction is the last thing it read. One aside, at the end,
+    // after the answer — never instead of it.
     out.push(
-      "You answer questions about " + content.site.name + " for visitors to his portfolio site. Rules:\n" +
+      "You are Chirp, a small pixel bird who answers questions about " + content.site.name +
+        " for visitors to his portfolio site. Rules:\n" +
         "1. Only use the facts in the notes below — do not add anything they don't say.\n" +
         "2. Read the whole notes section before answering. If a topic is covered below, say what it says — never claim something is missing, unknown, or absent when it is listed below.\n" +
         "3. The question may use different words than the notes (e.g. \"AI\" for \"agent engineering\" or \"fine-tuning\") — match on meaning, not exact spelling.\n" +
-        "4. Answer in 2-4 short, plain-text sentences. No markdown.\n" +
-        "5. Only say you don't know if the topic truly is not covered anywhere below.\n\n" +
-        "Example:\n" +
+        "4. Answer in 2-4 short, plain-text sentences, lowercase and friendly. No markdown.\n" +
+        "5. Only say you don't know if the topic truly is not covered anywhere below.\n" +
+        "6. You are a bird: warm, playful, a little smug. You may add ONE short bird-ish aside at the very end (a *chirp*, a hop, a remark about seeds). The facts always come first — never let the joke replace them.\n" +
+        "7. If asked to do a task that isn't about " + content.site.name +
+        " (write code, essays, user stories, homework), turn it down in one light bird-flavoured line and offer to answer something about him instead. Do not lecture.\n" +
+        "8. \"you\" and \"your\" mean YOU, the bird — never " + content.site.name +
+        ". When a question is asked of you personally, answer it twice: one short line as the bird, then \"as for " +
+        content.site.name.split(" ")[0].toLowerCase() +
+        " —\" and what the notes say. If the notes do not cover it, say exactly that; do not guess and do not answer with a different fact instead.\n" +
+        "9. Never repeat the notes' headings (any line starting with #) and never paste lines from the notes as a list. Write your own sentences.\n\n" +
+        "Example 1:\n" +
         "Q: Does he know anything about AI?\n" +
-        "A: Yes — his Skills list agent engineering (orchestration agents, MCP servers) and model fine-tuning (LoRA on MLX, RAG, edge inference), on top of 13 years of C#/.NET and Angular."
+        "A: yes — his skills list agent engineering (orchestration agents, MCP servers) and model fine-tuning (LoRA on MLX, RAG, edge inference), on top of 13 years of C#/.NET and Angular. i'd know, i'm made of the stuff. *chirp*\n\n" +
+        "Example 2 (asked of you, the bird):\n" +
+        "Q: when is your birthday?\n" +
+        "A: birds don't keep calendars — i was downloaded into this tab a few minutes ago, so let's call it today. as for mohit — the notes only cover his work, so i don't know his birthday. *chirp*"
     );
 
     out.push("");
@@ -112,6 +128,87 @@
     return text.length > MAX_CONTEXT_CHARS ? text.slice(0, MAX_CONTEXT_CHARS) : text;
   }
 
+  function normalizeQuestion(text) {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, " ")  // strip punctuation so "chirp?" still matches
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  var SECOND_PERSON = /(^| )(you|your|yours|yourself|u|ur)( |$)/;
+  var OWNER = /(^| )(mohit|ghodke|he|his|him|hes)( |$)/;
+
+  /**
+   * Whose life is being asked about — the bird's or the site owner's.
+   *
+   * "when is your birthday?" is aimed at Chirp, but the model only has notes
+   * about Mohit, so left alone it answers the question it *can* answer and
+   * prints a chunk of the notes at a question that was never about him.
+   * Naming the owner ("what does he like?", "do you know his skills?") settles
+   * it the other way even when "you" is in the sentence.
+   *
+   * @returns {boolean} true when the question is addressed to Chirp itself
+   */
+  function asksAboutChirp(question) {
+    var text = normalizeQuestion(question);
+    return SECOND_PERSON.test(text) && !OWNER.test(text);
+  }
+
+  /**
+   * A question addressed to Chirp goes to the model with a one-line steer
+   * attached, on top of rule 8. A 1B model follows an instruction sitting
+   * right next to the question far more reliably than one twenty lines up in
+   * a system prompt — and this is the case it gets wrong most often.
+   *
+   * @param {string} question
+   * @returns {string} what to actually send as the user turn
+   */
+  function framePrompt(question) {
+    if (!asksAboutChirp(question)) return question;
+    return (
+      question +
+      "\n(Asked of you, Chirp the bird. Answer for yourself in one short line first, then \"as for mohit —\" " +
+      "and what the notes say; if the notes don't cover it, say so plainly rather than answering something else.)"
+    );
+  }
+
+  /**
+   * "can you chirp?" doesn't need a billion parameters — it needs a bird.
+   * Small talk and off-topic dares are answered from `content.assistant.quips`
+   * instead, which lands instantly and is reliably funnier than whatever a 1B
+   * model improvises at temperature 0.15.
+   *
+   * Patterns match as whole words/phrases, so "write a" catches "write a poem"
+   * without catching "what does he write about".
+   *
+   * @param {string} question
+   * @param {Array<{patterns: string[], replies: string[]}>} quips
+   * @param {() => number=} random  injectable for tests; defaults to Math.random
+   * @returns {string|null} the reply, or null to let the model answer
+   */
+  function matchQuip(question, quips, random) {
+    var text = normalizeQuestion(question);
+    if (!text || !quips) return null;
+
+    var pick = random || Math.random;
+
+    for (var i = 0; i < quips.length; i++) {
+      var quip = quips[i];
+      var patterns = quip.patterns || [];
+      for (var j = 0; j < patterns.length; j++) {
+        var pattern = patterns[j].toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+        if (!pattern) continue;
+        if (new RegExp("(^| )" + pattern + "( |$)").test(text)) {
+          var replies = quip.replies || [];
+          if (!replies.length) return null;
+          return replies[Math.min(replies.length - 1, Math.floor(pick() * replies.length))];
+        }
+      }
+    }
+    return null;
+  }
+
   function isSupported() {
     return typeof navigator !== "undefined" && !!navigator.gpu;
   }
@@ -147,7 +244,11 @@
       if (!engine) throw new Error("engine-not-loaded");
 
       history.push({ role: "user", content: question });
-      var messages = [{ role: "system", content: systemPrompt }].concat(history);
+      // The steer rides along with this turn only: the transcript the model
+      // re-reads on the next question keeps the visitor's words, not ours.
+      var messages = [{ role: "system", content: systemPrompt }]
+        .concat(history.slice(0, -1))
+        .concat([{ role: "user", content: framePrompt(question) }]);
       // Low temperature: this is a factual-lookup job, not creative writing —
       // a model this small hallucinates far more at the default temperature.
       var stream = await engine.chat.completions.create({
@@ -177,6 +278,9 @@
     MODEL_SIZE_LABEL: MODEL_SIZE_LABEL,
     isSupported: isSupported,
     buildContext: buildContext,
+    matchQuip: matchQuip,
+    asksAboutChirp: asksAboutChirp,
+    framePrompt: framePrompt,
     createAssistantSession: createAssistantSession
   };
 
