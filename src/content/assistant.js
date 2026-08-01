@@ -12,7 +12,7 @@
     modelLabel: "Llama-3.2-1B-Instruct",
     modelSize: "~600MB",
 
-    greeting: "chirp — a small model that runs in your browser, offline",
+    greeting: "chirp — mohit's bird. on his monitor since day one, in your browser since just now.",
     prompt: "$",
 
     consentLines: [
@@ -25,13 +25,33 @@
     declined: "okay — nothing downloaded. type y any time to change your mind.",
 
     loadingLabel: "downloading model…",
-    readyLine: "ready. ask anything about mohit — but it can still be wrong, so double-check anything important.",
+    readyLine: "ready. i've watched this man work for his whole career — ask me anything about it. small bird, small model: i can still get it wrong, so double-check anything that matters.",
 
     unsupported:
       "this browser can't run the local model (no WebGPU). try a recent " +
       "Chrome or Edge.",
 
     errorLine: "something went wrong loading the model. type y to try again.",
+
+    // Said when the model had nothing of its own to offer — usually because it
+    // reached for a heading and pasted the notes underneath it instead of
+    // answering. That paste is thrown away (see `createReplyFilter` in
+    // src/core/assistant.js) and one of these is printed in its place.
+    //
+    // Not knowing is the bird's best material, so none of these apologise like
+    // a search box. Chirp has been perched on this man's monitor since his
+    // first day writing code — so it doesn't have gaps in its notes, it has an
+    // alibi. Keep that: the joke is that a bird who saw everything still
+    // manages to have missed this exact thing. Every line should still land
+    // somewhere useful — the work, or the contact window.
+    unknownLines: [
+      "*long pause* ...nope. i've been on this man's monitor since his first day writing code and that has never once come up. ask me about the work and i'm a genius again.",
+      "no idea. i was asleep in the desk lamp for whatever that was. the roles, the projects, the things he builds with — those i watched happen. try one of those?",
+      "*tilts head all the way over* not a clue. i only know what happens on this screen, and that never happened on this screen. want the work stuff instead? that i've got.",
+      "he's never mentioned it, and i'd know — i'm always here, i have nothing else going on. open the contact window and ask him yourself, he's nicer about it than i am.",
+      "hm. either he never said it out loud or i was chasing a moth that day. *ruffles feathers* his work, though — every line of that i've seen. go on, ask.",
+      "that one's above my pay grade, and my pay is seeds. what i can do: his roles, what he's shipped, what he works with. pick one. *chirp*"
+    ],
 
     // Printed one frame at a time while the model works out an answer. The
     // first token can be several seconds out, and a terminal that prints
@@ -90,8 +110,24 @@
         // Quips answered about the bird still hand back to the human, so
         // "you" never quietly becomes the last word on the subject.
         replies: [
-          "i'm chirp — about 600mb of bird, living in this browser tab. mohit is the human; i read his site so you don't have to.",
-          "chirp: small bird, smaller brain, runs entirely offline on your machine. the portfolio is mohit's — ask me anything about his work."
+          "i'm chirp — about 600mb of bird, perched on mohit's monitor since his first day writing code. he does the work; i watch and take notes.",
+          "chirp: small bird, smaller brain, runs entirely offline on your machine. i've been sat on this man's screen for his whole career — ask me anything about his work."
+        ]
+      },
+      {
+        // The bird's one piece of backstory, asked for directly. It's also in
+        // the model's persona (see `buildContext`), but this is the question
+        // that gets asked most, and the joke lands better instantly.
+        id: "how-long",
+        patterns: [
+          "how long have you known", "how long have you been", "how do you know him",
+          "how do you know mohit", "have you met him", "do you know him", "known him",
+          "how long have you worked"
+        ],
+        replies: [
+          "since day one. first job, first line of code, first bug he blamed on the compiler. i've been on that monitor ever since — it's a good monitor.",
+          "his whole career. i was there for the c# years, the angular years, and whatever this ai business is. never once been offered a raise.",
+          "longer than anyone else on this site. i don't leave, i don't blink, and i remember which builds he cried about. *chirp*"
         ]
       },
       {

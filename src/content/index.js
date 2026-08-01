@@ -158,6 +158,11 @@
     if (!isStringArray(c.assistant.thinkingFrames)) {
       problems.push("assistant.thinkingFrames must be a non-empty list of strings");
     }
+    // The only thing standing between a visitor and silence when the model
+    // produces nothing usable, so an empty list would lose the answer.
+    if (!isStringArray(c.assistant.unknownLines)) {
+      problems.push("assistant.unknownLines must be a non-empty list of strings");
+    }
     if (!Array.isArray(c.assistant.quips)) {
       problems.push("assistant.quips must be a list");
     } else {

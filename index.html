@@ -1697,23 +1697,39 @@ class Component extends DCLogic {
     this.aiSettle();
     this.aiStartThinking();
 
+    // `ask` hands over the answer as it stands after the notes it copied have
+    // been stripped out, not the raw chunk — so a paste is never drawn and
+    // then taken back. It can shrink as well as grow: a line only shows itself
+    // to be a copy once enough of it has arrived.
     this.aiSession
-      .ask(question, this.aiContext, (delta) => {
-        this.aiStopThinking(false);
+      .ask(question, this.aiContext, (text) => {
+        if (text) this.aiStopThinking(false);
         this.setState((s) => {
           const lines = s.ai.lines.slice();
           const last = lines[lines.length - 1];
-          // The first token retires the flapping line; the rest append to
+          if (!text) {
+            // Everything so far was copied notes. Take the empty line back and
+            // let the bird keep flapping — there may be an answer behind it.
+            if (last && last.kind === "assistant") lines.pop();
+            return { ai: { ...s.ai, lines } };
+          }
+          // The first real text retires the flapping line; the rest replace
           // the answer it left behind.
-          const grown = last && last.kind === "assistant" ? last.text : "";
-          lines[lines.length - 1] = aiLine("assistant", grown + delta);
+          if (last && (last.kind === "assistant" || last.kind === "thinking")) {
+            lines[lines.length - 1] = aiLine("assistant", text);
+          } else {
+            lines.push(aiLine("assistant", text));
+          }
           return { ai: { ...s.ai, lines } };
         });
         this.aiSettle();
       })
-      .then(() => {
+      .then((reply) => {
         this.aiStopThinking(true); // an empty reply would leave the bird flapping
         this.setState((s) => ({ ai: { ...s.ai, busy: false } }));
+        // Nothing survived the filter: the model had no answer of its own, so
+        // say that rather than leaving the question standing there unanswered.
+        if (!reply) this.aiSay(content.assistant.unknownLines);
         // The answer came in words; the window it came from is one "y" away.
         if (offer && !this.windowManager.isOpen(this.state.windows, offer)) {
           this.aiPendingOffer = offer;

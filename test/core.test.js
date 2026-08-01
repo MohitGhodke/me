@@ -7,7 +7,14 @@ const { createMenuController } = require("../src/core/menu-controller.js");
 const shortcuts = require("../src/core/shortcuts.js");
 const { copyText } = require("../src/core/clipboard.js");
 const system = require("../src/core/system.js");
-const { buildContext, matchQuip, asksAboutChirp, framePrompt } = require("../src/core/assistant.js");
+const {
+  buildContext,
+  matchQuip,
+  asksAboutChirp,
+  framePrompt,
+  createReplyFilter,
+  createAssistantSession
+} = require("../src/core/assistant.js");
 const { content } = require("../src/content/index.js");
 
 /* ------------------------------------------------------------------- menus */
@@ -216,6 +223,182 @@ test("the notes are not being silently truncated", () => {
   assert.ok(ctx.includes(content.site.email), "the email address survived the cut");
 });
 
+/* ------------------------------------------------------ Chirp's reply filter */
+
+// The bug this exists for: asked something the notes don't cover, the 1B model
+// grabs the nearest heading and pastes the block under it — and because that
+// paste becomes its own previous turn, every answer after it is the same
+// block again, whatever was asked.
+const NOTES = [
+  "You are Chirp. Rules: 1. Only use the facts in the notes below.",
+  "",
+  "# Mohit Ghodke — Lead Software Engineer (Aarhus)",
+  "Thirteen years building C#/.NET services and Angular front ends.",
+  "",
+  "# Experience",
+  "- Lead Software Engineer at EG A/S (Jun 2026 — Now): C#/.NET, Angular, Azure",
+  "",
+  "# Contact",
+  "Email: hello@example.com"
+].join("\n");
+
+const clean = createReplyFilter(NOTES);
+
+test("a heading pasted out of the notes is not an answer", () => {
+  assert.equal(clean("# Experience"), "");
+  assert.equal(
+    clean("# Experience\n- Lead Software Engineer at EG A/S (Jun 2026 — Now): C#/.NET, Angular, Azure"),
+    "",
+    "the heading and the row under it are the whole of the paste in the reported bug"
+  );
+});
+
+test("a copied line counts even when the model rewords the tail", () => {
+  // Straight from the screenshot: the head is verbatim, the tail is the
+  // question's own words bolted on, which is what made it look like an answer.
+  assert.equal(
+    clean("- Lead Software Engineer at EG A/S (Jun 2026 — Now): C# / .NET, Angular, international clients, and teams that build them."),
+    ""
+  );
+});
+
+test("a line still arriving is held back as soon as it looks like a paste", () => {
+  // Streaming: the filter runs on every token, so a copy has to be caught
+  // before it is drawn rather than shown and then snatched back.
+  assert.equal(clean("- Lead Software Eng"), "", "an exact prefix of a note is already a paste");
+  assert.equal(clean("- Lead"), "- Lead", "…but two words are not enough to call it");
+});
+
+test("an answer in the model's own words is left alone", () => {
+  const answer = "yes — he's been at eg a/s since 2026, leading the teams building c#/.net and angular. *chirp*";
+  assert.equal(clean(answer), answer);
+});
+
+test("the site's own prose is fair game — only the pasted structure is not", () => {
+  // The résumé summary is what a good answer to "who is he?" sounds like.
+  // Filtering that would trade the repetition bug for a mute bird.
+  const prose = "Thirteen years building C#/.NET services and Angular front ends.";
+  assert.equal(clean(prose), prose);
+});
+
+test("an answer that is part paste keeps the part that is not", () => {
+  assert.equal(
+    clean("# Experience\nhe leads the teams that build them, and has for four years.\n- Lead Software Engineer at EG A/S (Jun 2026 — Now): C#/.NET, Angular, Azure"),
+    "he leads the teams that build them, and has for four years."
+  );
+});
+
+test("the filter works against the notes the app actually ships", () => {
+  const live = createReplyFilter(buildContext(content));
+  const role = content.resume.roles[0];
+  const pasted = `- ${role.title} at ${role.company} (${role.period}): ${(role.stack || []).join(", ")}`;
+
+  assert.equal(live("# Experience"), "", "a real heading from the shipped notes");
+  assert.equal(live(pasted), "", "a real row from the shipped notes");
+  assert.equal(
+    live("i don't have that one — my notes are all his work. *chirp*"),
+    "i don't have that one — my notes are all his work. *chirp*"
+  );
+});
+
+/**
+ * A stand-in for the model: replies in order, streamed a line at a time, and
+ * keeps the messages it was sent so the next turn's transcript can be read.
+ */
+function fakeEngine(replies) {
+  const sent = [];
+  return {
+    sent,
+    chat: {
+      completions: {
+        create: async ({ messages }) => {
+          sent.push(messages);
+          const text = replies.shift() || "";
+          return {
+            async *[Symbol.asyncIterator]() {
+              for (const part of text.split(/(?<=\n)/)) {
+                yield { choices: [{ delta: { content: part } }] };
+              }
+            }
+          };
+        }
+      }
+    }
+  };
+}
+
+const PASTE = "# Experience\n- Lead Software Engineer at EG A/S (Jun 2026 — Now): C#/.NET, Angular, Azure";
+
+test("a pasted answer never reaches the visitor", async () => {
+  const engine = fakeEngine([PASTE]);
+  const session = createAssistantSession({ createEngine: async () => engine });
+  await session.load();
+
+  const shown = [];
+  const reply = await session.ask("does he know kubernetes?", NOTES, (text) => shown.push(text));
+
+  assert.equal(reply, "", "there was no answer under the paste");
+  assert.deepEqual(shown, [], "and nothing was drawn on the way, not even briefly");
+});
+
+// The heart of the reported bug: the model reads its own last turn back as the
+// house style, so one paste turned every following answer into the same block.
+test("a pasted answer is kept out of the transcript the model re-reads", async () => {
+  const engine = fakeEngine([PASTE, "he hasn't listed kubernetes. *chirp*"]);
+  const session = createAssistantSession({ createEngine: async () => engine });
+  await session.load();
+
+  await session.ask("does he know kubernetes?", NOTES, () => {});
+  await session.ask("what about terraform?", NOTES, () => {});
+
+  const secondTurn = engine.sent[1];
+  const carried = secondTurn.filter((m) => m.role === "assistant").map((m) => m.content);
+  assert.equal(carried.length, 1);
+  assert.ok(!carried[0].includes("Lead Software Engineer"), `the paste came back: ${carried[0]}`);
+  assert.match(carried[0], /don't know/i, "what it re-reads is a refusal, not a paste");
+});
+
+test("an answer the visitor saw is the one carried into the next turn", async () => {
+  const engine = fakeEngine(["he's been at eg a/s since 2026. *chirp*", "sure."]);
+  const session = createAssistantSession({ createEngine: async () => engine });
+  await session.load();
+
+  const shown = [];
+  const reply = await session.ask("where does he work?", NOTES, (text) => shown.push(text));
+
+  assert.equal(reply, "he's been at eg a/s since 2026. *chirp*");
+  assert.equal(shown[shown.length - 1], reply, "the last thing drawn is the whole answer");
+
+  await session.ask("and before that?", NOTES, () => {});
+  assert.ok(
+    engine.sent[1].some((m) => m.role === "assistant" && m.content === reply),
+    "the answer the visitor read is what the model reads back"
+  );
+});
+
+test("the transcript is capped, so the notes never get crowded out of the window", async () => {
+  const engine = fakeEngine(Array.from({ length: 8 }, (_, i) => `answer ${i}. *chirp*`));
+  const session = createAssistantSession({ createEngine: async () => engine });
+  await session.load();
+
+  for (let i = 0; i < 8; i++) await session.ask(`question ${i}`, NOTES, () => {});
+
+  const last = engine.sent[engine.sent.length - 1];
+  assert.equal(last[0].role, "system", "the notes lead every turn");
+  assert.ok(last.length <= 10, `the model was sent ${last.length} messages`);
+  assert.ok(
+    !last.some((m) => m.content === "question 0"),
+    "the oldest exchange should have fallen off the end"
+  );
+});
+
+test("there is something to say when the whole reply was a paste", () => {
+  // `clean` returning "" is what makes the terminal print one of these, so an
+  // empty list would leave the question hanging with no reply at all.
+  assert.ok(content.assistant.unknownLines.length);
+  content.assistant.unknownLines.forEach((line) => assert.ok(line.trim().length));
+});
+
 /* -------------------------------------------------------------- Chirp quips */
 
 const quips = content.assistant.quips;
@@ -272,7 +455,8 @@ test("a question aimed at the bird is sent with a steer, others go as typed", ()
 test("the prompt spells out both halves of an 'about you' answer", () => {
   const ctx = buildContext(content);
   assert.match(ctx, /"you" and "your" mean YOU, the bird/);
-  assert.match(ctx, /never repeat the notes' headings/i, "the '# About' dump has a rule against it");
+  assert.match(ctx, /never repeat a heading, never copy a line out of the notes/i,
+    "the '# About' dump has a rule against it");
 });
 
 test("every quip's replies are reachable", () => {

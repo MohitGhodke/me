@@ -200,6 +200,21 @@ The bird's copy, in three parts:
 - **The terminal lines** — greeting, consent prompt, error and `thinkingFrames`,
   the little ASCII bird that flaps while the model works. ASCII only: Silkscreen
   has no glyph for most symbols and draws a blank box.
+
+  `unknownLines[]` is the one to know about. Asked something the notes don't
+  cover, a 1B model would rather paste a chunk of them back than admit it —
+  and because it then reads its own paste as the house style, every answer
+  after it is the same block again. Any reply that turns out to be copied
+  notes is thrown away (`createReplyFilter`, src/core/assistant.js) and one of
+  these is printed instead.
+
+  Write them as the bird, not as a search box. Chirp's one piece of backstory
+  is that it has been perched on Mohit's monitor since his first day writing
+  code — so it doesn't have a gap in its notes, it has an alibi, and not
+  knowing is its best material. That backstory lives in three places, and they
+  should agree: the persona at the top of `buildContext`, the `how-long` quip,
+  and these lines. Each one should still land somewhere useful — the work, or
+  the contact window.
 - **`quips[]`** — `{ id, patterns[], replies[] }`. Answered locally and
   instantly, with no model involved, when a `pattern` appears in the question as
   a whole word or phrase; a reply is picked at random. This is where "can you

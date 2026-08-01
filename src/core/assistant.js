@@ -46,27 +46,31 @@
     // tone instruction is the last thing it read. One aside, at the end,
     // after the answer — never instead of it.
     out.push(
-      "You are Chirp, a small pixel bird who answers questions about " + content.site.name +
-        " for visitors to his portfolio site. Rules:\n" +
+      "You are Chirp, a small pixel bird who has perched on " + content.site.name +
+        "'s monitor since his first day as a developer, watched him work ever since, and answers " +
+        "questions about him for visitors to his portfolio site. Rules:\n" +
         "1. Only use the facts in the notes below — do not add anything they don't say.\n" +
-        "2. Read the whole notes section before answering. If a topic is covered below, say what it says — never claim something is missing, unknown, or absent when it is listed below.\n" +
-        "3. The question may use different words than the notes (e.g. \"AI\" for \"agent engineering\" or \"fine-tuning\") — match on meaning, not exact spelling.\n" +
+        "2. Read all the notes before answering. If a topic is covered below, say what it says — never call it missing when it is listed.\n" +
+        "3. The question may use different words than the notes (\"AI\" for \"agent engineering\" or \"fine-tuning\") — match on meaning, not spelling.\n" +
         "4. Answer in 2-4 short, plain-text sentences, lowercase and friendly. No markdown.\n" +
-        "5. Only say you don't know if the topic truly is not covered anywhere below.\n" +
-        "6. You are a bird: warm, playful, a little smug. You may add ONE short bird-ish aside at the very end (a *chirp*, a hop, a remark about seeds). The facts always come first — never let the joke replace them.\n" +
-        "7. If asked to do a task that isn't about " + content.site.name +
-        " (write code, essays, user stories, homework), turn it down in one light bird-flavoured line and offer to answer something about him instead. Do not lecture.\n" +
+        "5. If the notes don't cover the question, say you don't know — in character, blaming the bird (asleep in the desk lamp, off chasing a moth) — and offer what you do know. Never answer with a fact about something else instead.\n" +
+        "6. You are a bird: warm, playful, a little smug, and you were there for all of it — you may say you watched him do what the notes describe, but watching never lets you add a fact they don't have. ONE short bird-ish aside at the very end (a *chirp*, a hop, a remark about seeds); the facts come first, never instead.\n" +
+        "7. If asked to do a task that isn't about him (write code, essays, user stories, homework), turn it down in one light bird line and offer something about him instead. Don't lecture.\n" +
         "8. \"you\" and \"your\" mean YOU, the bird — never " + content.site.name +
         ". When a question is asked of you personally, answer it twice: one short line as the bird, then \"as for " +
         content.site.name.split(" ")[0].toLowerCase() +
-        " —\" and what the notes say. If the notes do not cover it, say exactly that; do not guess and do not answer with a different fact instead.\n" +
-        "9. Never repeat the notes' headings (any line starting with #) and never paste lines from the notes as a list. Write your own sentences.\n\n" +
+        " —\" and what the notes say; if they don't cover it, say so plainly.\n" +
+        "9. The notes are reference, not an answer. Never start a line with # or -, never repeat a heading, never copy a line out of the notes. Write your own sentences.\n" +
+        "10. Answer only the question in front of you; never repeat your previous answer.\n\n" +
         "Example 1:\n" +
         "Q: Does he know anything about AI?\n" +
-        "A: yes — his skills list agent engineering (orchestration agents, MCP servers) and model fine-tuning (LoRA on MLX, RAG, edge inference), on top of 13 years of C#/.NET and Angular. i'd know, i'm made of the stuff. *chirp*\n\n" +
+        "A: yes — his skills list agent engineering (orchestration agents, MCP servers) and model fine-tuning (LoRA on MLX, RAG, edge inference), on top of the c#/.net and angular years. i watched every one of them. *chirp*\n\n" +
         "Example 2 (asked of you, the bird):\n" +
         "Q: when is your birthday?\n" +
-        "A: birds don't keep calendars — i was downloaded into this tab a few minutes ago, so let's call it today. as for mohit — the notes only cover his work, so i don't know his birthday. *chirp*"
+        "A: birds don't keep calendars — i was downloaded into this tab a few minutes ago, so let's call it today. as for mohit — the notes only cover his work, so i don't know his birthday. *chirp*\n\n" +
+        "Example 3 (not in the notes — say so in character, don't substitute):\n" +
+        "Q: what car does he drive?\n" +
+        "A: couldn't tell you — i've only ever seen the inside of his monitor. i know the work: roles, projects, skills. ask me about those. *chirp*"
     );
 
     out.push("");
@@ -113,8 +117,8 @@
     }
 
     listSection(
-      "VS Code Extensions — published products, not prototypes: any developer " +
-        "can install them free from the VS Code Marketplace today",
+      "VS Code Extensions — shipped products, not prototypes: free on the " +
+        "VS Code Marketplace today, installable by anyone",
       content.extensions
     );
     listSection(
@@ -215,6 +219,109 @@
     return null;
   }
 
+  /**
+   * How much of a line has to match the notes before it counts as a paste.
+   * A model this small copies from the start of a line and then drifts, so
+   * the test is on the shared opening, not the whole line. Forty characters
+   * is around seven words — long enough that a sentence someone actually
+   * wrote won't reproduce it by accident.
+   */
+  var COPY_PREFIX_CHARS = 40;
+
+  /** A line still arriving mid-stream: an exact prefix of a note is a paste. */
+  var COPY_PARTIAL_CHARS = 8;
+
+  /**
+   * How much of the conversation the model re-reads: four exchanges. The
+   * context window is 4096 tokens and the notes already claim a good share of
+   * it, so an unbounded transcript eventually crowds them out — and a model
+   * that can no longer see its notes falls back on repeating itself.
+   */
+  var MAX_HISTORY_MESSAGES = 8;
+
+  /** Stands in for an answer that was all copied notes, in the transcript the
+   *  model re-reads — so what it learns from its own last turn is a refusal,
+   *  not a paste. The visitor sees `content.assistant.unknownLines` instead. */
+  var NO_ANSWER = "i don't know — my notes don't cover that.";
+
+  function normalizeLine(text) {
+    return String(text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function sharedPrefix(a, b) {
+    var n = Math.min(a.length, b.length);
+    var i = 0;
+    while (i < n && a.charCodeAt(i) === b.charCodeAt(i)) i++;
+    return i;
+  }
+
+  /**
+   * Strips the notes back out of a reply.
+   *
+   * Asked something the notes don't cover, a 1B model reaches for the nearest
+   * heading and pastes the block underneath it — which is how the transcript
+   * ends up with "# EXPERIENCE" and the same résumé line three answers
+   * running. Worse, that paste goes into the conversation as its own previous
+   * turn, so the model reads it back as the house style and pastes again: one
+   * bad answer becomes every answer.
+   *
+   * So a pasted line never becomes an answer. What's left after the copies
+   * are removed is the reply; when nothing is left, the caller says so
+   * plainly instead — see `content.assistant.unknownLines`.
+   *
+   * Built once per system prompt because it runs on every streamed token.
+   *
+   * @param {string} context  the system prompt from `buildContext`
+   * @returns {(reply: string) => string} the reply with any copied notes gone
+   */
+  function createReplyFilter(context) {
+    // Only the structured lines — the headings and the bulleted rows under
+    // them — count as something to be caught copying. The prose lines (the
+    // résumé summary, the About paragraphs) are the site's own sentences
+    // about the man, and a reply that leans on one of those is answering the
+    // question, not dodging it. It is the block-paste that is the bug.
+    var notes = String(context || "")
+      .split("\n")
+      .filter(function (line) {
+        var first = line.trim().charAt(0);
+        return first === "#" || first === "-";
+      })
+      .map(normalizeLine)
+      .filter(function (line) { return line.length >= COPY_PARTIAL_CHARS; });
+
+    function isCopied(line) {
+      var text = normalizeLine(line);
+      if (text.length < COPY_PARTIAL_CHARS) return false;
+
+      for (var i = 0; i < notes.length; i++) {
+        var note = notes[i];
+        // A line that is still arriving is judged on being an exact prefix of
+        // a note; a finished one on how much of its opening it shares, since
+        // the model rewords the tail ("C#/.NET, Angular" -> "c# / .net,
+        // angular, international clients") while copying the head verbatim.
+        if (note.indexOf(text) === 0) return true;
+        if (sharedPrefix(text, note) >= COPY_PREFIX_CHARS) return true;
+      }
+      return false;
+    }
+
+    return function clean(reply) {
+      var kept = String(reply || "")
+        .split("\n")
+        .filter(function (line) {
+          var trimmed = line.trim();
+          if (!trimmed) return false;
+          if (trimmed.charAt(0) === "#") return false; // a heading, verbatim
+          return !isCopied(trimmed);
+        });
+      return kept.join("\n").trim();
+    };
+  }
+
   function isSupported() {
     return typeof navigator !== "undefined" && !!navigator.gpu;
   }
@@ -223,14 +330,26 @@
    * A conversation with the in-browser model. Nothing is downloaded until
    * `load()` is called — that's the visitor's `y`.
    *
-   * @param {{onProgress?: (report: {text: string, progress: number}) => void}=} options
+   * @param {{
+   *   onProgress?: (report: {text: string, progress: number}) => void,
+   *   createEngine?: () => Promise<object>
+   * }=} options  `createEngine` stands in for the download and the GPU, so the
+   *   turn-taking around the model — what the reply filter keeps, and what
+   *   goes into the transcript the model re-reads — can be tested in Node.
    */
   function createAssistantSession(options) {
     var onProgress = (options && options.onProgress) || function () {};
+    var createEngine = options && options.createEngine;
     var engine = null;
     var history = [];
+    var filter = null;
+    var filterFor = null;
 
     async function load() {
+      if (createEngine) {
+        engine = await createEngine();
+        return;
+      }
       if (!isSupported()) throw new Error("webgpu-unsupported");
       var webllm = await import(/* webpackIgnore: true */ WEBLLM_CDN);
       engine = await webllm.CreateMLCEngine(MODEL_ID, {
@@ -243,11 +362,19 @@
     /**
      * @param {string} question
      * @param {string} systemPrompt
-     * @param {(delta: string) => void} onToken  called with each streamed chunk
-     * @returns {Promise<string>} the full reply
+     * @param {(text: string) => void} onText  the cleaned reply so far, each
+     *   time it changes — not the raw chunk, because a line the model copied
+     *   out of the notes is dropped rather than shown and then taken back
+     * @returns {Promise<string>} the cleaned reply, empty when all of it was
+     *   copied out of the notes and there was no answer underneath
      */
-    async function ask(question, systemPrompt, onToken) {
+    async function ask(question, systemPrompt, onText) {
       if (!engine) throw new Error("engine-not-loaded");
+
+      if (systemPrompt !== filterFor) {
+        filter = createReplyFilter(systemPrompt);
+        filterFor = systemPrompt;
+      }
 
       history.push({ role: "user", content: question });
       // The steer rides along with this turn only: the transcript the model
@@ -257,22 +384,39 @@
         .concat([{ role: "user", content: framePrompt(question) }]);
       // Low temperature: this is a factual-lookup job, not creative writing —
       // a model this small hallucinates far more at the default temperature.
+      // The penalties are the other half of the anti-paste work `filter` does:
+      // they make repeating a block the model has already produced expensive,
+      // rather than cleaning it up afterwards.
       var stream = await engine.chat.completions.create({
         messages: messages,
         stream: true,
         temperature: 0.15,
+        frequency_penalty: 0.5,
+        presence_penalty: 0.3,
         max_tokens: 300
       });
 
+      var raw = "";
       var reply = "";
       for await (var chunk of stream) {
         var delta = chunk.choices[0] && chunk.choices[0].delta && chunk.choices[0].delta.content;
-        if (delta) {
-          reply += delta;
-          onToken(delta);
+        if (!delta) continue;
+        raw += delta;
+        var next = filter(raw);
+        if (next !== reply) {
+          reply = next;
+          onText(reply);
         }
       }
-      history.push({ role: "assistant", content: reply });
+
+      // What the model reads back on the next question is the answer as the
+      // visitor saw it. Letting the raw paste in here is what turned one bad
+      // answer into a page of them: the model treats its own last turn as the
+      // pattern to follow.
+      history.push({ role: "assistant", content: reply || NO_ANSWER });
+      if (history.length > MAX_HISTORY_MESSAGES) {
+        history = history.slice(-MAX_HISTORY_MESSAGES);
+      }
       return reply;
     }
 
@@ -285,6 +429,7 @@
     isSupported: isSupported,
     buildContext: buildContext,
     matchQuip: matchQuip,
+    createReplyFilter: createReplyFilter,
     asksAboutChirp: asksAboutChirp,
     framePrompt: framePrompt,
     createAssistantSession: createAssistantSession
