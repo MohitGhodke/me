@@ -29,7 +29,7 @@ test("a verb next to a window name is an instruction", () => {
     keyword: "resume"
   });
   assert.equal(intentOf("open his cv").target, "resume");
-  assert.equal(intentOf("pull up the playground").target, "play");
+  assert.equal(intentOf("pull up his skills").target, "skills");
   assert.equal(intentOf("i want to see his vs code extensions").target, "extensions");
   assert.equal(intentOf("take me to the contact form").target, "contact");
 });
@@ -61,7 +61,7 @@ test("the more specific window name wins", () => {
 
 test("closing takes a name, or the pronoun for whatever was opened last", () => {
   assert.deepEqual(intentOf("close the resume"), { kind: "close", target: "resume", keyword: "resume" });
-  assert.equal(intentOf("hide the playground").target, "play");
+  assert.equal(intentOf("hide the contact form").target, "contact");
 
   const it = intentOf("close it");
   assert.equal(it.kind, "close");

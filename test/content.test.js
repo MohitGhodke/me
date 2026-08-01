@@ -19,7 +19,6 @@ const PARTS = [
   "apps",
   "about",
   "skills",
-  "playground",
   "assistant",
   "contact",
   "desktop"
@@ -280,7 +279,7 @@ test("keywords must be a list of strings when present", () => {
 
 test("a window with no keywords is allowed — it just can't be asked for by name", () => {
   const problems = mutate((c) => {
-    delete c.desktop.windows.find((w) => w.id === "play").keywords;
+    delete c.desktop.windows.find((w) => w.id === "apps").keywords;
   });
   assert.deepEqual(problems, []);
 });

@@ -28,7 +28,6 @@ src/content/             ▸ THE COPY. Edit these; nothing else.
   apps.js                  the iOS apps, in a folder inside Work
   about.js                 About Me.txt
   skills.js                the System Profile window
-  playground.js            the terminal's side projects
   contact.js               contact copy and form behaviour
   assistant.js             Chirp's copy: consent, quips, and the desktop verbs it obeys
   desktop.js               which windows exist, the menu bar, keyboard shortcuts

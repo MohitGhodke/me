@@ -355,7 +355,7 @@
      * @param {string}  ctx.toast
      * @param {boolean} ctx.showBoot
      * @param {boolean} ctx.isOff
-     * @param {{status: string, lines: object[], input: string, busy: boolean}} ctx.ai
+     * @param {{status: string, lines: object[], input: string, busy: boolean, focused: boolean}} ctx.ai
      * @param {"light"|"dark"} ctx.theme
      */
     function build(ctx) {
@@ -377,7 +377,6 @@
         resume: content.resume,
         about: content.about,
         skills: content.skills,
-        playground: content.playground,
         contact: content.contact,
         shell: content.desktop.shell,
 
@@ -389,9 +388,11 @@
         // can't run the model, but Chirp can still work the desktop — "open
         // his résumé" needs no model — so the line stays open there too.
         aiDisabled: !!(ctx.ai && ctx.ai.busy),
-        // The decorative blinking cursor stands in for the empty input, so it
-        // has no reason to show while there's nothing to type into.
-        aiShowCursor: !!(ctx.ai && !ctx.ai.input && !ctx.ai.busy),
+        // The blinking cursor stands in for the input's own caret, which the
+        // terminal look hides. So it shows exactly when that caret would: the
+        // input focused, empty, and open for typing. Blinking at an unfocused
+        // input invites a visitor to type into a line that isn't listening.
+        aiShowCursor: !!(ctx.ai && ctx.ai.focused && !ctx.ai.input && !ctx.ai.busy),
 
         // ---- derived view data
         s: s,

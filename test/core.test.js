@@ -182,7 +182,7 @@ test("buildContext folds the site's own content into the model's system prompt",
   const ctx = buildContext(content);
   assert.ok(ctx.includes(content.site.name), "should mention the site owner by name");
   assert.ok(ctx.includes(content.resume.roles[0].company), "should mention a real employer");
-  assert.ok(ctx.includes(content.playground.entries[0].name), "should mention a playground project");
+  assert.ok(ctx.includes(content.skills.groups[0].heading), "should mention what he works with");
 });
 
 test("buildContext tells the model the shipped work is public and installable", () => {

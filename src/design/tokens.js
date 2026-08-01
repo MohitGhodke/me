@@ -9,8 +9,8 @@
  * decorative one-offs in the template — the shutdown screen, the wallpaper
  * captions — are inline there on purpose, so they are not duplicated as
  * tokens that would never be read. The terminal's colors *are* tokenized
- * (`color.light/dark.term*`) because the Playground and Chirp AI windows
- * repaint with the rest of the site — see `index.html`'s `AI_LINE_STYLE`.
+ * (`color.light/dark.term*`) because the Chirp AI window repaints with the
+ * rest of the site — see `index.html`'s `AI_LINE_STYLE`.
  */
 ;(function (global) {
   "use strict";
@@ -20,8 +20,8 @@
    * one and publishes it as `--mos-*` custom properties; every builder below
    * reads the properties, never the palette directly, so a theme switch is a
    * repaint rather than a re-render. `termBg`/`termText`/`termDim` are used
-   * only by the Playground and Chirp AI terminal windows, which read as a
-   * light terminal (dark text on a pale ground) in light mode and keep
+   * only by the Chirp AI terminal window, which reads as a
+   * light terminal (dark text on a pale ground) in light mode and keeps
    * today's dark-terminal look — unchanged — in dark mode.
    */
   var color = {

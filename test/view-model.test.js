@@ -88,7 +88,7 @@ test("the handles a finger drags claim the gesture from the browser", () => {
 test("shipped work says it is live and links to where you get it", () => {
   // These two folders are the published software, so every item in them has
   // to carry the badge and the button — that is what separates them from the
-  // playground's experiments.
+  // case studies in the Work folder.
   ["extensions", "apps"].forEach((list) => {
     content[list].forEach((_, i) => {
       const shipped = buildVals({ item: { list, index: i } }).proj;
@@ -410,6 +410,20 @@ test("the ai state passes through untouched; only a reply in flight closes the i
     false,
     "no WebGPU still leaves Chirp able to open windows, so the input stays usable"
   );
+});
+
+test("the blinking cursor only stands in for a caret that would really be there", () => {
+  const ai = (over) =>
+    Object.assign({ status: "ready", lines: [], input: "", busy: false, focused: true }, over);
+
+  assert.equal(buildVals({ ai: ai() }).aiShowCursor, true);
+  assert.equal(
+    buildVals({ ai: ai({ focused: false }) }).aiShowCursor,
+    false,
+    "an unfocused input invites typing that would go nowhere"
+  );
+  assert.equal(buildVals({ ai: ai({ input: "hello" }) }).aiShowCursor, false);
+  assert.equal(buildVals({ ai: ai({ busy: true }) }).aiShowCursor, false);
 });
 
 test("light and dark define the same set of colors, so neither can drift from the other", () => {

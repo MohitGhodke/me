@@ -105,28 +105,40 @@ if (jsdom) {
   /** The inline frame style of an open window, found via its title bar. */
   const frameStyle = (dom, id) => query(dom, `[data-win="${id}"]`).parentElement.style;
 
-  /**
-   * Type a line into Chirp and press Enter, the way a visitor does.
-   *
-   * The input is React-controlled, so its value has to be set through the
-   * prototype's own setter — assigning `.value` directly is invisible to React
-   * and the keypress would submit an empty line.
-   */
-  async function askChirp(dom, question) {
+  function chirpInput(dom) {
     const { content } = require("../src/content/index.js");
     const input = query(dom, `input[aria-label="${content.assistant.inputPlaceholder}"]`);
     assert.ok(input, "Chirp needs an input to type into");
     assert.ok(!input.disabled, "the input should be usable — Chirp works without the model too");
+    return input;
+  }
 
+  /**
+   * Put a line in the input the way a visitor's keyboard would.
+   *
+   * The input is React-controlled, so its value has to be set through the
+   * prototype's own setter — assigning `.value` directly is invisible to React
+   * and a following keypress would submit an empty line.
+   */
+  function typeInto(dom, input, value) {
     const setValue = Object.getOwnPropertyDescriptor(dom.window.HTMLInputElement.prototype, "value").set;
-    setValue.call(input, question);
+    setValue.call(input, value);
     input.dispatchEvent(new dom.window.Event("input", { bubbles: true }));
-    await settle(dom);
+    return settle(dom);
+  }
 
+  function press(dom, input, key) {
     input.dispatchEvent(
-      new dom.window.KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true })
+      new dom.window.KeyboardEvent("keydown", { key, bubbles: true, cancelable: true })
     );
     return settle(dom);
+  }
+
+  /** Type a line into Chirp and press Enter, the way a visitor does. */
+  async function askChirp(dom, question) {
+    const input = chirpInput(dom);
+    await typeInto(dom, input, question);
+    return press(dom, input, "Enter");
   }
 
   const text = (dom) => dom.window.document.body.textContent;
@@ -555,12 +567,12 @@ if (jsdom) {
     await askChirp(dom, "what is in his resume?");
     assert.ok(!query(dom, '[data-win="resume"]'), "a passing mention must not open a window");
 
-    await askChirp(dom, "open the playground");
+    await askChirp(dom, "open the contact form");
     await askChirp(dom, "show me his skills");
-    assert.ok(query(dom, '[data-win="play"]') && query(dom, '[data-win="skills"]'));
+    assert.ok(query(dom, '[data-win="contact"]') && query(dom, '[data-win="skills"]'));
 
     await askChirp(dom, "close everything");
-    assert.ok(!query(dom, '[data-win="play"]'), "the playground should be gone");
+    assert.ok(!query(dom, '[data-win="contact"]'), "the contact window should be gone");
     assert.ok(!query(dom, '[data-win="skills"]'), "skills too");
     assert.ok(query(dom, '[data-win="ai"]'), "…including Chirp's own window, which it lives in");
 
@@ -568,11 +580,80 @@ if (jsdom) {
     dom.window.close();
   });
 
+  test("the arrow keys walk back through what was typed, and back down to the live line", async () => {
+    const dom = await bootPage();
+
+    await fire(dom, query(dom, '[data-app="ai"]'), "dblclick");
+    await askChirp(dom, "open the contact form");
+    await askChirp(dom, "close it");
+
+    const input = chirpInput(dom);
+    await press(dom, input, "ArrowUp");
+    assert.equal(input.value, "close it", "ArrowUp should recall the newest line first");
+
+    await press(dom, input, "ArrowUp");
+    assert.equal(input.value, "open the contact form", "…then the one before it");
+
+    await press(dom, input, "ArrowUp");
+    assert.equal(input.value, "open the contact form", "the oldest line is as far back as it goes");
+
+    await press(dom, input, "ArrowDown");
+    assert.equal(input.value, "close it");
+
+    await press(dom, input, "ArrowDown");
+    assert.equal(input.value, "", "one step past the newest is the line being typed");
+
+    assert.deepEqual(dom.problems, [], "the console should stay clean");
+    dom.window.close();
+  });
+
+  test("a half-typed line survives a walk through the history", async () => {
+    const dom = await bootPage();
+
+    await fire(dom, query(dom, '[data-app="ai"]'), "dblclick");
+    await askChirp(dom, "open the contact form");
+
+    const input = chirpInput(dom);
+    await typeInto(dom, input, "half a que");
+    await press(dom, input, "ArrowUp");
+    assert.equal(input.value, "open the contact form");
+
+    await press(dom, input, "ArrowDown");
+    assert.equal(input.value, "half a que", "the draft should come back untouched");
+
+    dom.window.close();
+  });
+
+  // The input's own caret is hidden to keep the terminal looking like one, so
+  // the blinking block is all a visitor has to go on: blinking at an unfocused
+  // line invites typing that lands nowhere.
+  test("the blinking cursor follows the input's focus", async () => {
+    const dom = await bootPage();
+    const cursor = () => query(dom, '[data-win="ai"]')
+      .parentElement.querySelector('span[aria-hidden="true"][style*="animation: blink"]');
+
+    await fire(dom, query(dom, '[data-app="ai"]'), "dblclick");
+    const input = chirpInput(dom);
+    input.focus();
+    await settle(dom);
+    assert.ok(cursor(), "a focused, empty input should blink");
+
+    input.blur();
+    await settle(dom);
+    assert.ok(!cursor(), "an unfocused input must not");
+
+    input.focus();
+    await typeInto(dom, input, "typing");
+    assert.ok(!cursor(), "…and neither should a line with something in it");
+
+    dom.window.close();
+  });
+
   test("driving the interface logs nothing to the console", async () => {
     const dom = await bootPage();
 
     await fire(dom, query(dom, '[data-app="skills"]'), "dblclick");
-    await fire(dom, query(dom, '[data-app="play"]'), "dblclick");
+    await fire(dom, query(dom, '[data-app="contact"]'), "dblclick");
     await fire(dom, query(dom, '[data-menu="edit"]'), "click");
     await fire(dom, query(dom, '[data-menu="special"]'), "click");
     await fire(dom, query(dom, '[data-win="skills"][role="button"]'), "click");

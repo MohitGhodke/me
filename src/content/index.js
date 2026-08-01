@@ -149,14 +149,6 @@
       });
     }
 
-    if (!Array.isArray(c.playground.entries)) {
-      problems.push("playground.entries must be a list");
-    } else {
-      c.playground.entries.forEach(function (e, i) {
-        requireFields(e, ["name", "description"], "playground.entries[" + i + "]");
-      });
-    }
-
     requireFields(c.assistant, ["modelLabel", "modelSize", "greeting", "prompt"], "assistant");
     if (!isStringArray(c.assistant.consentLines)) {
       problems.push("assistant.consentLines must be a non-empty list of strings");
@@ -281,7 +273,6 @@
       apps: parts.apps,
       about: parts.about,
       skills: parts.skills,
-      playground: parts.playground,
       assistant: parts.assistant,
       contact: parts.contact,
       desktop: parts.desktop,
@@ -304,7 +295,6 @@
     apps: req("apps", "./apps.js"),
     about: req("about", "./about.js"),
     skills: req("skills", "./skills.js"),
-    playground: req("playground", "./playground.js"),
     assistant: req("assistant", "./assistant.js"),
     contact: req("contact", "./contact.js"),
     desktop: req("desktop", "./desktop.js")

@@ -82,8 +82,8 @@
      *   summary  the one or two lines that show on screen
      *
      * The printed detail is derived from that window's own content, so it can
-     * never drift from what the site shows. To add one — "Playground", say —
-     * add a row here and a branch in `detailFor()` in src/app/view-model.js.
+     * never drift from what the site shows. To add one — "Writing", say — add
+     * a row here and a branch in `detailFor()` in src/app/view-model.js.
      */
     sections: [
       {

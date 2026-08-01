@@ -42,7 +42,6 @@
 <script src="./src/content/apps.js"></script>
 <script src="./src/content/about.js"></script>
 <script src="./src/content/skills.js"></script>
-<script src="./src/content/playground.js"></script>
 <script src="./src/content/assistant.js"></script>
 <script src="./src/content/contact.js"></script>
 <script src="./src/content/desktop.js"></script>
@@ -613,31 +612,6 @@
       </div>
     </sc-if>
 
-    <!-- ================================================= window: Playground -->
-    <sc-if value="{{ w.play.open }}" hint-placeholder-val="{{ false }}">
-      <div style="{{ w.play.style }}">
-        <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="play" style="{{ w.play.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="Close Playground" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.play.title }}</div>
-          <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="play" role="button" tabIndex="0" aria-label="{{ w.play.zoomLabel }}" style="{{ w.play.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
-        </div>
-        <div onPointerDown="{{ startResize }}" data-win="play" aria-hidden="true" style="{{ w.play.gripStyle }}"></div>
-        <div class="mos-selectable" style="flex: 1 1 auto; overflow: auto; background: var(--mos-term-bg); color: var(--mos-term-text); font-family: Silkscreen, monospace; font-size: 11px; line-height: 1.9; padding: 18px 20px 26px;">
-          <div style="opacity: 0.6;">{{ playground.lastLogin }}</div>
-          <div style="margin-top: 12px;">{{ playground.command }}</div>
-          <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 12px;">
-            <sc-for list="{{ playground.entries }}" as="e" hint-placeholder-count="3">
-              <div style="display: flex; flex-direction: column; gap: 3px;">
-                <div>{{ e.name }}</div>
-                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.6; color: var(--mos-term-dim);">{{ e.description }}</div>
-              </div>
-            </sc-for>
-          </div>
-          <div style="margin-top: 16px;">$ <span style="display: inline-block; width: 8px; height: 13px; background: var(--mos-term-text); vertical-align: -2px; animation: blink 1.1s steps(1) infinite;"></span></div>
-        </div>
-      </div>
-    </sc-if>
-
     <!-- ======================================================= window: Chirp -->
     <sc-if value="{{ w.ai.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.ai.style }}">
@@ -667,6 +641,8 @@
               value="{{ ai.input }}"
               onChange="{{ aiInputChange }}"
               onKeyDown="{{ aiKeyDown }}"
+              onFocus="{{ aiFocus }}"
+              onBlur="{{ aiBlur }}"
               disabled="{{ aiDisabled }}"
               placeholder="{{ aiCopy.inputPlaceholder }}"
               autoComplete="off"
@@ -829,7 +805,20 @@ class Component extends DCLogic {
     // Chirp: status walks idle -> awaiting-consent -> declined |
     // unsupported | loading -> ready | error. `lines` is everything printed
     // to the terminal so far; `busy` disables input while a reply streams in.
-    ai: { status: "idle", lines: [], input: "", busy: false }
+    // `history` is every line submitted, oldest first, walked with the arrow
+    // keys; `historyIndex` is null while the live line is being typed, and
+    // `draft` parks that half-typed line so walking back down returns it.
+    // `focused` drives the blinking cursor — see `aiShowCursor`.
+    ai: {
+      status: "idle",
+      lines: [],
+      input: "",
+      busy: false,
+      focused: false,
+      history: [],
+      historyIndex: null,
+      draft: ""
+    }
   };
 
   constructor(props) {
@@ -1075,7 +1064,10 @@ class Component extends DCLogic {
 
   openWindow = (id) => {
     this.setState((s) => ({ windows: this.windowManager.open(s.windows, id) }));
-    if (id === "ai") this.aiOpen();
+    // `aiOpen` greets once and settles, then does nothing on later opens — but
+    // a reopened conversation still needs the settle, or the input comes back
+    // unfocused with the transcript scrolled to the top.
+    if (id === "ai") { this.aiOpen(); this.aiSettle(); }
   };
 
   handleOpen = (e) => this.openWindow(e.currentTarget.dataset.app);
@@ -1293,7 +1285,22 @@ class Component extends DCLogic {
     requestAnimationFrame(() => {
       if (this.aiScrollRef) this.aiScrollRef.scrollTop = this.aiScrollRef.scrollHeight;
       if (this.aiInputRef && !this.aiInputRef.disabled) this.aiInputRef.focus();
+      this.aiSyncFocus();
     });
+  };
+
+  /**
+   * The DOM has the last word on whether the input is focused. `focus()` can
+   * be declined (a closed window has no input to focus; iOS declines outside a
+   * gesture), and an input removed from the page never fires a blur — either
+   * would otherwise leave `focused` stuck on, blinking a cursor at a line that
+   * isn't listening, which is the whole thing this tracking exists to stop.
+   */
+  aiSyncFocus = () => {
+    const focused = !!(this.aiInputRef && document.activeElement === this.aiInputRef);
+    if (focused !== this.state.ai.focused) {
+      this.setState((s) => ({ ai: { ...s.ai, focused } }));
+    }
   };
 
   /** Appends one printed line to the terminal. */
@@ -1314,33 +1321,100 @@ class Component extends DCLogic {
 
     if (!assistant.isSupported()) {
       lines.push(aiLine("system", content.assistant.unsupported));
-      this.setState({ ai: { status: "unsupported", lines, input: "", busy: false } });
+      this.setState((s) => ({ ai: { ...s.ai, status: "unsupported", lines, input: "", busy: false } }));
       this.aiSettle();
       return;
     }
 
     if (system.storage.get(Component.AI_CONSENT_KEY) === "1") {
-      this.setState({ ai: { status: "loading", lines, input: "", busy: true } });
+      this.setState((s) => ({ ai: { ...s.ai, status: "loading", lines, input: "", busy: true } }));
       this.aiSettle();
       this.aiLoad();
       return;
     }
 
     content.assistant.consentLines.forEach((text) => lines.push(aiLine("system", text)));
-    this.setState({ ai: { status: "awaiting-consent", lines, input: "", busy: false } });
+    this.setState((s) => ({ ai: { ...s.ai, status: "awaiting-consent", lines, input: "", busy: false } }));
     this.aiSettle();
+  };
+
+  /**
+   * The blinking block next to the prompt is a stand-in for the input's own
+   * caret, which is hidden (`caret-color: transparent`) to keep the terminal
+   * looking like one. A stand-in that blinks while the input isn't focused
+   * says "type here" when typing would go nowhere, so focus is tracked and
+   * `aiShowCursor` reads it.
+   */
+  aiFocus = () => {
+    this.setState((s) => ({ ai: { ...s.ai, focused: true } }));
+  };
+
+  aiBlur = () => {
+    this.setState((s) => ({ ai: { ...s.ai, focused: false } }));
   };
 
   aiInputChange = (e) => {
     const value = e.target.value;
-    this.setState((s) => ({ ai: { ...s.ai, input: value } }));
+    // Typing over a recalled line makes it the live line again, so the next
+    // ArrowUp starts from the newest entry rather than continuing the walk.
+    this.setState((s) => ({ ai: { ...s.ai, input: value, historyIndex: null, draft: "" } }));
   };
 
   aiKeyDown = (e) => {
+    if (e.key === "ArrowUp") {
+      e.preventDefault(); // otherwise the browser jumps the caret to the start
+      this.aiRecall(-1);
+      return;
+    }
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      this.aiRecall(1);
+      return;
+    }
     if (e.key !== "Enter") return;
     e.preventDefault();
     this.aiSubmit();
   };
+
+  /**
+   * Walks the history the way a shell does: up towards older lines, down
+   * towards newer ones, and one step past the newest is the line that was
+   * being typed when the walk started.
+   *
+   * @param {-1|1} step  -1 for older, 1 for newer
+   */
+  aiRecall(step) {
+    const ai = this.state.ai;
+    if (ai.busy) return;
+
+    const history = ai.history || [];
+    if (!history.length) return;
+
+    // A null index means "on the live line", which sits one past the newest
+    // entry — so walking up from there lands on the newest.
+    const from = ai.historyIndex === null ? history.length : ai.historyIndex;
+    const to = Math.min(history.length, Math.max(0, from + step));
+    if (to === from) return; // already at the oldest, or back on the live line
+
+    const draft = ai.historyIndex === null ? ai.input : ai.draft;
+    const back = to === history.length;
+
+    this.setState((s) => ({
+      ai: {
+        ...s.ai,
+        input: back ? draft : history[to],
+        draft: back ? "" : draft,
+        historyIndex: back ? null : to
+      }
+    }));
+
+    // The value lands on the next render; a browser leaves the caret where it
+    // was, which is mid-word on anything longer than the last line.
+    requestAnimationFrame(() => {
+      const el = this.aiInputRef;
+      if (el && !el.disabled) el.setSelectionRange(el.value.length, el.value.length);
+    });
+  }
 
   /** The one input line, dispatched on whatever the terminal is currently asking. */
   aiSubmit = () => {
@@ -1349,7 +1423,23 @@ class Component extends DCLogic {
     const value = ai.input.trim();
     if (!value) return;
 
-    this.setState((s) => ({ ai: { ...s.ai, input: "" } }));
+    // Everything sent is recalled, "y" at the consent gate included — it was
+    // typed at this prompt, so it belongs in this prompt's history. Repeating
+    // the last line doesn't add a second copy, which would need two ArrowUps
+    // to walk past.
+    this.setState((s) => {
+      const history = s.ai.history || [];
+      const last = history[history.length - 1];
+      return {
+        ai: {
+          ...s.ai,
+          input: "",
+          draft: "",
+          historyIndex: null,
+          history: last === value ? history : history.concat([value])
+        }
+      };
+    });
 
     // An instruction to the desktop needs no model, so it is carried out
     // whatever state the conversation is in — including at the consent prompt,
@@ -1680,6 +1770,8 @@ class Component extends DCLogic {
       submitContact: this.submitContact,
       aiInputChange: this.aiInputChange,
       aiKeyDown: this.aiKeyDown,
+      aiFocus: this.aiFocus,
+      aiBlur: this.aiBlur,
       setAiInputRef: this.setAiInputRef,
       setAiScrollRef: this.setAiScrollRef,
       toggleTheme: this.toggleTheme

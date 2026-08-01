@@ -172,9 +172,10 @@ what you're building right now, so revisit it when that changes.
 
 - `kind` is `"chips"` for technologies or `"lines"` for sentences.
 - `note` is optional — a sentence or two under the heading, for a section that
-  needs framing rather than just a list. The two AI sections use it (`AI Tooling`
-  for the orchestration-and-skills approach, `SLM Training` for the fine-tuning
-  work); the stack sections are lists and don't need one.
+  needs framing rather than just a list. The two AI sections use it
+  (`Agent Engineering` for the orchestration-and-skills approach, `Model
+  Fine-Tuning` for the training work); the stack sections are lists and don't
+  need one.
 
 The AI work is split in two on purpose: routing/context engineering and model
 training are different disciplines, and one `note` per group only stretches so
@@ -186,22 +187,13 @@ A result with a number behind it reads better as a case study in
 
 `subtitle` ("9 years in disk") is still template copy — check the number.
 
-### 6. `playground.js` — the terminal
-
-**Real content.** `entries[]`, each `{ name, description }` — the local-model
-side projects that aren't shipped products (the shipped ones are in the Work
-folder). The three invented projects this shipped with — `tinykv`, `slowdns`,
-`rasterbox`, one of which claimed to have made the wallpaper — have been removed.
-
-`lastLogin` is set dressing, like the menu-bar clock. It isn't a claim.
-
-### 7. `contact.js` — the Contact window
+### 6. `contact.js` — the Contact window
 
 The form has no backend: submitting opens the visitor's mail client with the
 fields already filled in, so nothing is silently dropped. To collect messages
 over HTTP instead, set `formAction` to a form endpoint.
 
-### 8. `assistant.js` — Chirp's voice and hands
+### 7. `assistant.js` — Chirp's voice and hands
 
 The bird's copy, in three parts:
 
@@ -227,7 +219,7 @@ A window named *without* one is a question: the model answers it and Chirp
 offers the window afterwards, waiting on a `y`. That split is what stops a
 passing mention from throwing a window over whatever you were reading.
 
-### 9. `desktop.js` — structure, not copy
+### 8. `desktop.js` — structure, not copy
 
 Only touch this to change *which* windows exist, what the menu bar says, or
 which keys do what. Window titles and desktop labels live here too.

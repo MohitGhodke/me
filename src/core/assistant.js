@@ -94,8 +94,7 @@
     // One named section per collection rather than a merged "shipped work"
     // blob — a weak model matches a question ("his VS Code extensions") to
     // whichever section header echoes its wording, so a vague shared heading
-    // reliably loses to a section that happens to mention the same words
-    // (the playground's inference-server entry mentions "VS Code" too).
+    // reliably loses to a section whose own words happen to match better.
     // `availability` is carried per item rather than summarised once in the
     // heading, because the question is usually asked about one of them ("can
     // I get the token one?") and a model this small answers from the line it
@@ -123,14 +122,6 @@
       content.apps
     );
     listSection("Case studies", content.projects);
-
-    if ((content.playground.entries || []).length) {
-      out.push("");
-      out.push("# Side projects (playground) — unlike the sections above, these are unshipped, experimental, and not VS Code extensions");
-      content.playground.entries.forEach(function (e) {
-        out.push("- " + e.name + ": " + firstSentence(e.description));
-      });
-    }
 
     out.push("");
     out.push("# Contact");

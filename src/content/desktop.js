@@ -84,14 +84,6 @@
       geometry: { w: 470, h: 716, x: 240, y: 48 }
     },
     {
-      id: "play",
-      title: "Playground",
-      icon: "app",
-      meta: "Side projects",
-      keywords: ["playground", "side projects", "experiments", "tinkering", "hobby projects"],
-      geometry: { w: 500, h: 400, x: 130, y: 190 }
-    },
-    {
       id: "contact",
       title: "Contact",
       icon: "app",
@@ -154,7 +146,6 @@
         { label: "Open Work Folder", act: "work", shortcut: "work" },
         { label: "Open VS Code Extensions", act: "extensions", shortcut: "extensions" },
         { label: "Open iOS Apps", act: "apps" },
-        { label: "Open Playground", act: "play" },
         { kind: "separator" },
         { label: "Save Resume as PDF…", act: "print", shortcut: "print" },
         { kind: "separator" },
