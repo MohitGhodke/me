@@ -65,6 +65,12 @@ scripts/dev-server.mjs   zero-dependency static server
   tests instead of manual clicking.
 - **The component is a composition root.** It owns React state and DOM events
   and delegates everything else.
+- **A phone gets a phone's navigation.** Below 780px a window fills the screen,
+  so the open windows are a back stack rather than a scattered desktop. Each
+  one owns a browser history entry (`syncNavDepth` in `index.html`), which is
+  what makes the iOS edge swipe and the Android back button close a window
+  instead of leaving the site — and the close box grows into a labelled Back
+  button, because a 14px square in a corner is a desktop idiom.
 
 ---
 
@@ -120,7 +126,7 @@ npm run test:watch    # re-runs on save
 
 | File | What it protects |
 | --- | --- |
-| `window-manager.test.js` | stacking, clamping, drag limits, resize, zoom, immutability |
+| `window-manager.test.js` | stacking, clamping, drag limits, resize, zoom, the mobile back stack, immutability |
 | `core.test.js` | menus, shortcuts, clipboard fallbacks, storage failures |
 | `content.test.js` | the validator actually catches broken content |
 | `view-model.test.js` | state → render values |

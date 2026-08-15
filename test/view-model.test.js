@@ -82,6 +82,41 @@ test("the zoom box and the resize grip collapse on mobile", () => {
   assert.equal(mobile.zoomStyle, "display:none;");
 });
 
+test("the close box becomes a labelled Back button on mobile", () => {
+  // A 14px square in the corner is a Mac idiom that reads as decoration on a
+  // phone, where the window is the whole screen and there is no desktop left
+  // visible for "close" to mean anything against.
+  const wm = windowManager();
+  const state = wm.open(wm.empty(), "resume");
+
+  const desktop = buildVals({ wm, state }).w.resume;
+  assert.match(desktop.closeStyle, /width:14px/);
+  assert.equal(desktop.closeText, "", "the desktop square carries no label");
+  assert.match(desktop.closeLabel, /^Close /);
+
+  const mobile = buildVals({ wm, state, isMobile: true }).w.resume;
+  assert.ok(mobile.closeText, "mobile says what it does in words");
+  assert.equal(mobile.closeLabel, "Back");
+  assert.match(
+    mobile.closeStyle,
+    new RegExp("min-height:" + tokens.layout.minTouchTarget + "px"),
+    "and is big enough to hit with a thumb"
+  );
+});
+
+test("a mobile title bar makes room for the Back button beside it", () => {
+  // Centring needs matching furniture on both sides; on mobile the zoom box
+  // is gone and the close box has grown, so a centred title drifts.
+  const wm = windowManager();
+  const state = wm.open(wm.empty(), "extensions");
+
+  assert.match(buildVals({ wm, state }).w.extensions.titleStyle, /text-align:center/);
+
+  const mobile = buildVals({ wm, state, isMobile: true }).w.extensions.titleStyle;
+  assert.match(mobile, /text-align:left/);
+  assert.match(mobile, /text-overflow:ellipsis/, "a long title truncates rather than shoving");
+});
+
 test("the handles a finger drags claim the gesture from the browser", () => {
   const wm = windowManager();
   const state = wm.open(wm.empty(), "resume");

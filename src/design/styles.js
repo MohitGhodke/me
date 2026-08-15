@@ -171,6 +171,33 @@
   }
 
   /**
+   * The close box — and, on mobile, the way back out of a window.
+   *
+   * On the desktop it is the Mac idiom: a small square in the corner, which
+   * works because the window is one of several floating over a desktop you can
+   * still see, so "close" is obviously what it does. On a phone the window
+   * fills the screen, nothing is left behind it to close *back to*, and the
+   * same square reads as decoration — visitors reach for the back gesture
+   * instead and find nothing. So here it becomes a labelled button at the full
+   * touch target. The gesture itself is the other half of the fix, and lives
+   * in `index.html`: one history entry per open window.
+   */
+  function titleBarClose(isMobile) {
+    if (!isMobile) return titleBarButton(true);
+    return join([
+      "display:flex;align-items:center;justify-content:center;flex:0 0 auto;",
+      "min-height:" + l.minTouchTarget + "px;padding:0 14px;",
+      "border:" + b.frame + ";border-radius:" + b.radiusSm + ";",
+      "background:" + c.paper + ";color:" + c.ink + ";",
+      "cursor:pointer;user-select:none;-webkit-user-select:none;",
+      // The bar itself doesn't claim touches (it isn't draggable on mobile),
+      // so the button only has to opt out of the double-tap zoom delay.
+      "touch-action:manipulation;white-space:nowrap;",
+      pixelText(s.chromeSmall, "letter-spacing:0.04em;")
+    ]);
+  }
+
+  /**
    * The zoom box: the close box's square with the smaller one nested in its
    * corner. Hidden on mobile, where a window already fills the stage.
    */
@@ -204,9 +231,16 @@
     ]);
   }
 
-  function titleBarTitle() {
+  /**
+   * A centred title is a desktop luxury: it needs matching furniture either
+   * side, and on mobile the right-hand zoom box is gone while the left-hand
+   * close box has grown into a Back button. So the title sits beside that
+   * button instead, and truncates rather than pushing it off the bar.
+   */
+  function titleBarTitle(isMobile) {
     return join([
-      "flex:1 1 auto;text-align:center;background:" + c.paper + ";padding:2px 10px;",
+      "flex:1 1 auto;background:" + c.paper + ";padding:2px 10px;",
+      isMobile ? "text-align:left;text-overflow:ellipsis;" : "text-align:center;",
       "white-space:nowrap;overflow:hidden;",
       pixelText(s.chrome)
     ]);
@@ -467,6 +501,7 @@
     windowFrame: windowFrame,
     titleBar: titleBar,
     titleBarButton: titleBarButton,
+    titleBarClose: titleBarClose,
     titleBarZoom: titleBarZoom,
     titleBarTitle: titleBarTitle,
     resizeGrip: resizeGrip,

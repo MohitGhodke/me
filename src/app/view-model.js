@@ -38,12 +38,12 @@
     // Styles that never change are built once, at construction.
     var s = {
       menuBar: styles.menuBar(),
-      // The mobile list's header. A window's own bar is built per-window,
-      // because only that one can be dragged.
+      // The mobile list's header. A window's own bar, close box and title are
+      // built per-window in `buildWindows`, because all three change on mobile
+      // and this bag is built before there is anything to ask.
       chromeBar: styles.titleBar(false),
-      chromeClose: styles.titleBarButton(true),
       chromeGrow: styles.titleBarButton(false),
-      chromeTitle: styles.titleBarTitle(),
+      chromeTitle: styles.titleBarTitle(false),
       infoStrip: styles.infoStrip(),
       sectionLabel: styles.sectionLabel(),
       sectionLabelRule: styles.sectionLabel({ rule: true }),
@@ -158,12 +158,13 @@
      * template says `{{ w.resume.open }}` and adding a window never touches
      * this function.
      *
-     * The title bar, the zoom box and the resize grip live here rather than in
-     * `s` because all three change on mobile, which `s` is built too early to
-     * know.
+     * The title bar, its close box, its title, the zoom box and the resize grip
+     * all live here rather than in `s` because every one of them changes on
+     * mobile, which `s` is built too early to know.
      */
     function buildWindows(ctx) {
       var out = {};
+      var back = content.desktop.shell.backLabel;
       content.windows.forEach(function (win) {
         var open = ctx.wm.isOpen(ctx.state, win.id);
         var frame = open ? ctx.wm.frame(ctx.state, win.id) : null;
@@ -176,6 +177,13 @@
           zoomLabel: (zoomed ? "Restore " : "Zoom ") + win.title,
           // A window fills the stage on mobile, so there is nowhere to drag it.
           chromeStyle: styles.titleBar(!ctx.isMobile),
+          titleStyle: styles.titleBarTitle(ctx.isMobile),
+          // On mobile the close box is a labelled Back button, and says so to
+          // a screen reader too: with the desktop hidden behind a full-screen
+          // window, going back is what closing it means.
+          closeStyle: styles.titleBarClose(ctx.isMobile),
+          closeText: ctx.isMobile ? back : "",
+          closeLabel: ctx.isMobile ? "Back" : "Close " + win.title,
           zoomStyle: styles.titleBarZoom(ctx.isMobile),
           gripStyle: styles.resizeGrip(ctx.isMobile),
           style: open ? styles.windowFrame(frame, ctx.isMobile, ctx.keyboardInset) : ""

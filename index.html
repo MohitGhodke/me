@@ -299,8 +299,8 @@
     <sc-if value="{{ w.resume.open }}" hint-placeholder-val="{{ false }}">
       <div data-print="doc" style="{{ w.resume.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="resume" data-print="chrome" style="{{ w.resume.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="Close Resume" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.resume.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="{{ w.resume.closeLabel }}" style="{{ w.resume.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.resume.closeText }}</div>
+          <div style="{{ w.resume.titleStyle }}">{{ w.resume.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="resume" role="button" tabIndex="0" aria-label="{{ w.resume.zoomLabel }}" style="{{ w.resume.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="resume" data-print="hide" aria-hidden="true" style="{{ w.resume.gripStyle }}"></div>
@@ -387,8 +387,8 @@
     <sc-if value="{{ w.work.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.work.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="work" style="{{ w.work.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="Close Work" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.work.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="{{ w.work.closeLabel }}" style="{{ w.work.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.work.closeText }}</div>
+          <div style="{{ w.work.titleStyle }}">{{ w.work.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="work" role="button" tabIndex="0" aria-label="{{ w.work.zoomLabel }}" style="{{ w.work.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="work" aria-hidden="true" style="{{ w.work.gripStyle }}"></div>
@@ -435,8 +435,8 @@
     <sc-if value="{{ w.extensions.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.extensions.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="extensions" style="{{ w.extensions.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="Close VS Code Extensions" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.extensions.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="{{ w.extensions.closeLabel }}" style="{{ w.extensions.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.extensions.closeText }}</div>
+          <div style="{{ w.extensions.titleStyle }}">{{ w.extensions.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="extensions" role="button" tabIndex="0" aria-label="{{ w.extensions.zoomLabel }}" style="{{ w.extensions.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="extensions" aria-hidden="true" style="{{ w.extensions.gripStyle }}"></div>
@@ -467,8 +467,8 @@
     <sc-if value="{{ w.apps.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.apps.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="apps" style="{{ w.apps.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="Close iOS Apps" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.apps.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="{{ w.apps.closeLabel }}" style="{{ w.apps.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.apps.closeText }}</div>
+          <div style="{{ w.apps.titleStyle }}">{{ w.apps.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="apps" role="button" tabIndex="0" aria-label="{{ w.apps.zoomLabel }}" style="{{ w.apps.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="apps" aria-hidden="true" style="{{ w.apps.gripStyle }}"></div>
@@ -496,8 +496,8 @@
     <sc-if value="{{ w.project.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.project.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="project" style="{{ w.project.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="Close case study" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ proj.file }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="{{ w.project.closeLabel }}" style="{{ w.project.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.project.closeText }}</div>
+          <div style="{{ w.project.titleStyle }}">{{ proj.file }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="project" role="button" tabIndex="0" aria-label="{{ w.project.zoomLabel }}" style="{{ w.project.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="project" aria-hidden="true" style="{{ w.project.gripStyle }}"></div>
@@ -552,8 +552,8 @@
     <sc-if value="{{ w.about.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.about.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="about" style="{{ w.about.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="Close About Me" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.about.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="{{ w.about.closeLabel }}" style="{{ w.about.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.about.closeText }}</div>
+          <div style="{{ w.about.titleStyle }}">{{ w.about.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="about" role="button" tabIndex="0" aria-label="{{ w.about.zoomLabel }}" style="{{ w.about.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="about" aria-hidden="true" style="{{ w.about.gripStyle }}"></div>
@@ -576,8 +576,8 @@
     <sc-if value="{{ w.skills.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.skills.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="skills" style="{{ w.skills.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="Close Skills" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.skills.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="{{ w.skills.closeLabel }}" style="{{ w.skills.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.skills.closeText }}</div>
+          <div style="{{ w.skills.titleStyle }}">{{ w.skills.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="skills" role="button" tabIndex="0" aria-label="{{ w.skills.zoomLabel }}" style="{{ w.skills.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="skills" aria-hidden="true" style="{{ w.skills.gripStyle }}"></div>
@@ -616,8 +616,8 @@
     <sc-if value="{{ w.ai.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.ai.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="ai" style="{{ w.ai.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="Close Chirp AI" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.ai.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="{{ w.ai.closeLabel }}" style="{{ w.ai.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.ai.closeText }}</div>
+          <div style="{{ w.ai.titleStyle }}">{{ w.ai.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="ai" role="button" tabIndex="0" aria-label="{{ w.ai.zoomLabel }}" style="{{ w.ai.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="ai" aria-hidden="true" style="{{ w.ai.gripStyle }}"></div>
@@ -661,8 +661,8 @@
     <sc-if value="{{ w.contact.open }}" hint-placeholder-val="{{ false }}">
       <div style="{{ w.contact.style }}">
         <div onPointerDown="{{ startDrag }}" onClick="{{ focusWin }}" onDoubleClick="{{ toggleZoom }}" data-win="contact" style="{{ w.contact.chromeStyle }}">
-          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="Close Contact" style="{{ s.chromeClose }}" style-hover="background:var(--mos-ink);"></div>
-          <div style="{{ s.chromeTitle }}">{{ w.contact.title }}</div>
+          <div onClick="{{ handleClose }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="{{ w.contact.closeLabel }}" style="{{ w.contact.closeStyle }}" style-hover="background:var(--mos-ink);color:var(--mos-paper);" style-active="background:var(--mos-ink);color:var(--mos-paper);">{{ w.contact.closeText }}</div>
+          <div style="{{ w.contact.titleStyle }}">{{ w.contact.title }}</div>
           <div onClick="{{ toggleZoom }}" onKeyDown="{{ keyActivate }}" data-win="contact" role="button" tabIndex="0" aria-label="{{ w.contact.zoomLabel }}" style="{{ w.contact.zoomStyle }}" style-hover="background:var(--mos-ink);"></div>
         </div>
         <div onPointerDown="{{ startResize }}" data-win="contact" aria-hidden="true" style="{{ w.contact.gripStyle }}"></div>
@@ -832,6 +832,11 @@ class Component extends DCLogic {
 
     this.state.windows = this.windowManager.empty();
     this.isApplePlatform = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || "");
+
+    // How many history entries the mobile window stack currently owns — see
+    // `syncNavDepth`. Zero until the first window opens, and always zero on
+    // the desktop.
+    this.navDepth = 0;
     this.aiSession = null;
 
     // Chirp's memory of its own hands: the window it opened last (what "close
@@ -902,8 +907,14 @@ class Component extends DCLogic {
       motion.clockMs
     );
 
+    // A reload always lands on the bare desktop, so the entry it lands on is
+    // stamped as the bottom of the stack — otherwise a refresh taken halfway
+    // through a stack would leave the count and the windows disagreeing.
+    window.history.replaceState({ mosDepth: 0 }, "");
+
     window.addEventListener("resize", this.onResize);
     window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("popstate", this.onPopState);
     if (window.visualViewport) {
       window.visualViewport.addEventListener("resize", this.onViewportChange);
       window.visualViewport.addEventListener("scroll", this.onViewportChange);
@@ -918,6 +929,7 @@ class Component extends DCLogic {
     clearInterval(this.thinkingTimer);
     window.removeEventListener("resize", this.onResize);
     window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("popstate", this.onPopState);
     if (window.visualViewport) {
       window.visualViewport.removeEventListener("resize", this.onViewportChange);
       window.visualViewport.removeEventListener("scroll", this.onViewportChange);
@@ -926,6 +938,71 @@ class Component extends DCLogic {
     this.endDrag();
     this.endResize();
   }
+
+  componentDidUpdate() {
+    this.syncNavDepth();
+  }
+
+  /* ------------------------------------------------- back gesture (mobile) */
+
+  /**
+   * Keep the browser's history in step with the mobile window stack.
+   *
+   * On a phone a window fills the screen and hides everything behind it, so
+   * the instinct for getting out of one is the back gesture — the edge swipe
+   * on iOS, the back button on Android — not a box in the corner of a title
+   * bar. Neither does anything on a single-page site with one history entry:
+   * the swipe leaves the site altogether, which is why visitors get stuck.
+   *
+   * So the stack of open windows is mirrored as history entries, one each.
+   * Then Back is a real navigation the browser already knows how to run, and
+   * `onPopState` does the closing.
+   *
+   * Called after every render rather than from the eight places that open or
+   * close a window — Chirp closes them too, and so does the File menu. It
+   * compares two counts and usually does nothing, which is cheaper than eight
+   * call sites that can each be forgotten.
+   */
+  syncNavDepth() {
+    const depth = this.state.isMobile
+      ? this.windowManager.openCount(this.state.windows)
+      : 0;
+    if (depth === this.navDepth) return;
+
+    if (depth > this.navDepth) {
+      while (this.navDepth < depth) {
+        this.navDepth += 1;
+        window.history.pushState({ mosDepth: this.navDepth }, "");
+      }
+      return;
+    }
+
+    // Going back is asynchronous — `popstate` arrives on a later tick — so the
+    // new depth is banked now. Without that, a second window closed before the
+    // event lands would rewind the same entries twice and walk off the site.
+    const steps = this.navDepth - depth;
+    this.navDepth = depth;
+    window.history.go(-steps);
+  }
+
+  /**
+   * Back, forward, or the swipe. The entry being restored says how many
+   * windows were open when it was pushed, so one handler serves a single step
+   * back and the multi-step rewind "Close All" asks for.
+   *
+   * Reopening on a forward navigation is deliberately not attempted: a closed
+   * window has lost its scroll position and, for Chirp, its conversation, so
+   * "forward" bringing back a hollow copy would be worse than it doing nothing.
+   */
+  onPopState = (e) => {
+    this.navDepth = (e.state && e.state.mosDepth) || 0;
+    // On the desktop the close box is unambiguous and windows float over a
+    // visible desktop, so Back stays a browser control and means "leave".
+    if (!this.state.isMobile) return;
+    this.setState((s) => ({
+      windows: this.windowManager.closeToDepth(s.windows, this.navDepth)
+    }));
+  };
 
   /**
    * Publish the palette so the stylesheet in <helmet> shares one source, and

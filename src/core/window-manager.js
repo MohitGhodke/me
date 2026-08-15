@@ -121,6 +121,36 @@
       });
     }
 
+    /** Every open window, back to front. */
+    function openIds(state) {
+      return Object.keys(state.win)
+        .filter(function (id) { return state.win[id].open; })
+        .sort(function (a, b) { return state.win[a].z - state.win[b].z; });
+    }
+
+    function openCount(state) {
+      return openIds(state).length;
+    }
+
+    /**
+     * Close windows from the front until at most `depth` are left open.
+     *
+     * On mobile every window fills the stage, so the open windows are not a
+     * scattered desktop but a stack — only the frontmost is visible, and
+     * closing it reveals the one underneath. That is a back stack, and this is
+     * what unwinds it: `index.html` keeps one browser history entry per open
+     * window, so the phone's back gesture lands here.
+     */
+    function closeToDepth(state, depth) {
+      var open = openIds(state);
+      if (open.length <= depth) return state;
+      var win = Object.assign({}, state.win);
+      open.slice(depth).forEach(function (id) {
+        win[id] = Object.assign({}, win[id], { open: false });
+      });
+      return { top: state.top, win: win };
+    }
+
     function patch(state, id, next) {
       var win = Object.assign({}, state.win);
       win[id] = Object.assign({}, state.win[id], next);
@@ -257,9 +287,11 @@
       get: get,
       isOpen: isOpen,
       anyOpen: anyOpen,
+      openCount: openCount,
       open: open,
       close: close,
       closeAll: closeAll,
+      closeToDepth: closeToDepth,
       bringFront: bringFront,
       dragTo: dragTo,
       resizeTo: resizeTo,

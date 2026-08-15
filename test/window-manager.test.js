@@ -100,6 +100,48 @@ test("close all closes every window but remembers their positions", () => {
   assert.equal(wm.get(s, "alpha").x, 222);
 });
 
+test("the open windows are a back stack, unwound from the front", () => {
+  // On mobile every window fills the stage, so only the frontmost is visible
+  // and the browser's Back gesture should reveal the one underneath — see
+  // `syncNavDepth` in index.html, which keeps one history entry per window.
+  const wm = manager();
+  let s = wm.open(wm.empty(), "alpha");
+  s = wm.open(s, "beta");
+  assert.equal(wm.openCount(s), 2);
+
+  s = wm.closeToDepth(s, 1);
+  assert.equal(wm.isOpen(s, "beta"), false, "the frontmost goes first");
+  assert.equal(wm.isOpen(s, "alpha"), true);
+
+  s = wm.closeToDepth(s, 0);
+  assert.equal(wm.anyOpen(s), false);
+});
+
+test("unwinding past the bottom of the stack changes nothing", () => {
+  // A history entry can arrive for a stack that has already been emptied
+  // another way — Chirp's "close everything", the File menu — and rewinding
+  // onto it must not be an error.
+  const wm = manager();
+  const empty = wm.empty();
+  assert.equal(wm.closeToDepth(empty, 0), empty);
+  assert.equal(wm.openCount(empty), 0);
+
+  const one = wm.open(empty, "alpha");
+  assert.equal(wm.closeToDepth(one, 3), one, "and a deeper target leaves it alone");
+});
+
+test("unwinding the stack leaves the windows under it untouched", () => {
+  const wm = manager();
+  let s = wm.open(wm.empty(), "alpha");
+  s = wm.dragTo(s, "alpha", 222, 111);
+  s = wm.open(s, "beta");
+  const before = s;
+
+  s = wm.closeToDepth(s, 1);
+  assert.equal(wm.get(s, "alpha").x, 222);
+  assert.equal(wm.get(before, "beta").open, true, "and the state given is not mutated");
+});
+
 test("clean up returns windows to their default frames", () => {
   const wm = manager();
   let s = wm.open(wm.empty(), "alpha");

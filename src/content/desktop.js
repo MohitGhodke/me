@@ -205,6 +205,10 @@
     osName: "MOHIT OS 1.0",
     desktopHint: "Double-click an icon to open it.",
     mobileHint: "MOHIT OS 1.0 — tap a row to open it.",
+    // The mobile close box, which is a Back button in everything but name —
+    // see `styles.titleBarClose`. Spelled out rather than left as an arrow
+    // glyph: an unlabelled chevron is the ambiguity being fixed here.
+    backLabel: "◂ BACK",
     workHint: "All shipped and public — double-click to open",
     // The strip is the only copy read before anything is opened, so it says
     // the one thing the icons can't: these are published, installable tools,

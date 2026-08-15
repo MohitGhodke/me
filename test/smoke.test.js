@@ -649,6 +649,119 @@ if (jsdom) {
     dom.window.close();
   });
 
+  /**
+   * Narrow the page to a phone and let the resize handler catch up. jsdom
+   * reports a fixed 1024 and has no way to set it, so the getter is replaced —
+   * which is all `system.isMobileWidth` reads.
+   */
+  async function shrinkToPhone(dom, width) {
+    Object.defineProperty(dom.window, "innerWidth", { value: width || 390, configurable: true });
+    dom.window.dispatchEvent(new dom.window.Event("resize"));
+    await settle(dom);
+  }
+
+  test("a phone gets a Back button where the desktop gets a close box", async () => {
+    const dom = await bootPage();
+    const { content } = require("../src/content/index.js");
+
+    const closeBox = () => query(dom, '[data-win="about"][role="button"]');
+
+    await fire(dom, query(dom, '[data-app="about"]'), "dblclick");
+    assert.equal(closeBox().textContent, "", "the desktop square says nothing");
+    assert.match(closeBox().getAttribute("aria-label"), /^Close /);
+
+    await shrinkToPhone(dom);
+    assert.equal(closeBox().textContent, content.desktop.shell.backLabel);
+    assert.equal(closeBox().getAttribute("aria-label"), "Back");
+
+    dom.window.close();
+  });
+
+  /**
+   * The reason the whole thing exists: on a phone the window is the screen,
+   * and the way out of a screen is the back gesture. Every open window owns a
+   * history entry, so the edge swipe on iOS and the button on Android land in
+   * `onPopState` instead of leaving the site.
+   */
+  test("on a phone the back gesture closes the window on top", async () => {
+    const dom = await bootPage();
+    const { content } = require("../src/content/index.js");
+    const { history } = dom.window;
+    const depth = () => (history.state && history.state.mosDepth) || 0;
+
+    await shrinkToPhone(dom);
+    assert.equal(depth(), 0, "the bare desktop owns no history entries");
+
+    // A row in the mobile list is one tap, not a double-click.
+    await fire(dom, query(dom, '[data-app="work"]'), "click");
+    assert.ok(text(dom).includes(content.desktop.shell.workHint), "the Work folder did not open");
+    assert.equal(depth(), 1, "the open window should have pushed an entry");
+
+    // Into the nested folder: a second full-screen window over the first.
+    await fire(dom, query(dom, '[data-app="extensions"]'), "click");
+    assert.ok(
+      text(dom).includes(content.desktop.shell.extensionsHint),
+      "the nested folder did not open"
+    );
+    assert.equal(depth(), 2);
+
+    history.back();
+    await settle(dom);
+    assert.equal(depth(), 1, "back should unwind one window, not the whole stack");
+    assert.ok(
+      !text(dom).includes(content.desktop.shell.extensionsHint),
+      "the window on top should have gone"
+    );
+    assert.ok(
+      text(dom).includes(content.desktop.shell.workHint),
+      "…and the folder underneath should still be there"
+    );
+
+    history.back();
+    await settle(dom);
+    assert.equal(depth(), 0);
+    assert.ok(!text(dom).includes(content.desktop.shell.workHint), "back to the list");
+
+    assert.deepEqual(dom.problems, [], "the console should stay clean");
+    dom.window.close();
+  });
+
+  test("the Back button and the back gesture stay in step", async () => {
+    // Tapping Back closes the window directly; the entry it pushed has to go
+    // with it, or the next gesture would spend a step doing nothing visible.
+    const dom = await bootPage();
+    const { content } = require("../src/content/index.js");
+    const { history } = dom.window;
+
+    await shrinkToPhone(dom);
+    await fire(dom, query(dom, '[data-app="skills"]'), "click");
+    assert.equal(history.state.mosDepth, 1);
+
+    await fire(dom, query(dom, '[data-win="skills"][role="button"]'), "click");
+    await settle(dom);
+    assert.ok(!text(dom).includes(content.skills.groups[0].items[0]), "the window did not close");
+    assert.equal((history.state && history.state.mosDepth) || 0, 0, "and gave its entry back");
+
+    dom.window.close();
+  });
+
+  test("back on the desktop is still the browser's, not the window manager's", async () => {
+    // A floating window sits over a desktop you can see, its close box is
+    // unmistakable, and hijacking Back there would trap visitors on the page.
+    const dom = await bootPage();
+    const { content } = require("../src/content/index.js");
+
+    await fire(dom, query(dom, '[data-app="skills"]'), "dblclick");
+    assert.equal(
+      (dom.window.history.state && dom.window.history.state.mosDepth) || 0,
+      0,
+      "no history entry should have been pushed"
+    );
+    assert.ok(text(dom).includes(content.skills.groups[0].items[0]));
+
+    dom.window.close();
+  });
+
   test("driving the interface logs nothing to the console", async () => {
     const dom = await bootPage();
 
