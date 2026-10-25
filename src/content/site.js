@@ -15,13 +15,13 @@
     url: "https://mohitghodke.com",
 
     /** Shown on the wallpaper under the OS name. */
-    tagline: "Lead Software Engineer — C#, Angular, and the AI tooling around them",
+    tagline: "Lead Software Engineer — agent systems, agent skills and fine-tuned models",
 
     /** Used for <title>, the meta description and social cards. */
     meta: {
       title: "Mohit Ghodke — Lead Software Engineer",
       description:
-        "Mohit Ghodke — lead software engineer. C#/.NET and Angular, plus the agent tooling and fine-tuned small language models around them. A portfolio built as a small operating system.",
+        "Mohit Ghodke — lead software engineer. Builds the agent framework his platform's teams ship features with, cuts the tokens it costs, and fine-tunes small language models to run on-premise, on 13 years of C#/.NET. A portfolio built as a small operating system.",
       locale: "en",
       themeColor: "#8a9c93"
     },

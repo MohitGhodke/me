@@ -17,13 +17,15 @@
   var resume = {
     /** Two or three sentences. What you do, and the proof. */
     summary:
-      "Thirteen years building C#/.NET services and Angular front ends, the last " +
-      "four leading the teams that build them. Alongside that I work on the AI " +
-      "tooling around delivery — orchestration agents that keep context out of " +
-      "the prompt, retrieval-augmented answers, and small language models " +
-      "fine-tuned to run offline against a private corpus. Four VS Code " +
-      "extensions on the Marketplace and an iOS app on the App Store — all " +
-      "published, all free — are the part you can go and install.",
+      "Lead software engineer who builds the agent layer his platform's teams " +
+      "ship features with — a documentation agent that makes each microservice " +
+      "legible to a model, eight agents that route a task to the one that owns " +
+      "it, and a fine-tuned small model for the legacy code too large for any " +
+      "prompt. Input tokens down a measured 20%, and engineers across the teams " +
+      "taught to write their own agents and skills. It stands on thirteen years " +
+      "of C#/.NET and Angular, the last four leading a team. Four " +
+      "VS Code extensions and an iOS app — published, free — are the part you " +
+      "can go and install.",
 
     /**
      * Newest first. Titles, employers and dates are from LinkedIn.
@@ -38,19 +40,24 @@
         title: "Lead Software Engineer",
         company: "EG A/S",
         period: "Jun 2026 — now",
+        description:
+          "Designed the eight-agent framework every team on the platform now " +
+          "builds features with; cut input tokens 20%; fine-tuned a 3B model " +
+          "for legacy code. Also teach engineers to write agents and skills.",
         stack: [
+          "Agent skills",
+          "Multi-agent frameworks",
+          "Context engineering",
+          "QLoRA fine-tuning",
           "C# / .NET",
-          "Angular",
-          "Micro frontends",
-          "Agentic coding",
-          "Small language models"
+          "Angular"
         ]
       },
       {
         title: "Lead Software Engineer",
         company: "TietoEVRY",
         period: "Jan 2022 — Jun 2026",
-        stack: ["C# / .NET", "Angular"]
+        stack: ["C# / .NET", "Angular", "Micro frontends", "Agentic coding"]
       },
       {
         title: "Senior Software Engineer",

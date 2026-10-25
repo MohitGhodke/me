@@ -11,12 +11,12 @@
     greeting: "Hello — I'm Mohit.",
 
     paragraphs: [
-      "I'm a lead software engineer. Most days that means C#, .NET and Angular — " +
-        "services and front ends that have to keep working while they change. " +
-        "The rest of the time I'm building the tooling around them: agents that " +
-        "fetch only the context a task actually needs, and small models " +
-        "fine-tuned on a private corpus so the answers never have to leave the " +
-        "building.",
+      "I'm a lead software engineer, and these days most of that means agents. " +
+        "I built the framework our teams ship features with — agents that fetch " +
+        "only the context a task needs, skills that own one job each, and a " +
+        "small model fine-tuned on a private corpus so the answers never leave " +
+        "the building — and I help the engineers around me write their own. " +
+        "Underneath it is thirteen years of C#, .NET and Angular.",
       // The short first sentence is deliberate: Chirp is handed the first
       // sentence of each paragraph, and this is the fact visitors most often
       // leave without — so it has to survive being cut at the full stop.

@@ -34,10 +34,12 @@
         kind: "chips",
         items: [
           "Orchestration agents",
+          "Multi-agent frameworks",
           "Agent skills",
           "System instructions",
           "MCP servers",
-          "Context engineering"
+          "Context engineering",
+          "Teaching teams to build with agents"
         ]
       },
       {
